@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Megaphone,
   Plus,
@@ -47,19 +48,18 @@ interface RoadmapItem {
 
 export const ModernDashboard: React.FC = () => {
   const sampleModules: RoadmapItem[] = [
-    { id: 'M1', name: 'Core Architecture & Layout Shell', lead: 'Member 1', status: 'Approved', progress: 'Completed' },
-    { id: 'M2', name: 'Authentication & Citizen Portal', lead: 'Member 2', status: 'Pending', progress: 'Next Up' },
-    { id: 'M3', name: 'Incident Registry & Coordinator Hub', lead: 'Member 3', status: 'Pending', progress: 'Pending' },
-    { id: 'M4', name: 'Inventory Depot & Safe Shelters', lead: 'Member 4', status: 'Pending', progress: 'Pending' },
-    { id: 'M5', name: 'Explainable AI Review & Notifications', lead: 'Member 5', status: 'Pending', progress: 'Pending' },
-    { id: 'M6', name: 'GIS Command Map & Volunteers', lead: 'Member 6', status: 'Pending', progress: 'Pending' },
+    { id: 'MOD-01', name: 'Core Architecture & Layout Shell', lead: 'Lead Architect', status: 'Approved', progress: 'Completed' },
+    { id: 'MOD-02', name: 'Authentication & Citizen Portal', lead: 'Security & Citizen Lead', status: 'Approved', progress: 'Completed' },
+    { id: 'MOD-03', name: 'Incident Registry & Coordinator Hub', lead: 'Crisis Coordinator', status: 'Pending', progress: 'In Progress' },
+    { id: 'MOD-04', name: 'Inventory Depot & Safe Shelters', lead: 'Logistics Lead', status: 'Pending', progress: 'Pending' },
+    { id: 'MOD-05', name: 'Explainable AI Review & Notifications', lead: 'AI Engineer', status: 'Pending', progress: 'Pending' },
+    { id: 'MOD-06', name: 'GIS Command Map & Volunteers', lead: 'GIS & Field Lead', status: 'Pending', progress: 'Pending' },
   ];
 
   return (
     <div className="space-y-6">
-      {/* 1. HERO BANNER USING THE ORIGINAL SRI LANKAN FLOOD RESCUE ASSET */}
+      {/* 1. HERO BANNER USING SRI LANKAN FLOOD RESCUE ASSET */}
       <div className="relative rounded-3xl overflow-hidden shadow-xl min-h-[380px] flex flex-col justify-between p-6 sm:p-10 border border-white/40">
-        {/* Background Image: using our authentic hero-flood-rescue.png with zoom effect */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 hover:scale-105"
           style={{
@@ -67,7 +67,6 @@ export const ModernDashboard: React.FC = () => {
             backgroundPosition: 'center 40%'
           }}
         />
-        {/* Soft Modern Gradients for high contrast and readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#0d1b32]/95 via-[#0d1b32]/80 to-transparent sm:w-7/12" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d1b32]/90 via-transparent to-transparent h-32 bottom-0" />
 
@@ -83,94 +82,107 @@ export const ModernDashboard: React.FC = () => {
             Coordinate. Prioritise. Assist.
           </p>
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-md leading-relaxed">
-            Unifying citizens affected by disasters, emergency coordinators, volunteers, donors, and shelters into one synchronized command system.
+            Unifying citizens affected by disasters, emergency coordinators, volunteers, donors, and shelters into one synchronized operational command system.
           </p>
         </div>
 
-        {/* 2. FOUR VIBRANT ACTION CARDS (Connected to Modules) */}
+        {/* 2. FOUR VIBRANT QUICK ACTION BUTTON CARDS (Fully Clickable Router Links) */}
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
-          {/* Blue - Incidents (Member 3) */}
-          <div className="group rounded-2xl bg-[#2563eb] text-white p-5 shadow-lg shadow-blue-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]">
+          
+          {/* Action 1: Blue - Incidents */}
+          <Link
+            to="/coordinator/incidents"
+            className="group rounded-2xl bg-[#2563eb] text-white p-5 shadow-lg shadow-blue-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
+          >
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
               <Megaphone className="w-5 h-5 text-white" />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">View Crisis<br />Alerts (M3)</span>
+              <span className="font-bold text-sm leading-snug">View Crisis<br />Alerts</span>
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
-          </div>
+          </Link>
 
-          {/* Red - Citizen Aid Request (Member 2) */}
-          <div className="group rounded-2xl bg-[#ef4444] text-white p-5 shadow-lg shadow-red-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]">
+          {/* Action 2: Red - Citizen Aid Request Wizard */}
+          <Link
+            to="/citizen/create-request"
+            className="group rounded-2xl bg-[#ef4444] text-white p-5 shadow-lg shadow-red-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
+          >
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
               <Plus className="w-5 h-5 text-white" />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Submit Aid<br />Request (M2)</span>
+              <span className="font-bold text-sm leading-snug">Submit Aid<br />Request</span>
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
-          </div>
+          </Link>
 
-          {/* Green - Shelters & Depot (Member 4) */}
-          <div className="group rounded-2xl bg-[#10b981] text-white p-5 shadow-lg shadow-emerald-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]">
+          {/* Action 3: Green - Find Shelters */}
+          <Link
+            to="/shelters"
+            className="group rounded-2xl bg-[#10b981] text-white p-5 shadow-lg shadow-emerald-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
+          >
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
               <Home className="w-5 h-5 text-white" />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Find Safe<br />Shelters (M4)</span>
+              <span className="font-bold text-sm leading-snug">Find Safe<br />Shelters</span>
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
-          </div>
+          </Link>
 
-          {/* Purple - Volunteers (Member 6) */}
-          <div className="group rounded-2xl bg-[#8b5cf6] text-white p-5 shadow-lg shadow-purple-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]">
+          {/* Action 4: Purple - Volunteer Mobilization */}
+          <Link
+            to="/volunteers"
+            className="group rounded-2xl bg-[#8b5cf6] text-white p-5 shadow-lg shadow-purple-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
+          >
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Volunteer<br />Mobilize (M6)</span>
+              <span className="font-bold text-sm leading-snug">Volunteer<br />Mobilize</span>
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
-      {/* 3. CORE ARCHITECTURE STATS (Member 1 Deliverables) */}
+      {/* 3. CORE ARCHITECTURE STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Architecture Phase"
-          value="Phase 1"
-          subtitle="Core Foundations"
+          value="Phase 1 & 2"
+          subtitle="Core Foundations & Citizen"
           icon={<Layers className="w-5 h-5" />}
-          trend="100% Core Shell"
+          trend="100% Operational"
           variant="success"
         />
         <StatCard
           title="System Readiness"
           value="Online"
-          subtitle="Enterprise SLA"
+          subtitle="National SLA 99.9%"
           icon={<ShieldCheck className="w-5 h-5" />}
           variant="default"
         />
         <StatCard
-          title="UI Primitives"
-          value="11 Ready"
+          title="UI Design System"
+          value="12 Ready"
           subtitle="Reusable Design System"
           icon={<Cpu className="w-5 h-5" />}
           variant="default"
         />
         <StatCard
-          title="Active Branch"
-          value="feature/core"
-          subtitle="feature/ui-modern-redesign"
+          title="Active Mode"
+          value="Operations"
+          subtitle="Command Center"
           icon={<GitBranch className="w-5 h-5" />}
           variant="default"
         />
@@ -262,10 +274,10 @@ export const ModernDashboard: React.FC = () => {
                 <Clock className="w-5 h-5 text-slate-700" />
                 <h3 className="font-extrabold text-base text-slate-900 tracking-tight">Recent System Activities</h3>
               </div>
-              <button className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition">
+              <Link to="/citizen/dashboard" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition">
                 <span>View All</span>
                 <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-4">
@@ -284,7 +296,7 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">AI Triage Recommendation (Member 5)</h4>
+                    <h4 className="text-sm font-bold text-slate-900">AI Triage Recommendation</h4>
                     <span className="text-[11px] text-slate-400 font-medium">5m ago</span>
                   </div>
                   <p className="text-xs text-slate-500">High Priority Emergency (Confidence: 92%)</p>
@@ -295,7 +307,7 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">Shelter Safe Zone Allocated (Member 4)</h4>
+                    <h4 className="text-sm font-bold text-slate-900">Shelter Safe Zone Allocated</h4>
                     <span className="text-[11px] text-slate-400 font-medium">8m ago</span>
                   </div>
                   <p className="text-xs text-slate-500">Family of 5 assigned to Sunanda Shelter</p>
@@ -306,7 +318,7 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">Relief Donation Received (Member 6)</h4>
+                    <h4 className="text-sm font-bold text-slate-900">Relief Donation Received</h4>
                     <span className="text-[11px] text-slate-400 font-medium">12m ago</span>
                   </div>
                   <p className="text-xs text-slate-500">Rs. 100,000 pledged from Global Care Relief Fund</p>
@@ -315,19 +327,19 @@ export const ModernDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* 5. ROADMAP DATA TABLE COMPONENT (Preserving Member 1 Reusable Primitives) */}
+          {/* 5. ROADMAP DATA TABLE */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
             <div className="p-5 border-b border-slate-200">
-              <h2 className="text-base font-bold text-slate-800">Six-Member Modular Architecture Roadmap</h2>
-              <p className="text-xs text-slate-500">Track implementation milestones across the distributed engineering team.</p>
+              <h2 className="text-base font-bold text-slate-800">Operational System Architecture Modules</h2>
+              <p className="text-xs text-slate-500">Real-time status of integrated humanitarian services.</p>
             </div>
             <DataTable<RoadmapItem>
               keyExtractor={(item) => item.id}
               columns={[
                 { key: 'id', header: 'Module ID', render: (item) => <span className="font-mono font-bold text-blue-600">{item.id}</span> },
                 { key: 'name', header: 'Technical Focus', render: (item) => <span className="font-medium text-slate-900">{item.name}</span> },
-                { key: 'lead', header: 'Assigned Lead', render: (item) => <span className="text-slate-600">{item.lead}</span> },
-                { key: 'status', header: 'Architecture Status', render: (item) => <StatusBadge status={item.status} /> },
+                { key: 'lead', header: 'Lead Role', render: (item) => <span className="text-slate-600 font-medium">{item.lead}</span> },
+                { key: 'status', header: 'Operational Status', render: (item) => <StatusBadge status={item.status} /> },
                 { key: 'progress', header: 'Delivery Stage', render: (item) => <span className="text-xs font-semibold text-slate-500">{item.progress}</span> },
               ]}
               data={sampleModules}
@@ -374,7 +386,7 @@ export const ModernDashboard: React.FC = () => {
             <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-slate-800">Quick Stats</span>
-                <span className="text-xs font-bold text-blue-600 cursor-pointer hover:underline">View Details →</span>
+                <Link to="/coordinator/incidents" className="text-xs font-bold text-blue-600 hover:underline">View Details →</Link>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
@@ -420,10 +432,13 @@ export const ModernDashboard: React.FC = () => {
             </div>
 
             <div className="relative z-10 pt-4">
-              <button className="w-full py-2.5 px-4 rounded-xl bg-[#2563eb] hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
+              <Link
+                to="/donations"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#2563eb] hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2"
+              >
                 <span>Donate Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
