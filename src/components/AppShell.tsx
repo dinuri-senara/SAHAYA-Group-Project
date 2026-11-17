@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
-import { AIChatDrawer } from './AIChatDrawer';
 import { UserRole } from '../types';
 
 interface AppShellProps {
@@ -58,9 +57,6 @@ export const AppShell: React.FC<AppShellProps> = ({
           {children}
         </main>
       </div>
-
-      {/* AI Assistant Chat Drawer */}
-      <AIChatDrawer />
     </div>
   );
 };
