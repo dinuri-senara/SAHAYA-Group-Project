@@ -1,6 +1,7 @@
 import React from 'react';
-import { Bell, Menu, Shield, ChevronDown } from 'lucide-react';
+import { Menu, Shield, ChevronDown } from 'lucide-react';
 import { UserRole } from '../types';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -13,7 +14,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onMenuClick,
   userName = 'Operational Officer',
   userRole = 'Admin',
-  unreadCount = 3,
 }) => {
   return (
     <header className="h-20 px-4 sm:px-8 flex items-center justify-between z-20">
@@ -35,20 +35,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Right side: Floating Notification Bell + User Role Pill */}
+      {/* Right side: Floating Notification Dropdown + User Role Pill */}
       <div className="flex items-center gap-3 ml-auto">
-        {/* Notification Bell */}
-        <button
-          aria-label="Notifications"
-          className="relative w-10 h-10 rounded-full bg-white/85 hover:bg-white text-slate-700 flex items-center justify-center shadow-xs border border-slate-200/80 backdrop-blur-md transition-all duration-200 hover:scale-105"
-        >
-          <Bell className="w-4.5 h-4.5 text-slate-700" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
-              {unreadCount}
-            </span>
-          )}
-        </button>
+        {/* Notification Dropdown */}
+        <NotificationDropdown />
 
         {/* User Pill */}
         <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white/85 hover:bg-white border border-slate-200/80 shadow-xs backdrop-blur-md transition cursor-pointer">
