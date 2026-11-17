@@ -5,32 +5,33 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   showTagline?: boolean;
   light?: boolean;
+  showText?: boolean;
 }
 
 export const SahayaLogo: React.FC<LogoProps> = ({ 
   className = '', 
   size = 'md', 
   showTagline = false,
-  light = false 
+  light = true,
+  showText = false
 }) => {
   const iconSizes = {
     sm: 'w-7 h-7',
     md: 'w-9 h-9',
-    lg: 'w-12 h-12'
+    lg: 'w-11 h-11'
   };
 
   const textSizes = {
-    sm: 'text-lg',
-    md: 'text-2xl',
-    lg: 'text-3xl'
+    sm: 'text-base',
+    md: 'text-xl',
+    lg: 'text-2xl'
   };
 
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
-      {/* Custom Original Humanitarian Aid Mark */}
-      <div className={`relative flex items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-md ${iconSizes[size]}`}>
+      {/* Humanitarian Beacon / Shield with Heart and Hands Symbolism */}
+      <div className={`relative flex items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-md shrink-0 ${iconSizes[size]}`}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-3/5 h-3/5 text-white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          {/* Beacon / Shield with Heart and Hands Symbolism */}
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           <path d="M12 8v8" />
           <path d="M8 12h8" />
@@ -41,21 +42,20 @@ export const SahayaLogo: React.FC<LogoProps> = ({
         </span>
       </div>
 
-      <div className="flex flex-col">
-        <div className="flex items-center gap-1.5 leading-none">
-          <span className={`font-black tracking-tight ${textSizes[size]} ${light ? 'text-white' : 'text-slate-900'}`}>
-            SAHAYA
-          </span>
-          <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-teal-100 text-teal-800 border border-teal-200">
-            Operations
-          </span>
+      {showText && (
+        <div className="flex flex-col overflow-hidden">
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className={`font-black tracking-tight ${textSizes[size]} ${light ? 'text-white' : 'text-slate-900'}`}>
+              SAHAYA
+            </span>
+          </div>
+          {showTagline && (
+            <span className="text-[10px] text-teal-400 font-semibold tracking-wide uppercase mt-0.5">
+              Crisis Management OS
+            </span>
+          )}
         </div>
-        {showTagline && (
-          <span className={`text-xs font-medium tracking-tight mt-0.5 ${light ? 'text-slate-400' : 'text-slate-500'}`}>
-            Smart Humanitarian Aid & Assistance
-          </span>
-        )}
-      </div>
+      )}
     </div>
   );
 };
