@@ -97,8 +97,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <SahayaLogo size="md" light={true} showText={false} />
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
-                <span className="font-black text-white text-lg tracking-tight leading-tight truncate">SAHAYA</span>
-                <span className="text-[10px] text-teal-400 font-semibold tracking-wide uppercase truncate">Crisis Management OS</span>
+                <span className="font-black text-white text-lg tracking-tight leading-tight truncate flex items-center gap-1.5">
+                  SAHAYA
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                    අපි වෙනුවෙන් අපි
+                  </span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium tracking-wide truncate">
+                  Humanitarian Aid Coordination
+                </span>
               </div>
             )}
           </div>
