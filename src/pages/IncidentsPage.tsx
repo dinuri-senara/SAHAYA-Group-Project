@@ -20,6 +20,8 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { UrgencyBadge } from '../components/StatusBadge';
 import { MapComponent } from '../components/MapComponent';
+import { DistrictFilter } from '../components/DistrictFilter';
+import { matchesLocationFilter } from '../data/sriLankaDistricts';
 
 export const IncidentsPage: React.FC = () => {
   const { user } = useAuth();
@@ -31,6 +33,8 @@ export const IncidentsPage: React.FC = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [activeOnly, setActiveOnly] = useState<boolean>(true);
+  const [selectedProvince, setSelectedProvince] = useState<string>('All');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Create Incident Modal
@@ -109,7 +113,8 @@ export const IncidentsPage: React.FC = () => {
                           inc.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           inc.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesActive = activeOnly ? inc.isActive : true;
-    return matchesSearch && matchesActive;
+    const matchesGeo = matchesLocationFilter(inc.location, selectedProvince, selectedDistrict);
+    return matchesSearch && matchesActive && matchesGeo;
   });
 
   const activeCount = incidents.filter(i => i.isActive).length;
@@ -239,6 +244,17 @@ export const IncidentsPage: React.FC = () => {
           {activeOnly ? 'Active Incidents Only' : 'Showing All Incidents'}
         </button>
       </div>
+
+      {/* District / Province Filter */}
+      <DistrictFilter
+        selectedProvince={selectedProvince}
+        selectedDistrict={selectedDistrict}
+        onProvinceChange={setSelectedProvince}
+        onDistrictChange={setSelectedDistrict}
+        resultCount={filteredIncidents.length}
+        totalCount={incidents.length}
+        label="Disaster Incident Zone / ආපදා සිදුවීම් කලාපය"
+      />
 
       {/* Content */}
       {loading ? (

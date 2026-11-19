@@ -19,6 +19,8 @@ import {
 import { Resource, AssistanceRequest } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { DistrictFilter } from '../components/DistrictFilter';
+import { matchesLocationFilter } from '../data/sriLankaDistricts';
 
 export const ResourcesPage: React.FC = () => {
   const { user } = useAuth();
@@ -31,6 +33,8 @@ export const ResourcesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [lowStockOnly, setLowStockOnly] = useState<boolean>(false);
+  const [selectedProvince, setSelectedProvince] = useState<string>('All');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -146,7 +150,8 @@ export const ResourcesPage: React.FC = () => {
       r.storageLocation.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'All' ? true : r.category === categoryFilter;
     const matchesLowStock = lowStockOnly ? r.isLowStock : true;
-    return matchesSearch && matchesCategory && matchesLowStock;
+    const matchesGeo = matchesLocationFilter(r.storageLocation, selectedProvince, selectedDistrict);
+    return matchesSearch && matchesCategory && matchesLowStock && matchesGeo;
   });
 
   const totalStockItems = resources.reduce((acc, r) => acc + r.totalQuantity, 0);
@@ -269,6 +274,17 @@ export const ResourcesPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* District / Province Filter */}
+      <DistrictFilter
+        selectedProvince={selectedProvince}
+        selectedDistrict={selectedDistrict}
+        onProvinceChange={setSelectedProvince}
+        onDistrictChange={setSelectedDistrict}
+        resultCount={filteredResources.length}
+        totalCount={resources.length}
+        label="Relief Depot Geographic Zone / ගබඩා පිහිටි පළාත හා දිස්ත්‍රික්කය"
+      />
 
       {/* Resources Table / Grid */}
       {loading ? (

@@ -21,6 +21,8 @@ import { Shelter, AssistanceRequest } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { MapComponent } from '../components/MapComponent';
+import { DistrictFilter } from '../components/DistrictFilter';
+import { matchesLocationFilter } from '../data/sriLankaDistricts';
 
 export const SheltersPage: React.FC = () => {
   const { user } = useAuth();
@@ -32,6 +34,8 @@ export const SheltersPage: React.FC = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Full'>('All');
+  const [selectedProvince, setSelectedProvince] = useState<string>('All');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Modals
@@ -146,7 +150,8 @@ export const SheltersPage: React.FC = () => {
       s.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.facilities.some(f => f.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'All' ? true : s.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesGeo = matchesLocationFilter(s.address, selectedProvince, selectedDistrict);
+    return matchesSearch && matchesStatus && matchesGeo;
   });
 
   const totalCap = shelters.reduce((acc, s) => acc + s.totalCapacity, 0);
@@ -282,6 +287,17 @@ export const SheltersPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* District / Province Filter */}
+      <DistrictFilter
+        selectedProvince={selectedProvince}
+        selectedDistrict={selectedDistrict}
+        onProvinceChange={setSelectedProvince}
+        onDistrictChange={setSelectedDistrict}
+        resultCount={filteredShelters.length}
+        totalCount={shelters.length}
+        label="Shelter Regional Zone / දිස්ත්‍රික්කය අනුව ආරක්ෂිත කඳවුරු"
+      />
 
       {/* Main Content Area */}
       {loading ? (
