@@ -16,9 +16,9 @@ export const SahayaLogo: React.FC<LogoProps> = ({
   showText = false
 }) => {
   const iconSizes = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-11 h-11'
+    sm: 'w-7 h-9',
+    md: 'w-9 h-11',
+    lg: 'w-12 h-14'
   };
 
   const textSizes = {
@@ -29,16 +29,16 @@ export const SahayaLogo: React.FC<LogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
-      {/* Humanitarian Logo (Two Hands forming S, Location Pin & Medical Cross) */}
-      <div className={`relative flex items-center justify-center rounded-xl bg-white/95 shadow-md p-1 shrink-0 overflow-hidden ring-1 ring-slate-200/50 ${iconSizes[size]}`}>
+      {/* Humanitarian Logo (Two Hands forming S, Location Pin & Medical Cross - Transparent) */}
+      <div className={`relative flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105 ${iconSizes[size]}`}>
         <img
           src="/sahaya-logo.png"
           alt="SAHAYA - අපි වෙනුවෙන් අපි"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(20,184,166,0.35)]"
         />
-        <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+        <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 pointer-events-none">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-400"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-300"></span>
         </span>
       </div>
 
