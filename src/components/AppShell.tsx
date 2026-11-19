@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
+import { OfflineBanner } from './OfflineBanner';
 import { UserRole } from '../types';
 
 interface AppShellProps {
@@ -47,6 +48,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           isCollapsed ? 'lg:pl-20' : 'lg:pl-68'
         }`}
       >
+        <OfflineBanner />
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           userName={userName}
