@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { OfflineBanner } from './OfflineBanner';
+import { RiverAlertTicker } from './RiverAlertTicker';
 import { UserRole } from '../types';
 
 interface AppShellProps {
@@ -49,6 +50,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         }`}
       >
         <OfflineBanner />
+        <RiverAlertTicker />
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           userName={userName}
