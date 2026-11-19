@@ -134,7 +134,7 @@ export const DonorDashboard: React.FC = () => {
   // 4. Reported aid outcomes (in-kind items delivered + meals funded)
   const totalInKindUnits = myDonations
     .filter(d => d.donationType === 'InKind')
-    .reduce((acc, d) => acc + d.itemQuantity, 0);
+    .reduce((acc, d) => acc + (d.itemQuantity || d.quantity || 0), 0);
   // 5. Recent impact updates
   const recentImpacts = campaigns.slice(0, 3);
 

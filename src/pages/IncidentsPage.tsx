@@ -93,8 +93,8 @@ export const IncidentsPage: React.FC = () => {
     }
   };
 
-  const getDisasterIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+  const getDisasterIcon = (type?: string) => {
+    switch ((type || '').toLowerCase()) {
       case 'flood':
         return <Waves className="w-5 h-5 text-blue-500" />;
       case 'landslide':
@@ -302,7 +302,7 @@ export const IncidentsPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>Declared: {new Date(inc.startDate).toLocaleDateString()}</span>
+                    <span>Declared: {new Date(inc.startDate || inc.startedAt || inc.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>

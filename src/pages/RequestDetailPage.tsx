@@ -288,11 +288,11 @@ export const RequestDetailPage: React.FC = () => {
                   </p>
                 </div>
 
-                {rec.suggestedResources?.length > 0 && (
+                {Boolean(rec.suggestedResources && rec.suggestedResources.length > 0) && (
                   <div>
                     <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-1.5">Recommended Relief Supplies</h4>
                     <div className="flex flex-wrap gap-2">
-                      {rec.suggestedResources.map((item, idx) => (
+                      {rec.suggestedResources?.map((item, idx) => (
                         <span key={idx} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-950/60 text-teal-300 border border-teal-800">
                           {item}
                         </span>
@@ -446,7 +446,7 @@ export const RequestDetailPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900">{h.newStatus}</span>
                     <span className="text-[10px] text-slate-400">
-                      {new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(h.timestamp || h.changedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px] leading-relaxed">

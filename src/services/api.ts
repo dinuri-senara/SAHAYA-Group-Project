@@ -112,6 +112,7 @@ const mockRequests: AssistanceRequest[] = [
     longitude: 79.887,
     peopleCount: 45,
     status: 'Pending' as RequestStatus,
+    statusHistory: [],
     createdAt: '2026-11-19T06:30:00Z',
   },
   {
@@ -127,6 +128,7 @@ const mockRequests: AssistanceRequest[] = [
     longitude: 80.015,
     peopleCount: 4,
     status: 'Assigned' as RequestStatus,
+    statusHistory: [],
     createdAt: '2026-11-19T07:15:00Z',
   },
   {
@@ -142,6 +144,7 @@ const mockRequests: AssistanceRequest[] = [
     longitude: 79.992,
     peopleCount: 30,
     status: 'InProgress' as RequestStatus,
+    statusHistory: [],
     createdAt: '2026-11-19T08:00:00Z',
   },
 ];
@@ -350,10 +353,53 @@ const mockCampaigns: DonationCampaign[] = [
     description: 'Urgent crowdfunding to procure hot meals, infant nutrition, and clean water filtration kits for displaced families.',
     targetAmount: 2500000,
     raisedAmount: 1845000,
+    progressPercentage: 74,
     startDate: '2026-11-15T00:00:00Z',
     endDate: '2026-12-31T00:00:00Z',
     status: 'Active',
     crisisEventId: 'inc-1',
+  },
+];
+
+const mockVolunteers: VolunteerProfile[] = [
+  {
+    id: 'vol-1',
+    userId: 'u-3',
+    fullName: 'Kasun Wickramasinghe',
+    skills: ['First Aid (Red Cross)', 'Offroad 4x4 Driving', 'Water Rescue'],
+    isAvailable: true,
+    serviceArea: 'Colombo & Gampaha',
+    currentLatitude: 6.95,
+    currentLongitude: 79.92,
+    rating: 4.9,
+    completedTasksCount: 28,
+    createdAt: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: 'vol-2',
+    userId: 'u-vol-2',
+    fullName: 'Dr. Priyantha Alwis',
+    skills: ['Emergency Medicine', 'Pediatric Triage'],
+    isAvailable: true,
+    serviceArea: 'Western Province',
+    currentLatitude: 6.93,
+    currentLongitude: 79.98,
+    rating: 5.0,
+    completedTasksCount: 42,
+    createdAt: '2026-01-01T00:00:00Z',
+  },
+];
+
+const mockVolunteerTasks: VolunteerTask[] = [
+  {
+    id: 'task-1',
+    volunteerId: 'vol-1',
+    assistanceRequestId: 'req-1',
+    title: 'Flood Rescue & Evacuation Assistance',
+    priority: 'Critical',
+    description: 'Deploy inflatable boat to evacuate 14 trapped families from Sedawatta temple.',
+    status: 'Assigned',
+    assignedAt: new Date().toISOString(),
   },
 ];
 
@@ -463,7 +509,7 @@ export const api = {
     return inc || mockIncidents[0];
   },
 
-  async getCrisisEvents(): Promise<CrisisEvent[]> {
+  async getCrisisEvents(_activeOnly?: boolean): Promise<CrisisEvent[]> {
     return this.getIncidents();
   },
 
@@ -521,13 +567,24 @@ export const api = {
   // Coordinator Dashboard
   async getCoordinatorDashboard(): Promise<CoordinatorDashboardData> {
     return {
-      activeCrisisEvents: mockIncidents,
-      pendingRequestsCount: mockRequests.filter((r) => r.status === 'Pending').length,
+      totalRequests: mockRequests.length,
+      pendingRequests: mockRequests.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
+      pendingRequestsCount: mockRequests.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
+      approvedRequests: mockRequests.filter((r) => r.status === 'Approved').length,
       assignedRequestsCount: mockRequests.filter((r) => r.status === 'Assigned').length,
       inProgressRequestsCount: mockRequests.filter((r) => r.status === 'InProgress').length,
       resolvedRequestsCount: 142,
+      criticalRequests: 18,
       criticalUrgencyCount: 18,
+      activeIncidents: mockIncidents.length,
+      totalShelters: mockShelters.length,
+      availableCapacity: 850,
+      totalVolunteers: 65,
+      activeVolunteers: 42,
+      lowStockResourcesCount: mockResources.filter((r) => r.isLowStock).length,
       recentRequests: mockRequests,
+      activeEvents: mockIncidents,
+      activeCrisisEvents: mockIncidents,
       topNeededResources: [
         { resourceName: 'Bottled Water', totalRequested: 2400, totalAvailable: 1250, shortage: 1150 },
         { resourceName: 'Dry Ration Packs', totalRequested: 1800, totalAvailable: 4800, shortage: 0 },
@@ -537,7 +594,7 @@ export const api = {
   },
 
   // Shelters
-  async getShelters(): Promise<Shelter[]> {
+  async getShelters(_activeOnly?: boolean): Promise<Shelter[]> {
     return mockShelters;
   },
 
@@ -629,30 +686,7 @@ export const api = {
 
   // Volunteers
   async getVolunteers(): Promise<VolunteerProfile[]> {
-    return [
-      {
-        id: 'vol-1',
-        userId: 'u-3',
-        fullName: 'Kasun Wickramasinghe',
-        skills: ['First Aid (Red Cross)', 'Offroad 4x4 Driving', 'Water Rescue'],
-        isAvailable: true,
-        currentLatitude: 6.95,
-        currentLongitude: 79.92,
-        rating: 4.9,
-        completedTasksCount: 28,
-      },
-      {
-        id: 'vol-2',
-        userId: 'u-vol-2',
-        fullName: 'Dr. Priyantha Alwis',
-        skills: ['Emergency Medicine', 'Pediatric Triage'],
-        isAvailable: true,
-        currentLatitude: 6.93,
-        currentLongitude: 79.98,
-        rating: 5.0,
-        completedTasksCount: 42,
-      },
-    ];
+    return mockVolunteers;
   },
 
   async getVolunteerProfile(_id: string): Promise<VolunteerProfile> {
@@ -662,16 +696,7 @@ export const api = {
   async updateVolunteerAvailability(_isAvailable: boolean): Promise<void> {},
 
   async getVolunteerTasks(): Promise<VolunteerTask[]> {
-    return [
-      {
-        id: 'task-1',
-        volunteerId: 'vol-1',
-        assistanceRequestId: 'req-1',
-        description: 'Deploy inflatable boat to evacuate 14 trapped families from Sedawatta temple.',
-        status: 'Assigned',
-        assignedAt: new Date().toISOString(),
-      },
-    ];
+    return mockVolunteerTasks;
   },
 
   async updateTaskStatus(_id: string, _status: string): Promise<void> {},
@@ -864,14 +889,17 @@ export const api = {
   },
 
   async getShelterReport(): Promise<any[]> {
-    return mockShelters.map((s) => ({
-      shelterId: s.id,
-      shelterName: s.name,
-      totalCapacity: s.capacity,
-      currentOccupancy: s.currentOccupancy,
-      occupancyRate: Math.round((s.currentOccupancy / s.capacity) * 100),
-      status: s.status,
-    }));
+    return mockShelters.map((s) => {
+      const cap = s.totalCapacity || s.capacity || 1;
+      return {
+        shelterId: s.id,
+        shelterName: s.name,
+        totalCapacity: cap,
+        currentOccupancy: s.currentOccupancy,
+        occupancyRate: Math.round((s.currentOccupancy / cap) * 100),
+        status: s.status,
+      };
+    });
   },
 
   async getDonationCampaigns(): Promise<DonationCampaign[]> {
@@ -928,5 +956,95 @@ export const api = {
     if (u) {
       u.isActive = data.isActive;
     }
+  },
+
+  // AI Chat Assistant
+  async sendAIChat(
+    _message: string,
+    language?: string
+  ): Promise<{ reply: string; isFromFallback?: boolean; quickSuggestions?: string[] }> {
+    return {
+      reply:
+        language === 'si'
+          ? 'සහාය පද්ධතියට සාදරයෙන් පිළිගනිමු. ඔබගේ සහන ඉල්ලීම හෝ ආපදා තොරතුරු අප වෙත යොමු කරන්න.'
+          : 'Welcome to SAHAYA Humanitarian Operations. How can I assist you with disaster relief or shelter information today?',
+      isFromFallback: true,
+      quickSuggestions: ['Safe Shelters nearby', 'Emergency Food & Water', 'Report Flooding'],
+    };
+  },
+
+  // AI Decision Review
+  async reviewAIRecommendation(recommendationId: string, data: any): Promise<any> {
+    const req = mockRequests.find((r) => r.latestRecommendation?.id === recommendationId);
+    if (req && req.latestRecommendation) {
+      req.latestRecommendation.reviewStatus =
+        data.reviewStatus === 1 ? 'Accepted' : data.reviewStatus === 2 ? 'Overridden' : 'Rejected';
+      if (data.overrideReason) req.latestRecommendation.overrideReason = data.overrideReason;
+      if (data.notes) req.latestRecommendation.officerDecision = data.notes;
+    }
+    return { success: true };
+  },
+
+  // Donor shortcuts
+  async getMyDonations(): Promise<Donation[]> {
+    return this.getDonations();
+  },
+
+  // Requests
+  async getRequestById(id: string): Promise<AssistanceRequest> {
+    return this.getRequest(id);
+  },
+
+  async reviewRequest(id: string, data: any): Promise<any> {
+    const req = mockRequests.find((r) => r.id === id);
+    if (req) {
+      req.status = data.status || req.status;
+    }
+    return { success: true, request: req };
+  },
+
+  async cancelRequest(id: string, _reason?: string): Promise<any> {
+    const req = mockRequests.find((r) => r.id === id);
+    if (req) {
+      req.status = 'Cancelled';
+    }
+    return { success: true };
+  },
+
+  // Volunteers
+  async getMyVolunteerProfile(): Promise<VolunteerProfile> {
+    return mockVolunteers[0];
+  },
+
+  async getMyVolunteerTasks(): Promise<VolunteerTask[]> {
+    return mockVolunteerTasks;
+  },
+
+  async getAvailableVolunteerTasks(): Promise<VolunteerTask[]> {
+    return mockVolunteerTasks.filter((t: VolunteerTask) => t.status === 'Assigned');
+  },
+
+  async updateVolunteerTaskStatus(taskId: string, status: any, notes?: string): Promise<any> {
+    const task = mockVolunteerTasks.find((t: VolunteerTask) => t.id === taskId);
+    if (task) {
+      task.status = status;
+      if (notes) task.notes = notes;
+    }
+    return { success: true, task };
+  },
+
+  async acceptVolunteerTask(taskId: string): Promise<any> {
+    return this.updateVolunteerTaskStatus(taskId, 'Accepted');
+  },
+
+  async assignVolunteerTask(dataOrTaskId: any, volunteerId?: string): Promise<any> {
+    const taskId = typeof dataOrTaskId === 'string' ? dataOrTaskId : dataOrTaskId?.taskId || 'task-1';
+    const vId = typeof dataOrTaskId === 'string' ? volunteerId : dataOrTaskId?.volunteerProfileId;
+    const task = mockVolunteerTasks.find((t: VolunteerTask) => t.id === taskId);
+    if (task && vId) {
+      task.volunteerProfileId = vId;
+      task.status = 'Assigned';
+    }
+    return { success: true, task };
   },
 };

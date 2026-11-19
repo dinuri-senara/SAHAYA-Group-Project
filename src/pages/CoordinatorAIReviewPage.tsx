@@ -139,11 +139,11 @@ export const CoordinatorAIReviewPage: React.FC = () => {
             <span className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
               <Sparkles className="w-6 h-6" />
             </span>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               AI Operations Center & Triage Oversight
             </h1>
           </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-600">
             Explainable AI decision intelligence, human-in-the-loop review, and NLP duplicate request detection.
           </p>
         </div>
@@ -174,7 +174,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Request Queue */}
         <div className="lg:col-span-5 space-y-3">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
             Incoming Triage Queue ({requests.length})
           </h2>
 
@@ -204,7 +204,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">{req.title}</h4>
+                      <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{req.title}</h4>
                       <UrgencyBadge urgency={req.urgency} />
                     </div>
                     <p className="text-xs text-slate-500 line-clamp-2 mt-1">{req.description}</p>
@@ -236,7 +236,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <span className="text-xs font-semibold text-slate-400">Assistance Request #{selectedRequest.id.substring(0, 8)}</span>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">{selectedRequest.title}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 mt-0.5">{selectedRequest.title}</h3>
                     <p className="text-xs text-slate-500 mt-1">Submitted by {selectedRequest.citizenName} • Category: {selectedRequest.category}</p>
                   </div>
                   <Link
@@ -295,7 +295,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                       <div className="p-3.5 rounded-xl bg-slate-900/60 border border-purple-500/20">
                         <span className="text-[11px] font-semibold text-slate-400">Recommended Priority</span>
                         <div className="mt-1">
-                          <UrgencyBadge urgency={rec.suggestedPriority} />
+                          <UrgencyBadge urgency={rec.suggestedPriority || 'Medium'} />
                         </div>
                       </div>
                     </div>
@@ -386,7 +386,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Copy className="w-5 h-5 text-amber-500" />
-                    <h4 className="font-bold text-slate-900 dark:text-white text-base">Duplicate Request Detector</h4>
+                    <h4 className="font-bold text-slate-900 text-base">Duplicate Request Detector</h4>
                   </div>
                   <span className="text-xs text-slate-500">Jaccard NLP & Haversine Proximity Check</span>
                 </div>
@@ -409,7 +409,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                         className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1.5"
                       >
                         <div className="flex justify-between items-start">
-                          <strong className="text-slate-900 dark:text-white">{dup.matchedTitle}</strong>
+                          <strong className="text-slate-900">{dup.matchedTitle}</strong>
                           <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 font-bold text-[10px]">
                             {Math.round(dup.similarityScore * 100)}% Similarity
                           </span>
@@ -427,7 +427,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
           ) : (
             <div className="p-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <Sparkles className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Select a Request to Inspect</h3>
+              <h3 className="text-base font-bold text-slate-900">Select a Request to Inspect</h3>
               <p className="text-xs text-slate-500 mt-1">Select an item from the queue to view explainable AI recommendations.</p>
             </div>
           )}
@@ -438,7 +438,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
       {showOverrideModal && rec && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Human Officer AI Review</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-1">Human Officer AI Review</h2>
             <p className="text-xs text-slate-500 mb-4">
               Authorized coordinators have full authority to accept, modify, or override AI recommendations.
             </p>
@@ -476,7 +476,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     <select
                       value={modifiedUrgency}
                       onChange={e => setModifiedUrgency(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900"
                     >
                       <option value={0}>Low</option>
                       <option value={1}>Medium</option>
@@ -493,7 +493,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                       value={overrideReason}
                       onChange={e => setOverrideReason(e.target.value)}
                       placeholder="Explain why the AI model's recommendation is being overridden (e.g. verified infant in household requiring urgent formula)..."
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900"
                     />
                   </div>
                 </div>
