@@ -25,7 +25,8 @@ import {
   UserSummary,
   UserRoleCounts,
   SystemHealthMetrics,
-  VolunteerCheckIn
+  VolunteerCheckIn,
+  PartnerRequest
 } from '../types';
 
 // Mock DB for pure client-side standalone execution
@@ -344,6 +345,89 @@ const mockResources: Resource[] = [
     isLowStock: false,
     createdAt: '2026-11-18T05:00:00Z',
   },
+  {
+    id: 'res-7',
+    name: 'Bottled Mineral Drinking Water (1L Bottles)',
+    category: 'DrinkingWater',
+    quantity: 2000,
+    totalQuantity: 2000,
+    availableQuantity: 0,
+    allocatedQuantity: 1500,
+    dispatchedQuantity: 500,
+    lowStockThreshold: 400,
+    unit: 'Bottles',
+    warehouseLocation: 'Depot A - Kelaniya, Gampaha District',
+    storageLocation: 'Depot A - Kelaniya, Gampaha District',
+    expiryDate: '2027-04-30',
+    isActive: true,
+    isLowStock: true,
+    createdAt: '2026-11-18T06:00:00Z',
+  },
+  {
+    id: 'res-8',
+    name: 'Heavy-Duty Motorized Rescue Zodiacs',
+    category: 'LogisticsEquipment',
+    quantity: 12,
+    totalQuantity: 12,
+    availableQuantity: 0,
+    allocatedQuantity: 8,
+    dispatchedQuantity: 4,
+    lowStockThreshold: 3,
+    unit: 'Boats',
+    warehouseLocation: 'Disaster Rapid Center Colombo, Western Province',
+    storageLocation: 'Disaster Rapid Center Colombo, Western Province',
+    isActive: true,
+    isLowStock: true,
+    createdAt: '2026-11-18T07:00:00Z',
+  },
+];
+
+const mockPartnerRequests: PartnerRequest[] = [
+  {
+    id: 'pr-101',
+    partnerName: 'Sri Lanka Red Cross Society (SLRCS)',
+    partnerType: 'Humanitarian NGO',
+    resourceCategory: 'DrinkingWater',
+    itemName: 'Emergency Packaged Drinking Water (20L Cans)',
+    quantityRequested: 1000,
+    unit: 'Cans',
+    priority: 'Critical',
+    deliveryLocation: 'Depot A - Kelaniya, Gampaha District',
+    justification: 'Kelani river flood evacuation exceeded Kelaniya depot drinking water stock.',
+    status: 'InTransit',
+    requestedAt: '2026-11-21T08:30:00Z',
+    etaHours: 3
+  },
+  {
+    id: 'pr-102',
+    partnerName: 'Sri Lanka Army Disaster Relief Wing',
+    partnerType: 'Military / Civil Defence',
+    resourceCategory: 'LogisticsEquipment',
+    itemName: 'Aluminum Assault Boats with Outboard Motors',
+    quantityRequested: 6,
+    unit: 'Boats',
+    priority: 'High',
+    deliveryLocation: 'Disaster Rapid Center Colombo, Western Province',
+    justification: 'Severe waterlogging in Biyagama industrial and residential basin.',
+    status: 'Approved',
+    requestedAt: '2026-11-21T10:15:00Z',
+    etaHours: 6
+  },
+  {
+    id: 'pr-103',
+    partnerName: 'UN World Food Programme (WFP)',
+    partnerType: 'UN Agency',
+    resourceCategory: 'Food',
+    itemName: 'High-Energy Micronutrient Fortified Biscuits (BP-5)',
+    quantityRequested: 2500,
+    unit: 'Boxes',
+    priority: 'Medium',
+    deliveryLocation: 'Ratnapura Central Relief Depot, Sabaragamuwa Province',
+    justification: 'Sustained relief for 4 isolated landslide pockets in Kalawana.',
+    status: 'Pending',
+    requestedAt: '2026-11-21T12:00:00Z',
+    etaHours: 14
+  }
 ];
 
 const mockCampaigns: DonationCampaign[] = [
@@ -654,15 +738,38 @@ export const api = {
   },
 
   async allocateResource(data: any): Promise<ResourceAllocation> {
+    const res = mockResources.find((r) => r.id === data.resourceId);
+    if (res) {
+      const qty = Number(data.quantityAllocated || data.quantity || 0);
+      res.availableQuantity = Math.max(0, res.availableQuantity - qty);
+      res.allocatedQuantity = (res.allocatedQuantity || 0) + qty;
+      res.isLowStock = res.availableQuantity <= res.lowStockThreshold;
+    }
     return {
       id: `alloc-${Date.now()}`,
       resourceId: data.resourceId,
       assistanceRequestId: data.assistanceRequestId,
-      quantityAllocated: data.quantityAllocated,
+      quantityAllocated: data.quantityAllocated || data.quantity,
       allocatedAt: new Date().toISOString(),
       allocatedByEmail: 'coordinator@sahaya.lk',
       status: 'Dispatched',
     };
+  },
+
+  // Partner Assistance Requests (External Inter-Agency Requisitions)
+  async getPartnerRequests(): Promise<PartnerRequest[]> {
+    return mockPartnerRequests;
+  },
+
+  async createPartnerRequest(data: Omit<PartnerRequest, 'id' | 'status' | 'requestedAt'>): Promise<PartnerRequest> {
+    const newReq: PartnerRequest = {
+      ...data,
+      id: `pr-${Date.now()}`,
+      status: 'Pending',
+      requestedAt: new Date().toISOString(),
+    };
+    mockPartnerRequests.unshift(newReq);
+    return newReq;
   },
 
   // AI Recommendations

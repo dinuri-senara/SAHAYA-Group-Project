@@ -403,3 +403,20 @@ export interface VolunteerCheckIn {
   statusNotes?: string;
 }
 
+export interface PartnerRequest {
+  id: string;
+  partnerName: string;
+  partnerType: string;
+  resourceCategory: string;
+  itemName: string;
+  quantityRequested: number;
+  unit: string;
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  deliveryLocation: string;
+  justification: string;
+  status: 'Pending' | 'Approved' | 'InTransit' | 'Delivered';
+  requestedAt: string;
+  etaHours: number;
+}
+
+
