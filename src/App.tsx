@@ -3,8 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppShell } from './components/AppShell';
+import { ScrollToTop } from './components/ScrollToTop';
+
+// Public Landing Page
+import { LandingPage } from './pages/LandingPage';
 
 // Main Executive Command Overview (Member 1 Modern Design)
 import { ModernDashboard } from './pages/ModernDashboard';
@@ -53,14 +56,18 @@ export function App() {
       <AuthProvider>
         <LanguageProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               {/* Public Authentication Pages */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
+              {/* Public Landing Page */}
+              <Route path="/" element={<LandingPage />} />
+
               {/* Main Executive Command Overview (Member 1 Modern Design) */}
               <Route
-                path="/"
+                path="/dashboard"
                 element={
                   <AppShell>
                     <ModernDashboard />
@@ -68,7 +75,15 @@ export function App() {
                 }
               />
               <Route
-                path="/dashboard"
+                path="/admin/overview"
+                element={
+                  <AppShell>
+                    <ModernDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/reports"
                 element={
                   <AppShell>
                     <ModernDashboard />
@@ -111,6 +126,14 @@ export function App() {
               />
               <Route
                 path="/citizen/create-request"
+                element={
+                  <AppShell>
+                    <CreateRequestPage />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/request/new"
                 element={
                   <AppShell>
                     <CreateRequestPage />

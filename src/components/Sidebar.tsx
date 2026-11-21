@@ -28,7 +28,7 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { name: 'Admin Overview', href: '/', icon: LayoutDashboard, roles: ['Admin'] },
+  { name: 'Admin Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin'] },
   { name: 'System Telemetry & Audit', href: '/admin/dashboard', icon: ShieldAlert, roles: ['Admin'] },
   { name: 'User Management', href: '/admin/users', icon: Users, roles: ['Admin'] },
   { name: 'Citizen Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen', 'Admin'] },
