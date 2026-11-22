@@ -299,29 +299,38 @@ export const LoginPage: React.FC = () => {
                 </Link>
               </div>
 
-              {/* BOTTOM ALERT: Need immediate help without login (Matching uploaded reference image) */}
-              <div className="mt-6 p-3.5 rounded-2xl bg-red-50/90 border border-red-200/80 flex items-center justify-between gap-3 group">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse" />
+              {/* BOTTOM ALERT: Need immediate help without login */}
+              <div className="mt-6 p-3.5 rounded-2xl bg-red-50/90 border border-red-200/80 flex flex-col gap-2 group">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-red-900">
+                        Need immediate help?
+                      </h4>
+                      <p className="text-[11px] text-red-700">
+                        Request emergency assistance without login.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black text-red-900">
-                      Need immediate help?
-                    </h4>
-                    <p className="text-[11px] text-red-700">
-                      Request emergency assistance without login.
-                    </p>
-                  </div>
+
+                  <Link
+                    to="/emergency/request"
+                    className="w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 shadow-xs flex items-center justify-center text-white group-hover:translate-x-0.5 transition shrink-0 cursor-pointer"
+                    title="Request without login"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
 
-                <Link
-                  to="/citizen/create-request"
-                  className="w-7 h-7 rounded-full bg-white shadow-xs flex items-center justify-center text-red-600 group-hover:translate-x-0.5 transition-transform shrink-0 cursor-pointer"
-                  title="Request without login"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="pt-2 border-t border-red-200/60 flex items-center justify-between text-[11px] font-semibold text-red-800">
+                  <span>Already requested emergency aid?</span>
+                  <Link to="/emergency/track" className="font-bold underline hover:text-red-950 flex items-center gap-1">
+                    Track status &rarr;
+                  </Link>
+                </div>
               </div>
 
               {/* ONE-CLICK ACADEMIC DEMO LOGINS (Collapsible for easy evaluation) */}

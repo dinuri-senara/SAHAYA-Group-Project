@@ -13,7 +13,8 @@ import {
   LifeBuoy,
   Flame,
   Droplets,
-  Mountain
+  Mountain,
+  Compass
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { SahayaLogo } from '../components/SahayaLogo';
@@ -123,22 +124,30 @@ export const LandingPage: React.FC = () => {
             </p>
 
             {/* CTAs */}
-            <div className="pt-2 flex flex-wrap items-center gap-4">
+            <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link
-                to="/citizen/create-request"
+                to="/emergency/request"
                 className="px-6 py-3.5 rounded-xl font-black text-xs sm:text-sm text-white bg-[#ef4444] hover:bg-[#dc2626] shadow-lg shadow-red-600/30 hover:shadow-xl transition-all flex items-center gap-2.5 cursor-pointer group"
               >
                 <AlertTriangle className="w-4 h-4 shrink-0 text-white" />
-                <span>Request Emergency Assistance</span>
+                <span>Request Emergency Aid (No Login)</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
 
               <Link
-                to="/citizen/safety-guide"
+                to="/emergency/track"
                 className="px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-white/10 hover:bg-white/20 border border-white/25 backdrop-blur-md transition flex items-center gap-2 cursor-pointer"
               >
-                <BookOpen className="w-4 h-4 text-white" />
-                <span>View Safety Guides</span>
+                <Compass className="w-4 h-4 text-amber-400" />
+                <span>Track Request Status</span>
+              </Link>
+
+              <Link
+                to="/citizen/safety-guide"
+                className="px-4 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-slate-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Safety Guides</span>
               </Link>
             </div>
 
