@@ -35,11 +35,15 @@ export const LoginPage: React.FC = () => {
   }, []);
 
   const demoAccounts: { role: UserRole; email: string; pass: string; title: string; desc: string }[] = [
-    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Citizen@123', title: 'Citizen Portal', desc: 'Submit requests & track emergency aid' },
-    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Coordinator@123', title: 'Coordinator Operations', desc: 'Triage, approve, and allocate resources' },
-    { role: 'Volunteer', email: 'volunteer@sahaya.org', pass: 'Volunteer@123', title: 'Volunteer Dispatch', desc: 'Accept field mission tasks & updates' },
-    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor Hub', desc: 'Support campaigns & track aid impact' },
-    { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'Audit trails & platform governance' },
+    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Citizen@123', title: 'Affected Person / Citizen', desc: 'Aid requests, emergency SOS & status tracking' },
+    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Coordinator@123', title: 'Emergency Coordinator', desc: 'Case triage, AI assessment & crisis escalation' },
+    { role: 'CaseManager', email: 'casemanager@sahaya.org', pass: 'Case@123', title: 'Incident / Case Manager', desc: 'Incidents registry & request lifecycle audit' },
+    { role: 'LogisticsManager', email: 'logistics@sahaya.org', pass: 'Logistics@123', title: 'Resource & Logistics Manager', desc: 'Inventory depot, aid dispatches & shortages' },
+    { role: 'ShelterAdmin', email: 'shelteradmin@sahaya.org', pass: 'Shelter@123', title: 'Shelter Administrator', desc: 'Shelter capacity, occupancies & facilities' },
+    { role: 'VolunteerCoordinator', email: 'volunteercoord@sahaya.org', pass: 'VolCoord@123', title: 'Volunteer Coordinator', desc: 'Mobilization rosters & mission task allocation' },
+    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor / Funding Officer', desc: 'Fund pledges, in-kind supplies & audit log' },
+    { role: 'PartnerOfficer', email: 'partner@sahaya.org', pass: 'Partner@123', title: 'Partner Organisation Officer', desc: 'Inter-agency requisition & joint response' },
+    { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'National executive command & system telemetry' },
   ];
 
   const handleLogin = async (e?: React.FormEvent, customEmail?: string, customPass?: string) => {
@@ -67,14 +71,30 @@ export const LoginPage: React.FC = () => {
 
   const redirectToDashboard = (role: UserRole) => {
     let target = '/citizen/dashboard';
-    switch (role) {
-      case 'Citizen': target = '/citizen/dashboard'; break;
-      case 'Coordinator': target = '/coordinator/dashboard'; break;
-      case 'Volunteer': target = '/volunteer/dashboard'; break;
-      case 'Donor': target = '/donor/dashboard'; break;
-      case 'Admin': target = '/admin/dashboard'; break;
-      default: target = '/citizen/dashboard';
+    const cleanRole = String(role).trim();
+
+    if (cleanRole === 'ShelterAdmin' || cleanRole === '8') {
+      target = '/shelters';
+    } else if (cleanRole === 'LogisticsManager' || cleanRole === '7') {
+      target = '/resources';
+    } else if (cleanRole === 'CaseManager' || cleanRole === '6') {
+      target = '/coordinator/incidents';
+    } else if (cleanRole === 'Coordinator' || cleanRole === '2') {
+      target = '/coordinator/dashboard';
+    } else if (cleanRole === 'VolunteerCoordinator' || cleanRole === '9') {
+      target = '/volunteers';
+    } else if (cleanRole === 'Donor' || cleanRole === '4') {
+      target = '/donor/dashboard';
+    } else if (cleanRole === 'PartnerOfficer' || cleanRole === '10') {
+      target = '/resources';
+    } else if (cleanRole === 'Volunteer' || cleanRole === '3') {
+      target = '/volunteer/dashboard';
+    } else if (cleanRole === 'Admin' || cleanRole === '5') {
+      target = '/dashboard';
+    } else {
+      target = '/citizen/dashboard';
     }
+
     window.location.href = target;
   };
 
