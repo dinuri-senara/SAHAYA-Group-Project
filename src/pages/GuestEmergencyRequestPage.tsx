@@ -345,27 +345,26 @@ export const GuestEmergencyRequestPage: React.FC = () => {
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-teal-600 selection:text-white">
       {/* Top Navbar */}
       <header className="sticky top-0 z-[1000] bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 group">
             <SahayaLogo size="md" light={false} showText={true} showTagline={true} />
           </Link>
 
-          <div className="flex items-center gap-3 text-xs font-bold">
-            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              National Operational Command Active
-            </span>
+          {/* Right Controls: Back to Home & Login */}
+          <div className="flex items-center gap-3">
             <Link
-              to="/emergency/track"
-              className="px-3.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-300 transition"
+              to="/"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 transition flex items-center gap-1.5 shadow-2xs"
             >
-              Track Request
+              <Home className="w-4 h-4 text-slate-500" />
+              <span>Back to Home</span>
             </Link>
+
             <Link
               to="/login"
-              className="px-4 py-2 rounded-xl text-white bg-[#0d254c] hover:bg-[#153a75] shadow-md transition"
+              className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0d254c] hover:bg-[#153a75] shadow-md shadow-blue-950/20 transition hover:shadow-lg"
             >
-              Citizen Login
+              Login
             </Link>
           </div>
         </div>

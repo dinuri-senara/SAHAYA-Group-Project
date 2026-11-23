@@ -338,20 +338,21 @@ export const GuestRequestTrackingPage: React.FC = () => {
             <SahayaLogo size="md" light={false} showText={true} showTagline={true} />
           </Link>
 
+          {/* Right Controls: Back to Home & Login */}
           <div className="flex items-center gap-3">
             <Link
-              to="/emergency/request"
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#ef4444] hover:bg-[#dc2626] shadow-md transition flex items-center gap-1.5"
+              to="/"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 transition flex items-center gap-1.5 shadow-2xs"
             >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Request Help</span>
+              <Home className="w-4 h-4 text-slate-500" />
+              <span>Back to Home</span>
             </Link>
 
             <Link
               to="/login"
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 transition"
+              className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0d254c] hover:bg-[#153a75] shadow-md shadow-blue-950/20 transition hover:shadow-lg"
             >
-              Citizen Login
+              Login
             </Link>
           </div>
         </div>
