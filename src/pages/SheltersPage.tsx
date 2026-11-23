@@ -62,7 +62,8 @@ export const SheltersPage: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'ShelterAdmin';
+  const isShelterAdminOnly = user?.role === 'ShelterAdmin';
 
   const loadShelters = async () => {
     try {

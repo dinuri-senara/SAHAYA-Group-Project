@@ -28,19 +28,61 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { name: 'Admin Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin'] },
+  // 1. Affected Person / Citizen
+  { name: 'My Assistance Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen'] },
+  { name: 'Submit Aid Request (SOS)', href: '/citizen/create-request', icon: ShieldAlert, roles: ['Citizen'] },
+  { name: 'Nearby Safe Shelters', href: '/shelters', icon: Home, roles: ['Citizen'] },
+  { name: 'Crisis Safety Guides', href: '/citizen/safety-guide', icon: FileBarChart, roles: ['Citizen'] },
+
+  // 2. Emergency Coordinator
+  { name: 'Coordinator Command Hub', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator'] },
+  { name: 'Explainable AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator'] },
+  { name: 'Crisis Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator'] },
+  { name: 'Resource Allocation Depot', href: '/resources', icon: Package, roles: ['Coordinator'] },
+  { name: 'Operational Analytics', href: '/reports', icon: FileBarChart, roles: ['Coordinator'] },
+
+  // 3. Incident / Case Manager
+  { name: 'Active Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['CaseManager'] },
+  { name: 'Case Review & AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['CaseManager'] },
+  { name: 'GIS Crisis Map', href: '/map', icon: MapPin, roles: ['CaseManager'] },
+
+  // 4. Resource and Logistics Manager
+  { name: 'Inventory Depot & Supplies', href: '/resources', icon: Package, roles: ['LogisticsManager'] },
+  { name: 'Supply Logistics Analytics', href: '/reports', icon: FileBarChart, roles: ['LogisticsManager'] },
+
+  // 5. Shelter Administrator
+  { name: 'Safe Shelters & Camp Roster', href: '/shelters', icon: Home, roles: ['ShelterAdmin'] },
+  { name: 'Shelter Locations Map', href: '/map', icon: MapPin, roles: ['ShelterAdmin'] },
+
+  // 6. Volunteer Coordinator
+  { name: 'Volunteer Mobilization Hub', href: '/volunteers', icon: HeartHandshake, roles: ['VolunteerCoordinator'] },
+  { name: 'Field Mission GIS Map', href: '/map', icon: MapPin, roles: ['VolunteerCoordinator'] },
+
+  // 7. Donor / Funding Officer
+  { name: 'My Funding Portfolio', href: '/donor/dashboard', icon: LayoutDashboard, roles: ['Donor'] },
+  { name: 'Relief Campaigns & Pledges', href: '/donations', icon: DollarSign, roles: ['Donor'] },
+
+  // 8. Partner Organisation Officer
+  { name: 'Partner Requisitions Depot', href: '/resources', icon: Package, roles: ['PartnerOfficer'] },
+  { name: 'Joint Crisis GIS Map', href: '/map', icon: MapPin, roles: ['PartnerOfficer'] },
+
+  // 9. System Administrator (National Command & Governance)
+  { name: 'National Command Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin'] },
   { name: 'System Telemetry & Audit', href: '/admin/dashboard', icon: ShieldAlert, roles: ['Admin'] },
-  { name: 'User Management', href: '/admin/users', icon: Users, roles: ['Admin'] },
-  { name: 'Citizen Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen', 'Admin'] },
-  { name: 'Coordinator Hub', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator', 'Admin'] },
-  { name: 'Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator', 'Admin'] },
-  { name: 'Safe Shelters', href: '/shelters', icon: Home, roles: ['Coordinator', 'Citizen', 'Volunteer', 'Admin'] },
-  { name: 'Inventory Depot', href: '/resources', icon: Package, roles: ['Coordinator', 'Admin'] },
-  { name: 'Volunteer Mobilization', href: '/volunteers', icon: HeartHandshake, roles: ['Coordinator', 'Volunteer', 'Admin'] },
-  { name: 'Relief Campaigns', href: '/donations', icon: DollarSign, roles: ['Donor', 'Coordinator', 'Admin'] },
-  { name: 'GIS Command Map', href: '/map', icon: MapPin, roles: ['Coordinator', 'Volunteer', 'Citizen', 'Admin'] },
-  { name: 'AI Decision Review', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator', 'Admin'] },
-  { name: 'Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Coordinator', 'Admin'] },
+  { name: 'User Management & RBAC', href: '/admin/users', icon: Users, roles: ['Admin'] },
+  { name: 'Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Admin'] },
+  { name: 'AI Decision Oversight', href: '/coordinator/ai-review', icon: Bot, roles: ['Admin'] },
+  { name: 'All Shelters', href: '/shelters', icon: Home, roles: ['Admin'] },
+  { name: 'All Resources Depot', href: '/resources', icon: Package, roles: ['Admin'] },
+  { name: 'All Volunteers', href: '/volunteers', icon: HeartHandshake, roles: ['Admin'] },
+  { name: 'Donations & Campaigns', href: '/donations', icon: DollarSign, roles: ['Admin'] },
+  { name: 'Command GIS Map', href: '/map', icon: MapPin, roles: ['Admin'] },
+  { name: 'System Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Admin'] },
+
+  // Optional: Field Volunteer Mobile Dispatch
+  { name: 'Field Mission Dispatch', href: '/volunteer/dashboard', icon: LayoutDashboard, roles: ['Volunteer'] },
+  { name: 'Assigned Shelters', href: '/shelters', icon: Home, roles: ['Volunteer'] },
+  { name: 'Field Navigation Map', href: '/map', icon: MapPin, roles: ['Volunteer'] },
 ];
 
 interface SidebarProps {
