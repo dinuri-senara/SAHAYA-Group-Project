@@ -16,7 +16,8 @@ import {
   Boxes,
   Home,
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  Camera
 } from 'lucide-react';
 import { api } from '../services/api';
 import { AssistanceRequest, RequestCategory, RequestUrgency } from '../types';
@@ -343,6 +344,28 @@ export const RequestDetailPage: React.FC = () => {
               height="260px"
             />
           </div>
+
+          {/* Attached Evidence Photos Preview (Coursework 1.1 A) */}
+          {(request as any).evidenceImages && (request as any).evidenceImages.length > 0 && (
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Camera className="w-4 h-4 text-teal-600" />
+                Attached Evidence Photos ({(request as any).evidenceImages.length})
+              </h3>
+              <p className="text-xs text-slate-500">Field photos submitted by citizen for damage & flood verification.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+                {(request as any).evidenceImages.map((imgUrl: string, idx: number) => (
+                  <div key={idx} className="h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs group relative">
+                    <img
+                      src={imgUrl}
+                      alt={`Evidence ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Col: Coordinator Operations & Status History */}
@@ -440,7 +463,7 @@ export const RequestDetailPage: React.FC = () => {
             </h3>
 
             <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-              {request.statusHistory.map(h => (
+              {(request.statusHistory || []).map(h => (
                 <div key={h.id} className="relative pl-7 text-xs space-y-1">
                   <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-teal-600 border-2 border-white ring-2 ring-slate-100" />
                   <div className="flex items-center justify-between">
