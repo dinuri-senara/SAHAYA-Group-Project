@@ -16,7 +16,8 @@ import {
   Boxes,
   Home,
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  Camera
 } from 'lucide-react';
 import { api } from '../services/api';
 import { AssistanceRequest, RequestCategory, RequestUrgency } from '../types';
@@ -288,11 +289,11 @@ export const RequestDetailPage: React.FC = () => {
                   </p>
                 </div>
 
-                {rec.suggestedResources?.length > 0 && (
+                {Boolean(rec.suggestedResources && rec.suggestedResources.length > 0) && (
                   <div>
                     <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-1.5">Recommended Relief Supplies</h4>
                     <div className="flex flex-wrap gap-2">
-                      {rec.suggestedResources.map((item, idx) => (
+                      {rec.suggestedResources?.map((item, idx) => (
                         <span key={idx} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-950/60 text-teal-300 border border-teal-800">
                           {item}
                         </span>
@@ -343,6 +344,28 @@ export const RequestDetailPage: React.FC = () => {
               height="260px"
             />
           </div>
+
+          {/* Attached Evidence Photos Preview (Coursework 1.1 A) */}
+          {(request as any).evidenceImages && (request as any).evidenceImages.length > 0 && (
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Camera className="w-4 h-4 text-teal-600" />
+                Attached Evidence Photos ({(request as any).evidenceImages.length})
+              </h3>
+              <p className="text-xs text-slate-500">Field photos submitted by citizen for damage & flood verification.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+                {(request as any).evidenceImages.map((imgUrl: string, idx: number) => (
+                  <div key={idx} className="h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs group relative">
+                    <img
+                      src={imgUrl}
+                      alt={`Evidence ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Col: Coordinator Operations & Status History */}
@@ -440,13 +463,13 @@ export const RequestDetailPage: React.FC = () => {
             </h3>
 
             <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-              {request.statusHistory.map(h => (
+              {(request.statusHistory || []).map(h => (
                 <div key={h.id} className="relative pl-7 text-xs space-y-1">
                   <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-teal-600 border-2 border-white ring-2 ring-slate-100" />
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900">{h.newStatus}</span>
                     <span className="text-[10px] text-slate-400">
-                      {new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(h.timestamp || h.changedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px] leading-relaxed">

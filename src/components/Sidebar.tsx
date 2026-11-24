@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { SahayaLogo } from './SahayaLogo';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface NavItem {
   name: string;
@@ -28,18 +29,62 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { name: 'Admin Overview', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['Admin'] },
-  { name: 'User Management', href: '/admin/users', icon: Users, roles: ['Admin'] },
-  { name: 'Citizen Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen', 'Admin'] },
-  { name: 'Coordinator Hub', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator', 'Admin'] },
-  { name: 'Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator', 'Admin'] },
-  { name: 'Safe Shelters', href: '/shelters', icon: Home, roles: ['Coordinator', 'Citizen', 'Volunteer', 'Admin'] },
-  { name: 'Inventory Depot', href: '/resources', icon: Package, roles: ['Coordinator', 'Admin'] },
-  { name: 'Volunteer Mobilization', href: '/volunteers', icon: HeartHandshake, roles: ['Coordinator', 'Volunteer', 'Admin'] },
-  { name: 'Relief Campaigns', href: '/donations', icon: DollarSign, roles: ['Donor', 'Coordinator', 'Admin'] },
-  { name: 'GIS Command Map', href: '/map', icon: MapPin, roles: ['Coordinator', 'Volunteer', 'Citizen', 'Admin'] },
-  { name: 'AI Decision Review', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator', 'Admin'] },
-  { name: 'Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Coordinator', 'Admin'] },
+  // 1. Affected Person / Citizen
+  { name: 'My Assistance Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen'] },
+  { name: 'Submit Aid Request (SOS)', href: '/citizen/create-request', icon: ShieldAlert, roles: ['Citizen'] },
+  { name: 'Nearby Safe Shelters', href: '/shelters', icon: Home, roles: ['Citizen'] },
+  { name: 'Crisis Safety Guides', href: '/citizen/safety-guide', icon: FileBarChart, roles: ['Citizen'] },
+
+  // 2. Emergency Coordinator
+  { name: 'Coordinator Command Hub', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator'] },
+  { name: 'Explainable AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator'] },
+  { name: 'Crisis Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator'] },
+  { name: 'Resource Allocation Depot', href: '/resources', icon: Package, roles: ['Coordinator'] },
+  { name: 'Operational Analytics', href: '/reports', icon: FileBarChart, roles: ['Coordinator'] },
+
+  // 3. Incident / Case Manager
+  { name: 'Active Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['CaseManager'] },
+  { name: 'Case Review & AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['CaseManager'] },
+  { name: 'GIS Crisis Map', href: '/map', icon: MapPin, roles: ['CaseManager'] },
+
+  // 4. Resource and Logistics Manager
+  { name: 'Inventory Depot & Supplies', href: '/resources', icon: Package, roles: ['LogisticsManager'] },
+  { name: 'Supply Logistics Analytics', href: '/reports', icon: FileBarChart, roles: ['LogisticsManager'] },
+
+  // 5. Shelter Administrator
+  { name: 'Safe Shelters & Camp Roster', href: '/shelters', icon: Home, roles: ['ShelterAdmin'] },
+  { name: 'Shelter Locations Map', href: '/map', icon: MapPin, roles: ['ShelterAdmin'] },
+
+  // 6. Volunteer Coordinator
+  { name: 'Volunteer Mobilization Hub', href: '/volunteers', icon: HeartHandshake, roles: ['VolunteerCoordinator'] },
+  { name: 'Field Mission GIS Map', href: '/map', icon: MapPin, roles: ['VolunteerCoordinator'] },
+
+  // 7. Donor / Funding Officer
+  { name: 'My Funding Portfolio', href: '/donor/dashboard', icon: LayoutDashboard, roles: ['Donor'] },
+  { name: 'Relief Campaigns & Pledges', href: '/donations', icon: DollarSign, roles: ['Donor'] },
+
+  // 8. Partner Organisation Officer
+  { name: 'Partner Operations Hub', href: '/partner/dashboard', icon: LayoutDashboard, roles: ['PartnerOfficer'] },
+  { name: 'Depot Relief Supplies', href: '/resources', icon: Package, roles: ['PartnerOfficer'] },
+  { name: 'Joint Crisis GIS Map', href: '/map', icon: MapPin, roles: ['PartnerOfficer'] },
+
+  // 9. System Administrator (National Command & Governance)
+  { name: 'National Command Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin'] },
+  { name: 'System Telemetry & Audit', href: '/admin/dashboard', icon: ShieldAlert, roles: ['Admin'] },
+  { name: 'User Management & RBAC', href: '/admin/users', icon: Users, roles: ['Admin'] },
+  { name: 'Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Admin'] },
+  { name: 'AI Decision Oversight', href: '/coordinator/ai-review', icon: Bot, roles: ['Admin'] },
+  { name: 'All Shelters', href: '/shelters', icon: Home, roles: ['Admin'] },
+  { name: 'All Resources Depot', href: '/resources', icon: Package, roles: ['Admin'] },
+  { name: 'All Volunteers', href: '/volunteers', icon: HeartHandshake, roles: ['Admin'] },
+  { name: 'Donations & Campaigns', href: '/donations', icon: DollarSign, roles: ['Admin'] },
+  { name: 'Command GIS Map', href: '/map', icon: MapPin, roles: ['Admin'] },
+  { name: 'System Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Admin'] },
+
+  // Optional: Field Volunteer Mobile Dispatch
+  { name: 'Field Mission Dispatch', href: '/volunteer/dashboard', icon: LayoutDashboard, roles: ['Volunteer'] },
+  { name: 'Assigned Shelters', href: '/shelters', icon: Home, roles: ['Volunteer'] },
+  { name: 'Field Navigation Map', href: '/map', icon: MapPin, roles: ['Volunteer'] },
 ];
 
 interface SidebarProps {
@@ -52,6 +97,46 @@ interface SidebarProps {
   onOpenAiDrawer?: () => void;
 }
 
+const navItemTranslations: Record<string, { en: string; si: string }> = {
+  'My Assistance Portal': { en: 'My Assistance Portal', si: 'මගේ සහන පෝර්ටලය' },
+  'Submit Aid Request (SOS)': { en: 'Submit Aid Request (SOS)', si: 'හදිසි ආධාර ඉල්ලීම (SOS)' },
+  'Nearby Safe Shelters': { en: 'Nearby Safe Shelters', si: 'ආසන්න ආරක්ෂිත කඳවුරු' },
+  'Crisis Safety Guides': { en: 'Crisis Safety Guides', si: 'ආපදා ආරක්ෂක උපදෙස්' },
+  'Coordinator Command Hub': { en: 'Coordinator Command Hub', si: 'සම්බන්ධීකාරක මෙහෙයුම් මැදිරිය' },
+  'Explainable AI Triage': { en: 'Explainable AI Triage', si: 'AI ප්‍රමුඛතා නිර්දේශ' },
+  'Crisis Incidents Registry': { en: 'Crisis Incidents Registry', si: 'ආපදා සිදුවීම් ලේඛනය' },
+  'Resource Allocation Depot': { en: 'Resource Allocation Depot', si: 'සම්පත් හා උපකරණ ගබඩාව' },
+  'Operational Analytics': { en: 'Operational Analytics', si: 'මෙහෙයුම් විශ්ලේෂණ' },
+  'Active Incidents Registry': { en: 'Active Incidents Registry', si: 'ක්‍රියාකාරී සිදුවීම් ලේඛනය' },
+  'Case Review & AI Triage': { en: 'Case Review & AI Triage', si: 'සිද්ධි සමාලෝචන සහ AI Triage' },
+  'GIS Crisis Map': { en: 'GIS Crisis Map', si: 'භූගෝලීය ආපදා සිතියම' },
+  'Inventory Depot & Supplies': { en: 'Inventory Depot & Supplies', si: 'ගබඩා තොග සහ සැපයුම්' },
+  'Supply Logistics Analytics': { en: 'Supply Logistics Analytics', si: 'සැපයුම් ලොජිස්ටික්ස් වාර්තා' },
+  'Safe Shelters & Camp Roster': { en: 'Safe Shelters & Camp Roster', si: 'ආරක්ෂිත කඳවුරු ලේඛනය' },
+  'Shelter Locations Map': { en: 'Shelter Locations Map', si: 'නවාතැන් පිහිටීම් සිතියම' },
+  'Volunteer Mobilization Hub': { en: 'Volunteer Mobilization Hub', si: 'ස්වේච්ඡා බලකා මෙහෙයුම්' },
+  'Field Mission GIS Map': { en: 'Field Mission GIS Map', si: 'ක්ෂේත්‍ර මෙහෙයුම් සිතියම' },
+  'My Funding Portfolio': { en: 'My Funding Portfolio', si: 'මගේ පරිත්‍යාග කළඹ' },
+  'Relief Campaigns & Pledges': { en: 'Relief Campaigns & Pledges', si: 'සහන අරමුදල් සහ පරිත්‍යාග' },
+  'Partner Operations Hub': { en: 'Partner Operations Hub', si: 'හවුල්කාර මෙහෙයුම් කේන්ද්‍රය' },
+  'Depot Relief Supplies': { en: 'Depot Relief Supplies', si: 'සහන සැපයුම් ගබඩාව' },
+  'Joint Crisis GIS Map': { en: 'Joint Crisis GIS Map', si: 'ඒකාබද්ධ ආපදා සිතියම' },
+  'National Command Overview': { en: 'National Command Overview', si: 'ජාතික ආපදා මෙහෙයුම් මධ්‍යස්ථානය' },
+  'System Telemetry & Audit': { en: 'System Telemetry & Audit', si: 'පද්ධති විගණන වාර්තා' },
+  'User Management & RBAC': { en: 'User Management & RBAC', si: 'පරිශීලක සහ අවසර කළමනාකරණය' },
+  'Incidents Registry': { en: 'Incidents Registry', si: 'සිදුවීම් ලේඛනය' },
+  'AI Decision Oversight': { en: 'AI Decision Oversight', si: 'AI තීරණ අධීක්ෂණය' },
+  'All Shelters': { en: 'All Shelters', si: 'සියලුම ආරක්ෂිත කඳවුරු' },
+  'All Resources Depot': { en: 'All Resources Depot', si: 'සියලුම සම්පත් ගබඩා' },
+  'All Volunteers': { en: 'All Volunteers', si: 'සියලුම ස්වේච්ඡා සේවකයින්' },
+  'Donations & Campaigns': { en: 'Donations & Campaigns', si: 'පරිත්‍යාග සහ ව්‍යාපාර' },
+  'Command GIS Map': { en: 'Command GIS Map', si: 'භූගෝලීය ආපදා සිතියම' },
+  'System Analytics & Reports': { en: 'System Analytics & Reports', si: 'පද්ධති විශ්ලේෂණ වාර්තා' },
+  'Field Mission Dispatch': { en: 'Field Mission Dispatch', si: 'ක්ෂේත්‍ර මෙහෙයුම් අංශය' },
+  'Assigned Shelters': { en: 'Assigned Shelters', si: 'පවරන ලද කඳවුරු' },
+  'Field Navigation Map': { en: 'Field Navigation Map', si: 'ක්ෂේත්‍ර ගමන් සිතියම' },
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   role = 'Admin',
   isOpen,
@@ -61,6 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   onOpenAiDrawer,
 }) => {
+  const { language } = useLanguage();
   const filteredNav = navItems.filter((item) => item.roles.includes(role));
 
   const handleSignOut = () => {
@@ -96,8 +182,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <SahayaLogo size="md" light={true} showText={false} />
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
-                <span className="font-black text-white text-lg tracking-tight leading-tight truncate">SAHAYA</span>
-                <span className="text-[10px] text-teal-400 font-semibold tracking-wide uppercase truncate">Crisis Management OS</span>
+                <span className="font-black text-white text-lg tracking-tight leading-tight truncate flex items-center gap-1.5">
+                  SAHAYA
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                    අපි වෙනුවෙන් අපි
+                  </span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium tracking-wide truncate">
+                  Humanitarian Aid Coordination
+                </span>
               </div>
             )}
           </div>
@@ -129,7 +222,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }
               >
                 <Icon className="w-5 h-5 shrink-0" />
-                {!isCollapsed && <span className="truncate">{item.name}</span>}
+                {!isCollapsed && (
+                  <span className="truncate">
+                    {language === 'si' && navItemTranslations[item.name]?.si
+                      ? navItemTranslations[item.name].si
+                      : item.name}
+                  </span>
+                )}
               </NavLink>
             );
           })}

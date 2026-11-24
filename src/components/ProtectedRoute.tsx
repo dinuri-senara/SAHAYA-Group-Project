@@ -41,8 +41,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
             <Navigate to={
               user.role === 'Citizen' ? '/citizen/dashboard' :
               user.role === 'Coordinator' ? '/coordinator/dashboard' :
+              user.role === 'CaseManager' ? '/coordinator/incidents' :
+              user.role === 'LogisticsManager' ? '/resources' :
+              user.role === 'ShelterAdmin' ? '/shelters' :
+              user.role === 'VolunteerCoordinator' ? '/volunteers' :
               user.role === 'Volunteer' ? '/volunteer/dashboard' :
-              user.role === 'Donor' ? '/donor/dashboard' : '/admin/dashboard'
+              user.role === 'Donor' ? '/donor/dashboard' :
+              user.role === 'PartnerOfficer' ? '/resources' : '/dashboard'
             } />
           </div>
         </div>

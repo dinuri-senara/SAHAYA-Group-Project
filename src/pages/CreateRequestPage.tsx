@@ -20,7 +20,10 @@ import {
   Shirt,
   Sparkle,
   HelpCircle,
-  Check
+  Check,
+  Camera,
+  UploadCloud,
+  X
 } from 'lucide-react';
 import { api } from '../services/api';
 import { CrisisEvent } from '../types';
@@ -48,6 +51,53 @@ export const CreateRequestPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Evidence / Damage Photos (Coursework 1.1 A)
+  interface UploadedPhoto {
+    id: string;
+    name: string;
+    size: string;
+    url: string;
+  }
+  const [evidenceImages, setEvidenceImages] = useState<UploadedPhoto[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (evidenceImages.length + files.length > 3) {
+      setUploadError('Maximum 3 damage photos allowed per assistance request.');
+      return;
+    }
+
+    setUploadError(null);
+    Array.from(files).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError(`File "${file.name}" exceeds maximum 5MB size limit.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const newPhoto: UploadedPhoto = {
+            id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name,
+            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+            url: event.target.result as string,
+          };
+          setEvidenceImages((prev) => [...prev, newPhoto].slice(0, 3));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const removePhoto = (id: string) => {
+    setEvidenceImages((prev) => prev.filter((p) => p.id !== id));
+    setUploadError(null);
+  };
 
   useEffect(() => {
     async function loadEvents() {
@@ -136,6 +186,7 @@ export const CreateRequestPage: React.FC = () => {
         latitude: Number(latitude),
         longitude: Number(longitude),
         contactPhone: contactPhone.trim() || undefined,
+        evidenceImages: evidenceImages.map((img) => img.url),
       });
 
       navigate(`/requests/${created.id}`);
@@ -463,6 +514,89 @@ export const CreateRequestPage: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {/* Supporting Evidence & Disaster Photos (Coursework 1.1 A) */}
+            <div className="pt-4 border-t border-slate-100 space-y-3">
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-teal-600" />
+                  Supporting Evidence & Disaster Photos
+                  <span className="text-[10px] font-normal text-slate-400 normal-case">(Optional - Up to 3 photos)</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Attach photos of rising floodwaters, damaged structures, or road obstacles to assist rescue teams in verifying severity.
+                </p>
+              </div>
+
+              {uploadError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {/* Dropzone */}
+              <div className="relative border-2 border-dashed border-slate-200 hover:border-teal-500 rounded-2xl p-5 text-center transition bg-slate-50/60 hover:bg-teal-50/20">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  multiple
+                  disabled={evidenceImages.length >= 3}
+                  onChange={handlePhotoUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  id="damage-photo-upload"
+                />
+                <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
+                  <div className="p-3 rounded-2xl bg-teal-50 text-teal-600 border border-teal-200/60">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">
+                      {evidenceImages.length >= 3
+                        ? 'Maximum 3 photos reached'
+                        : 'Click or drag & drop disaster damage photos here'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Supports JPG, PNG, WEBP (Max 5MB per photo)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Uploaded Thumbnails Preview */}
+              {evidenceImages.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  {evidenceImages.map((img) => (
+                    <div
+                      key={img.id}
+                      className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs"
+                    >
+                      <div className="h-28 w-full overflow-hidden">
+                        <img
+                          src={img.url}
+                          alt={img.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                        />
+                      </div>
+                      <div className="p-2 bg-white flex items-center justify-between text-[11px]">
+                        <span className="truncate max-w-[120px] font-semibold text-slate-700" title={img.name}>
+                          {img.name}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">{img.size}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(img.id)}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-slate-900/70 hover:bg-rose-600 text-white transition cursor-pointer"
+                        title="Remove Photo"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Step 1 Actions */}
@@ -685,6 +819,22 @@ export const CreateRequestPage: React.FC = () => {
                 GPS Coordinates: {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
             </div>
+
+            {/* Attached Damage Evidence Photos Preview (Coursework 1.1 A) */}
+            {evidenceImages.length > 0 && (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Attached Damage Evidence ({evidenceImages.length} photos)
+                </span>
+                <div className="grid grid-cols-3 gap-2.5 pt-1">
+                  {evidenceImages.map((img) => (
+                    <div key={img.id} className="h-20 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                      <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Explanation of What Happens Next */}
             <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 space-y-1.5">

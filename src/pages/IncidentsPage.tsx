@@ -20,6 +20,8 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { UrgencyBadge } from '../components/StatusBadge';
 import { MapComponent } from '../components/MapComponent';
+import { DistrictFilter } from '../components/DistrictFilter';
+import { matchesLocationFilter } from '../data/sriLankaDistricts';
 
 export const IncidentsPage: React.FC = () => {
   const { user } = useAuth();
@@ -31,6 +33,8 @@ export const IncidentsPage: React.FC = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [activeOnly, setActiveOnly] = useState<boolean>(true);
+  const [selectedProvince, setSelectedProvince] = useState<string>('All');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Create Incident Modal
@@ -47,7 +51,8 @@ export const IncidentsPage: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'CaseManager';
+  const canRegisterIncidents = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'CaseManager';
 
   const loadIncidents = async () => {
     try {
@@ -89,8 +94,8 @@ export const IncidentsPage: React.FC = () => {
     }
   };
 
-  const getDisasterIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+  const getDisasterIcon = (type?: string) => {
+    switch ((type || '').toLowerCase()) {
       case 'flood':
         return <Waves className="w-5 h-5 text-blue-500" />;
       case 'landslide':
@@ -109,7 +114,8 @@ export const IncidentsPage: React.FC = () => {
                           inc.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           inc.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesActive = activeOnly ? inc.isActive : true;
-    return matchesSearch && matchesActive;
+    const matchesGeo = matchesLocationFilter(inc.location, selectedProvince, selectedDistrict);
+    return matchesSearch && matchesActive && matchesGeo;
   });
 
   const activeCount = incidents.filter(i => i.isActive).length;
@@ -240,6 +246,17 @@ export const IncidentsPage: React.FC = () => {
         </button>
       </div>
 
+      {/* District / Province Filter */}
+      <DistrictFilter
+        selectedProvince={selectedProvince}
+        selectedDistrict={selectedDistrict}
+        onProvinceChange={setSelectedProvince}
+        onDistrictChange={setSelectedDistrict}
+        resultCount={filteredIncidents.length}
+        totalCount={incidents.length}
+        label="Disaster Incident Zone / ආපදා සිදුවීම් කලාපය"
+      />
+
       {/* Content */}
       {loading ? (
         <div className="p-12 text-center">
@@ -286,7 +303,7 @@ export const IncidentsPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>Declared: {new Date(inc.startDate).toLocaleDateString()}</span>
+                    <span>Declared: {new Date(inc.startDate || inc.startedAt || inc.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
