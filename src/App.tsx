@@ -45,6 +45,7 @@ import { VolunteersPage } from './pages/VolunteersPage';
 import { VolunteerDashboard } from './pages/VolunteerDashboard';
 import { DonationsPage } from './pages/DonationsPage';
 import { DonorDashboard } from './pages/DonorDashboard';
+import { PartnerDashboard } from './pages/PartnerDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -268,6 +269,14 @@ export function App() {
                 element={
                   <AppShell>
                     <DonorDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/partner/dashboard"
+                element={
+                  <AppShell>
+                    <PartnerDashboard />
                   </AppShell>
                 }
               />

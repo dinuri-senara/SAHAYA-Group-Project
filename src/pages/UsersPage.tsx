@@ -42,6 +42,18 @@ export const UsersPage: React.FC = () => {
   const [statusJustification, setStatusJustification] = useState('');
   const [togglingStatus, setTogglingStatus] = useState(false);
 
+  // Create Staff / Admin Account Modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newAccount, setNewAccount] = useState({
+    fullName: '',
+    email: '',
+    role: 'Admin' as UserRole,
+    password: '',
+    department: 'National Emergency Operations Center'
+  });
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
+
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -168,6 +180,36 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const handleCreateAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingAccount(true);
+    try {
+      const createdUser: UserSummary = {
+        id: `u-adm-${Date.now()}`,
+        fullName: newAccount.fullName,
+        email: newAccount.email,
+        role: newAccount.role,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+      setUsers([createdUser, ...users]);
+      setSuccessBanner(`Official credential for ${newAccount.fullName} (${newAccount.role}) created successfully!`);
+      setShowCreateModal(false);
+      setNewAccount({
+        fullName: '',
+        email: '',
+        role: 'Admin',
+        password: '',
+        department: 'National Emergency Operations Center'
+      });
+      setTimeout(() => setSuccessBanner(null), 5000);
+    } catch {
+      setActionError('Failed to create account.');
+    } finally {
+      setCreatingAccount(false);
+    }
+  };
+
   const filteredUsers = (users || []).filter(u => {
     if (!u) return false;
     return (
@@ -187,7 +229,23 @@ export const UsersPage: React.FC = () => {
           { label: 'Admin Console', path: '/admin/dashboard' },
           { label: 'User Governance' },
         ]}
+        actions={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/20 transition cursor-pointer"
+          >
+            <Shield className="w-4 h-4" />
+            Create Official Account
+          </button>
+        }
       />
+
+      {successBanner && (
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2 shadow-xs">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+          <span>{successBanner}</span>
+        </div>
+      )}
 
       {/* Security Best Practice Notice */}
       <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 text-purple-900 flex items-start gap-3 shadow-2xs">
@@ -477,6 +535,114 @@ export const UsersPage: React.FC = () => {
                   }`}
                 >
                   {togglingStatus ? 'Processing...' : statusUser.isActive ? 'Confirm Suspension' : 'Confirm Reactivation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Create Official Account (Admin only) */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
+              Issue Official Platform Credential
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Create an administrative, coordinator, or manager credential with specific RBAC permissions.
+            </p>
+
+            <form onSubmit={handleCreateAccount} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Full Legal Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Commander Asela Wickrama"
+                  value={newAccount.fullName}
+                  onChange={e => setNewAccount({ ...newAccount, fullName: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Official Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="officer@sahaya.org"
+                    value={newAccount.email}
+                    onChange={e => setNewAccount({ ...newAccount, email: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Operational Role *
+                  </label>
+                  <select
+                    value={newAccount.role}
+                    onChange={e => setNewAccount({ ...newAccount, role: e.target.value as any })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-pointer"
+                  >
+                    <option value="Admin">System Administrator</option>
+                    <option value="Coordinator">Emergency Coordinator</option>
+                    <option value="CaseManager">Incident / Case Manager</option>
+                    <option value="LogisticsManager">Resource & Logistics Manager</option>
+                    <option value="ShelterAdmin">Shelter Administrator</option>
+                    <option value="VolunteerCoordinator">Volunteer Coordinator</option>
+                    <option value="PartnerOfficer">Partner Organisation Officer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Department / Command Sector
+                </label>
+                <input
+                  type="text"
+                  placeholder="Disaster Management Centre / Ministry of Defence"
+                  value={newAccount.department}
+                  onChange={e => setNewAccount({ ...newAccount, department: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Initial Temporary Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={newAccount.password}
+                  onChange={e => setNewAccount({ ...newAccount, password: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingAccount}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs"
+                >
+                  {creatingAccount ? 'Issuing...' : 'Create Official Account'}
                 </button>
               </div>
             </form>

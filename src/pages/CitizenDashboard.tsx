@@ -18,12 +18,12 @@ import {
   UserCheck,
   BookOpen,
   ShieldCheck,
-  Star,
-  Check,
-  X
+  ArrowRight,
+  Megaphone,
+  Users
 } from 'lucide-react';
 import { api } from '../services/api';
-import { AssistanceRequest, Shelter, NotificationItem, RequestStatus } from '../types';
+import { AssistanceRequest, Shelter, NotificationItem } from '../types';
 import { StatusBadge, UrgencyBadge, getStatusHumanLabel, getStatusExplanation } from '../components/StatusBadge';
 import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
@@ -39,79 +39,6 @@ export const CitizenDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Resolved'>('All');
-
-  // Post-Delivery Feedback Modal State (Coursework 1.1 A)
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [feedbackRequestId, setFeedbackRequestId] = useState<string | null>(null);
-  const [feedbackRequestTitle, setFeedbackRequestTitle] = useState('');
-  const [feedbackRating, setFeedbackRating] = useState(5);
-  const [feedbackTags, setFeedbackTags] = useState<string[]>([]);
-  const [feedbackComments, setFeedbackComments] = useState('');
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
-  const [feedbackSuccessMsg, setFeedbackSuccessMsg] = useState<string | null>(null);
-
-  const availableTags = [
-    'Quick Delivery',
-    'Adequate Supplies',
-    'Courteous Volunteers',
-    'High Quality Food/Water',
-    'Life Saving Aid',
-    'Delayed Response',
-  ];
-
-  const toggleFeedbackTag = (tag: string) => {
-    setFeedbackTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const openFeedbackModal = (id: string, title: string) => {
-    setFeedbackRequestId(id);
-    setFeedbackRequestTitle(title);
-    setFeedbackRating(5);
-    setFeedbackTags(['Quick Delivery', 'Adequate Supplies']);
-    setFeedbackComments('');
-    setFeedbackSuccessMsg(null);
-    setFeedbackModalOpen(true);
-  };
-
-  const handleFeedbackSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedbackRequestId) return;
-    setFeedbackSubmitting(true);
-    try {
-      if ((api as any).submitRequestFeedback) {
-        await (api as any).submitRequestFeedback(feedbackRequestId, {
-          rating: feedbackRating,
-          tags: feedbackTags,
-          comments: feedbackComments.trim(),
-        });
-      }
-      // Update local state directly so feedback displays immediately on the card
-      setRequests(prev =>
-        prev.map(r =>
-          r.id === feedbackRequestId
-            ? {
-                ...r,
-                citizenFeedback: {
-                  rating: feedbackRating,
-                  tags: feedbackTags,
-                  comments: feedbackComments.trim(),
-                },
-              }
-            : r
-        )
-      );
-      setFeedbackSuccessMsg('Thank you! Your feedback has been recorded.');
-      setTimeout(() => {
-        setFeedbackModalOpen(false);
-      }, 900);
-    } catch (err: any) {
-      alert(err.message || 'Failed to submit feedback');
-    } finally {
-      setFeedbackSubmitting(false);
-    }
-  };
 
   // Filter requests according to tab
   const filteredRequests = requests.filter(r => {
@@ -135,50 +62,7 @@ export const CitizenDashboard: React.FC = () => {
         api.getShelters(true),
         api.getNotifications(),
       ]);
-
-      // Ensure a resolved request exists so citizens can view & test the Post-Delivery Feedback feature
-      const resolvedExists = reqs.some(r => r.status === 'Resolved');
-      const enrichedReqs = resolvedExists
-        ? reqs
-        : [
-            ...reqs,
-            {
-              id: 'req-4',
-              citizenId: 'cit-4',
-              citizenName: 'Chaminda Silva',
-              citizenPhone: '+94 76 892 1100',
-              title: 'Emergency Life Jackets & Flood Rescue Boat Evacuation',
-              category: 'Rescue' as any,
-              urgency: 'Immediate' as any,
-              description: 'Families evacuated to safe high ground. 8 life jackets delivered and residents secured.',
-              location: 'Sedawatta Ferry Point, Kelani River Basin',
-              latitude: 6.946,
-              longitude: 79.882,
-              peopleCount: 8,
-              status: 'Resolved' as any,
-              statusHistory: [
-                {
-                  id: 'h-4-1',
-                  assistanceRequestId: 'req-4',
-                  newStatus: 'Submitted' as RequestStatus,
-                  changedByName: 'Chaminda Silva',
-                  timestamp: '2026-11-18T10:00:00Z',
-                  notes: 'Flood rescue assistance request',
-                },
-                {
-                  id: 'h-4-2',
-                  assistanceRequestId: 'req-4',
-                  newStatus: 'Resolved' as RequestStatus,
-                  changedByName: 'Navy Rescue Unit #4',
-                  timestamp: '2026-11-18T14:20:00Z',
-                  notes: 'Rescue completed and evacuees transported safely to Kelaniya MV Camp.',
-                },
-              ],
-              createdAt: '2026-11-18T10:00:00Z',
-            } as AssistanceRequest,
-          ];
-
-      setRequests(enrichedReqs);
+      setRequests(reqs);
       setShelters(shlts);
       setNotifications(notifs);
     } catch (err: any) {
@@ -204,10 +88,10 @@ export const CitizenDashboard: React.FC = () => {
   // Calculate 5 specified widget KPIs
   const totalSubmitted = requests.length;
   const pendingRequests = requests.filter(
-    r => r.status === 'Submitted' || r.status === 'UnderReview' || r.status === 'Pending'
+    r => r.status === 'Submitted' || r.status === 'UnderReview'
   ).length;
   const approvedRequests = requests.filter(
-    r => r.status === 'Approved' || r.status === 'Assigned' || r.status === 'InProgress'
+    r => r.status === 'Approved' || r.status === 'InProgress'
   ).length;
   const completedRequests = requests.filter(
     r => r.status === 'Resolved'
@@ -240,71 +124,101 @@ export const CitizenDashboard: React.FC = () => {
         }
       />
 
-      {/* Quick Action Navigation Hero - Direct, clear choices for citizens in stress */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 4 Vibrant Action Cards (Matching platform UI theme & visual hierarchy) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Emergency Aid SOS (Red) */}
         <Link
-          to="/request/new"
-          className="p-5 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 text-white shadow-md shadow-teal-700/20 transition-all flex flex-col justify-between group cursor-pointer"
+          to="/citizen/create-request"
+          className="group rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white p-5 shadow-lg shadow-red-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-white/20 text-white">
-              <PlusCircle className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-              Primary Step
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <PlusCircle className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              Instant SOS
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold group-hover:translate-x-0.5 transition-transform flex items-center gap-1.5">
-              Request Emergency Aid <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-teal-100 mt-1 leading-relaxed">
-              Need rescue, medical care, food, or clean water? Submit an aid request with your GPS pin.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Submit Aid Request</span>
+              <span className="text-[11px] text-red-100 font-medium">Food, water, rescue & medical</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
 
+        {/* Card 2: Find Safe Shelters (Teal / Emerald) */}
         <Link
           to="/shelters"
-          className="p-5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-teal-400 shadow-xs transition-all flex flex-col justify-between group cursor-pointer"
+          className="group rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-700 text-white p-5 shadow-lg shadow-teal-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-teal-50 text-teal-600">
-              <Home className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-              {shelters.filter(s => s.availableCapacity > 0).length} Safe Zones Open
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Home className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              {shelters.filter(s => s.availableCapacity > 0).length} Open
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold text-slate-900 group-hover:text-teal-600 transition-colors flex items-center gap-1.5">
-              Find Safe Shelters <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Locate verified disaster evacuation centers with available beds, medical staff, and food.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Nearby Safe Camps</span>
+              <span className="text-[11px] text-teal-100 font-medium">Verified shelters with beds</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
 
-        <a
-          href="tel:117"
-          className="p-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-800 shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+        {/* Card 3: Disaster Safety Guides (Blue) */}
+        <Link
+          to="/citizen/safety-guide"
+          className="group rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
-              <PhoneCall className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              Bilingual Guides
             </span>
-            <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+          </div>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Crisis Safety Guides</span>
+              <span className="text-[11px] text-blue-100 font-medium">Floods, landslides & storms</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </Link>
+
+        {/* Card 4: 24/7 National Emergency Hotline (Amber / Slate) */}
+        <a
+          href="tel:117"
+          className="group rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white border border-slate-800 p-5 shadow-lg shadow-slate-900/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <PhoneCall className="w-5 h-5 text-amber-400" />
+            </div>
+            <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
               24/7 Hotline
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold text-white group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
-              Call Hotline: 117 / 1990 <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              For immediate aquatic rescue or life-threatening medical emergencies, dial national disaster lines.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Call Hotline: 117 / 1990</span>
+              <span className="text-[11px] text-slate-300 font-medium">Disaster center & 1990 Suwa Seriya</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0 text-amber-300">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </a>
       </div>
@@ -476,10 +390,9 @@ export const CitizenDashboard: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {displayList.map(req => {
-                  const isPending = req.status === 'Submitted' || req.status === 'UnderReview' || req.status === 'Pending';
-                  const isApproved = req.status === 'Approved' || req.status === 'Assigned' || req.status === 'InProgress';
+                  const isPending = req.status === 'Submitted' || req.status === 'UnderReview';
+                  const isApproved = req.status === 'Approved' || req.status === 'InProgress';
                   const isResolved = req.status === 'Resolved';
-                  const reqFeedback = (req as any).citizenFeedback;
 
                   return (
                     <Link
@@ -501,7 +414,7 @@ export const CitizenDashboard: React.FC = () => {
                           </div>
 
                           <h3 className="font-bold text-sm text-slate-900 group-hover:text-teal-600 transition truncate">
-                            {req.title || `${req.category || 'Emergency'} Assistance Request`}
+                            {req.title}
                           </h3>
 
                           {/* Reassuring Plain-English Status Meaning */}
@@ -513,65 +426,13 @@ export const CitizenDashboard: React.FC = () => {
                           <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 font-medium pt-1">
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span className="truncate max-w-[200px]">{req.address || (req as any).location || 'Reported incident location'}</span>
+                              <span className="truncate max-w-[200px]">{req.address}</span>
                             </span>
-                            <span>{req.affectedCount || (req as any).peopleCount || 1} person(s) affected</span>
-                            {(req.contactPhone || (req as any).citizenPhone) && (
-                              <span>Contact: {req.contactPhone || (req as any).citizenPhone}</span>
+                            <span>{req.affectedCount} person(s) affected</span>
+                            {req.contactPhone && (
+                              <span>Contact: {req.contactPhone}</span>
                             )}
                           </div>
-
-                          {/* Uploaded Evidence Photos Preview (Coursework 1.1 A) */}
-                          {(req as any).evidenceImages && (req as any).evidenceImages.length > 0 && (
-                            <div className="flex items-center gap-2 pt-1">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Evidence:</span>
-                              <div className="flex items-center gap-1.5">
-                                {(req as any).evidenceImages.map((imgUrl: string, idx: number) => (
-                                  <img
-                                    key={idx}
-                                    src={imgUrl}
-                                    alt="Evidence thumbnail"
-                                    className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-2xs"
-                                  />
-                                ))}
-                                <span className="text-[10px] font-semibold text-slate-500">
-                                  ({(req as any).evidenceImages.length} attached)
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Post-Delivery Feedback Trigger (Coursework 1.1 A) */}
-                          {isResolved && (
-                            <div className="pt-2 mt-2 border-t border-slate-200/60">
-                              {reqFeedback ? (
-                                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
-                                  <span className="flex items-center gap-1 font-bold">
-                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                                    Your Feedback: {reqFeedback.rating}/5 Stars
-                                  </span>
-                                  {reqFeedback.comments && (
-                                    <span className="text-[11px] text-emerald-700 italic truncate max-w-[220px]">
-                                      "{reqFeedback.comments}"
-                                    </span>
-                                  )}
-                                </div>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    openFeedbackModal(req.id, req.title || `${req.category} Assistance Request`);
-                                  }}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300 transition cursor-pointer"
-                                >
-                                  <Star className="w-3.5 h-3.5 text-amber-600" />
-                                  Provide Aid Delivery Feedback
-                                </button>
-                              )}
-                            </div>
-                          )}
                         </div>
 
                         <div className="p-2 rounded-xl bg-white group-hover:bg-teal-50 text-slate-400 group-hover:text-teal-600 transition shrink-0 border border-slate-200/60">
@@ -665,119 +526,6 @@ export const CitizenDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Post-Delivery Feedback Modal (Coursework 1.1 A) */}
-      {feedbackModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-teal-700 font-bold text-sm">
-                <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
-                <span>Rate Your Relief Assistance</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFeedbackModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Help us improve humanitarian coordination by providing feedback on: <strong className="text-slate-800">{feedbackRequestTitle}</strong>
-            </p>
-
-            {feedbackSuccessMsg ? (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold text-center flex items-center justify-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600" />
-                {feedbackSuccessMsg}
-              </div>
-            ) : (
-              <form onSubmit={handleFeedbackSubmit} className="space-y-4">
-                {/* Star Rating Selector */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Overall Satisfaction *</label>
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setFeedbackRating(star)}
-                        className="p-1 transition transform hover:scale-110 cursor-pointer"
-                      >
-                        <Star
-                          className={`w-7 h-7 ${
-                            star <= feedbackRating
-                              ? 'fill-amber-400 text-amber-500'
-                              : 'text-slate-300'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                    <span className="text-xs font-bold text-slate-700 ml-2">
-                      {feedbackRating === 5 ? 'Excellent' : feedbackRating === 4 ? 'Good' : feedbackRating === 3 ? 'Satisfactory' : 'Needs Improvement'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Quick Aspect Tag Pills */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Key Highlights / Observations</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {availableTags.map((tag) => {
-                      const isSelected = feedbackTags.includes(tag);
-                      return (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => toggleFeedbackTag(tag)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border ${
-                            isSelected
-                              ? 'bg-teal-50 text-teal-800 border-teal-300'
-                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Comments Textarea */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Additional Comments / Notes</label>
-                  <textarea
-                    value={feedbackComments}
-                    onChange={(e) => setFeedbackComments(e.target.value)}
-                    placeholder="e.g. Relief pack arrived in good condition, drinking water was very helpful."
-                    className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:outline-teal-500"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setFeedbackModalOpen(false)}
-                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={feedbackSubmitting}
-                    className="px-5 py-2 text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
-                  >
-                    {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
