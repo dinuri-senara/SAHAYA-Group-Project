@@ -487,7 +487,7 @@ const mockVolunteerTasks: VolunteerTask[] = [
   },
 ];
 
-const mockUsers: UserSummary[] = [
+const initialDefaultUsers: UserSummary[] = [
   {
     id: 'u-1',
     fullName: 'Operational Officer',
@@ -545,6 +545,25 @@ const mockUsers: UserSummary[] = [
     createdAt: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
   },
 ];
+
+const getStoredUsers = (): UserSummary[] => {
+  try {
+    const stored = localStorage.getItem('sahaya_registered_users');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return [...initialDefaultUsers];
+};
+
+const saveStoredUsers = (users: UserSummary[]) => {
+  try {
+    localStorage.setItem('sahaya_registered_users', JSON.stringify(users));
+  } catch {}
+};
 
 export const api = {
   // Auth
@@ -621,7 +640,11 @@ export const api = {
       isActive: isActive,
       createdAt: new Date().toISOString(),
     };
-    mockUsers.unshift(newUser);
+    
+    // Save to persisted stored users
+    const allUsers = getStoredUsers();
+    allUsers.unshift(newUser);
+    saveStoredUsers(allUsers);
 
     return {
       token: 'mock-jwt-token-new-reg',
@@ -639,8 +662,9 @@ export const api = {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.email) {
-          // Sync with mockUsers in case status was updated by admin
-          const found = mockUsers.find(
+          // Sync with stored users in case status was updated by admin
+          const allUsers = getStoredUsers();
+          const found = allUsers.find(
             (u) => u.email.toLowerCase() === parsed.email.toLowerCase() || u.id === parsed.id
           );
           if (found) {
@@ -1029,7 +1053,7 @@ export const api = {
       totalDonationsRaised: 1845000,
       totalInKindDonations: 320,
       activeVolunteers: 65,
-      totalRegisteredUsers: mockUsers.length + 475,
+      totalRegisteredUsers: getStoredUsers().length + 475,
     };
   },
 
@@ -1134,7 +1158,7 @@ export const api = {
 
   // User Management
   async getUsers(role?: string, search?: string): Promise<UserSummary[]> {
-    let result = [...mockUsers];
+    let result = getStoredUsers();
     if (role && role !== 'All') {
       result = result.filter((u) => u.role === role);
     }
@@ -1146,21 +1170,26 @@ export const api = {
   },
 
   async getUserById(id: string): Promise<UserSummary> {
-    return mockUsers.find((u) => u.id === id) || mockUsers[0];
+    const allUsers = getStoredUsers();
+    return allUsers.find((u) => u.id === id) || allUsers[0];
   },
 
   async updateUserRole(id: string, data: { newRole: number; justification: string }): Promise<void> {
     const roles: UserRole[] = ['Citizen', 'Coordinator', 'Volunteer', 'Donor', 'Admin'];
-    const u = mockUsers.find((item) => item.id === id);
+    const allUsers = getStoredUsers();
+    const u = allUsers.find((item) => item.id === id);
     if (u) {
       u.role = roles[data.newRole] || 'Citizen';
+      saveStoredUsers(allUsers);
     }
   },
 
   async toggleUserStatus(id: string, data: { isActive: boolean; justification: string }): Promise<void> {
-    const u = mockUsers.find((item) => item.id === id);
+    const allUsers = getStoredUsers();
+    const u = allUsers.find((item) => item.id === id);
     if (u) {
       u.isActive = data.isActive;
+      saveStoredUsers(allUsers);
     }
   },
 

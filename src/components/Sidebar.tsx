@@ -40,7 +40,6 @@ export const navItems: NavItem[] = [
   { name: 'Explainable AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator'] },
   { name: 'Crisis Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator'] },
   { name: 'Resource Allocation Depot', href: '/resources', icon: Package, roles: ['Coordinator'] },
-  { name: 'Operational Analytics', href: '/reports', icon: FileBarChart, roles: ['Coordinator'] },
 
   // 3. Incident / Case Manager
   { name: 'Active Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['CaseManager'] },
@@ -49,7 +48,6 @@ export const navItems: NavItem[] = [
 
   // 4. Resource and Logistics Manager
   { name: 'Inventory Depot & Supplies', href: '/resources', icon: Package, roles: ['LogisticsManager'] },
-  { name: 'Supply Logistics Analytics', href: '/reports', icon: FileBarChart, roles: ['LogisticsManager'] },
 
   // 5. Shelter Administrator
   { name: 'Safe Shelters & Camp Roster', href: '/shelters', icon: Home, roles: ['ShelterAdmin'] },
@@ -79,7 +77,6 @@ export const navItems: NavItem[] = [
   { name: 'All Volunteers', href: '/volunteers', icon: HeartHandshake, roles: ['Admin'] },
   { name: 'Donations & Campaigns', href: '/donations', icon: DollarSign, roles: ['Admin'] },
   { name: 'Command GIS Map', href: '/map', icon: MapPin, roles: ['Admin'] },
-  { name: 'System Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Admin'] },
 
   // Optional: Field Volunteer Mobile Dispatch
   { name: 'Field Mission Dispatch', href: '/volunteer/dashboard', icon: LayoutDashboard, roles: ['Volunteer'] },

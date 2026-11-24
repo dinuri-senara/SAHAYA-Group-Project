@@ -59,48 +59,7 @@ export const UsersPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const roleQuery = selectedRoleFilter !== 'All' ? selectedRoleFilter : undefined;
-      const data = await api.getUsers(roleQuery).catch(() => [
-        {
-          id: 'u-1',
-          fullName: 'Amal Perera',
-          email: 'amal.perera@sahaya.lk',
-          role: 'Admin' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
-        },
-        {
-          id: 'u-2',
-          fullName: 'Dinuri Senara',
-          email: 'dinuri.senara@sahaya.lk',
-          role: 'Coordinator' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString()
-        },
-        {
-          id: 'u-3',
-          fullName: 'Kasun Wickramasinghe',
-          email: 'kasun.w@sahaya.lk',
-          role: 'Volunteer' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()
-        },
-        {
-          id: 'u-4',
-          fullName: 'Sunil Silva',
-          email: 'sunil.silva@gmail.com',
-          role: 'Citizen' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
-        },
-        {
-          id: 'u-5',
-          fullName: 'Oxfam Aid Foundation',
-          email: 'contact@oxfamaid.org',
-          role: 'Donor' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString()
-        }
-      ]);
+      const data = await api.getUsers(roleQuery);
       setUsers(data);
     } catch (err: any) {
       console.error(err);
