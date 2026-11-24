@@ -124,13 +124,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(res.token);
 
     const mappedRole = normalizeRole(res.role);
+    const isPublicRole = mappedRole === 'Citizen' || mappedRole === 'Donor';
+    const isActive = isPublicRole;
+
     const fullUser: User = {
       id: res.userId,
       email: res.email,
       fullName: res.fullName,
       phoneNumber: data.phoneNumber,
       role: mappedRole,
-      isActive: true,
+      isActive: isActive,
       createdAt: new Date().toISOString(),
     };
     setUser(fullUser);

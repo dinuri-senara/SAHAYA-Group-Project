@@ -26,6 +26,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Official staff account awaiting administrator verification
+  const isPublicRole = user.role === 'Citizen' || user.role === 'Donor';
+  if (!isPublicRole && user.isActive === false) {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
       <AppShell>

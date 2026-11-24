@@ -210,8 +210,27 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<'All' | 'Pending'>('All');
+
+  const pendingRequests = (users || []).filter(u => u.isActive === false);
+
+  const handleApprovePending = async (userToApprove: UserSummary) => {
+    try {
+      await api.toggleUserStatus(userToApprove.id, {
+        isActive: true,
+        justification: `Approved official ${userToApprove.role} account by administrator`,
+      });
+      setSuccessBanner(`Approved & activated official access for ${userToApprove.fullName} (${userToApprove.role})!`);
+      await loadUsers();
+      setTimeout(() => setSuccessBanner(null), 5000);
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to approve account.');
+    }
+  };
+
   const filteredUsers = (users || []).filter(u => {
     if (!u) return false;
+    if (activeTab === 'Pending' && u.isActive !== false) return false;
     return (
       (u.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -244,6 +263,42 @@ export const UsersPage: React.FC = () => {
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2 shadow-xs">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
           <span>{successBanner}</span>
+        </div>
+      )}
+
+      {/* Pending Official Account Requests Alert Banner */}
+      {pendingRequests.length > 0 && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-900 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-sm text-amber-950">
+                  {pendingRequests.length} Official Account Registration Request{pendingRequests.length > 1 ? 's' : ''} Awaiting Review
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                  Action Required
+                </span>
+              </div>
+              <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                Staff roles requesting access to operational sectors (Coordinators, Logistics Managers, Shelter Admins) require explicit administrator approval before permissions are unlocked.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setActiveTab(activeTab === 'Pending' ? 'All' : 'Pending')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer ${
+                activeTab === 'Pending'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-white text-amber-900 border border-amber-300 hover:bg-amber-50'
+              }`}
+            >
+              {activeTab === 'Pending' ? 'Show All Users' : `Review Pending Requests (${pendingRequests.length})`}
+            </button>
+          </div>
         </div>
       )}
 
@@ -361,6 +416,15 @@ export const UsersPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3.5 text-right space-x-2">
+                        {!u.isActive && (
+                          <button
+                            onClick={() => handleApprovePending(u)}
+                            className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition cursor-pointer"
+                            title="Approve and activate official access"
+                          >
+                            Approve Access
+                          </button>
+                        )}
                         <button
                           disabled={isSelf}
                           onClick={() => openRoleModal(u)}

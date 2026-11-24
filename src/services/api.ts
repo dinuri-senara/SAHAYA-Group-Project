@@ -528,6 +528,22 @@ const mockUsers: UserSummary[] = [
     isActive: true,
     createdAt: '2026-05-20T00:00:00Z',
   },
+  {
+    id: 'u-pending-1',
+    fullName: 'Ravi Sandaruwan',
+    email: 'ravi.sandaruwan@slrcs.org',
+    role: 'PartnerOfficer',
+    isActive: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
+  },
+  {
+    id: 'u-pending-2',
+    fullName: 'Dr. Tharaka Mendis',
+    email: 't.mendis@health.gov.lk',
+    role: 'ShelterAdmin',
+    isActive: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
+  },
 ];
 
 export const api = {
@@ -593,9 +609,23 @@ export const api = {
     else if (roleNum === 9) resolvedRole = 'VolunteerCoordinator';
     else if (roleNum === 10) resolvedRole = 'PartnerOfficer';
 
+    // Official staff roles require Administrator verification
+    const isPublicRole = resolvedRole === 'Citizen' || resolvedRole === 'Donor';
+    const isActive = isPublicRole;
+
+    const newUser: UserSummary = {
+      id: `u-reg-${Date.now()}`,
+      email: data.email,
+      fullName: data.fullName,
+      role: resolvedRole,
+      isActive: isActive,
+      createdAt: new Date().toISOString(),
+    };
+    mockUsers.unshift(newUser);
+
     return {
       token: 'mock-jwt-token-new-reg',
-      userId: `u-reg-${Date.now()}`,
+      userId: newUser.id,
       email: data.email,
       fullName: data.fullName,
       role: resolvedRole,
