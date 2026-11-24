@@ -86,7 +86,7 @@ export const LoginPage: React.FC = () => {
     } else if (cleanRole === 'Donor' || cleanRole === '4') {
       target = '/donor/dashboard';
     } else if (cleanRole === 'PartnerOfficer' || cleanRole === '10') {
-      target = '/resources';
+      target = '/partner/dashboard';
     } else if (cleanRole === 'Volunteer' || cleanRole === '3') {
       target = '/volunteer/dashboard';
     } else if (cleanRole === 'Admin' || cleanRole === '5') {

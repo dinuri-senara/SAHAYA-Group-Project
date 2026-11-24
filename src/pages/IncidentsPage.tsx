@@ -51,7 +51,8 @@ export const IncidentsPage: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'CaseManager';
+  const canRegisterIncidents = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'CaseManager';
 
   const loadIncidents = async () => {
     try {

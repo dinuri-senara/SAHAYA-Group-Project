@@ -19,7 +19,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { SahayaLogo } from '../components/SahayaLogo';
 
 export const LandingPage: React.FC = () => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
@@ -35,19 +35,19 @@ export const LandingPage: React.FC = () => {
           {/* Center Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
             <Link to="/" className="text-blue-700 font-extrabold border-b-2 border-blue-700 pb-0.5">
-              Home
+              {t('nav.home', 'Home')}
             </Link>
             <Link to="/citizen/safety-guide" className="hover:text-blue-700 transition">
-              Safety Guides
+              {t('nav.safetyGuides', 'Safety Guides')}
             </Link>
             <a href="#how-it-works" className="hover:text-blue-700 transition">
-              How It Works
+              {t('nav.howItWorks', 'How It Works')}
             </a>
             <a href="#about" className="hover:text-blue-700 transition">
-              About
+              {t('nav.about', 'About')}
             </a>
             <a href="#contact" className="hover:text-blue-700 transition">
-              Contact
+              {t('nav.contact', 'Contact')}
             </a>
           </nav>
 
@@ -72,7 +72,7 @@ export const LandingPage: React.FC = () => {
               to="/login"
               className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-[#0d254c] hover:bg-slate-100 border border-slate-300 transition shadow-2xs"
             >
-              Login
+              {t('nav.login', 'Login')}
             </Link>
 
             {/* Sign Up Button */}
@@ -80,7 +80,7 @@ export const LandingPage: React.FC = () => {
               to="/register"
               className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0d254c] hover:bg-[#153a75] shadow-md shadow-blue-950/20 transition hover:shadow-lg"
             >
-              Sign Up
+              {t('nav.signUp', 'Sign Up')}
             </Link>
           </div>
         </div>
@@ -108,18 +108,27 @@ export const LandingPage: React.FC = () => {
               <span className="p-1 rounded-full bg-red-500 text-white animate-pulse">
                 <AlertTriangle className="w-3 h-3" />
               </span>
-              <span>Emergency Assistance</span>
+              <span>{language === 'si' ? 'හදිසි ආධාර මෙහෙයුම්' : 'Emergency Assistance'}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
-              Help When You <br />
-              <span className="text-[#ef4444]">Need It Most.</span>
+              {language === 'si' ? (
+                <>
+                  ඔබට වඩාත්ම අවශ්‍ය <br />
+                  <span className="text-[#ef4444]">මොහොතේ පිහිට.</span>
+                </>
+              ) : (
+                <>
+                  Help When You <br />
+                  <span className="text-[#ef4444]">Need It Most.</span>
+                </>
+              )}
             </h1>
 
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-slate-200 font-medium leading-relaxed max-w-xl">
-              Request emergency assistance, get safety information, and stay connected during disasters across Sri Lanka.
+              {t('landing.heroSub')}
             </p>
 
             {/* CTAs */}
@@ -129,7 +138,7 @@ export const LandingPage: React.FC = () => {
                 className="px-6 py-3.5 rounded-xl font-black text-xs sm:text-sm text-white bg-[#ef4444] hover:bg-[#dc2626] shadow-lg shadow-red-600/30 hover:shadow-xl transition-all flex items-center gap-2.5 cursor-pointer group"
               >
                 <AlertTriangle className="w-4 h-4 shrink-0 text-white" />
-                <span>Request Emergency Assistance</span>
+                <span>{t('landing.requestAidBtn')}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
 
@@ -138,14 +147,14 @@ export const LandingPage: React.FC = () => {
                 className="px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-white/10 hover:bg-white/20 border border-white/25 backdrop-blur-md transition flex items-center gap-2 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-white" />
-                <span>View Safety Guides</span>
+                <span>{t('landing.viewGuidesBtn')}</span>
               </Link>
             </div>
 
             {/* No Account Required Note */}
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 pt-1">
               <span className="text-emerald-400 font-bold">✓</span>
-              <span>No account or login required for emergency aid requests</span>
+              <span>{t('landing.noAccountNotice')}</span>
             </div>
           </div>
         </div>
@@ -184,10 +193,10 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-red-600 transition-colors">
-                Request Help
+                {t('landing.cardHelpTitle', 'Request Help')}
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-snug">
-                Food, water, medical, or rescue
+                {t('landing.cardHelpDesc', 'Food, water, medical, or rescue')}
               </p>
             </div>
           </Link>
@@ -202,17 +211,17 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
-                Find Nearby Shelters
+                {t('landing.cardSheltersTitle', 'Find Nearby Shelters')}
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-snug">
-                Safe locations in your area
+                {t('landing.cardSheltersDesc', 'Safe locations in your area')}
               </p>
             </div>
           </Link>
 
           {/* Card 3: Get Emergency Alerts */}
           <Link
-            to="/coordinator/incidents"
+            to="/citizen/safety-guide"
             className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all group flex items-start gap-4"
           >
             <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
@@ -220,10 +229,10 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-amber-600 transition-colors">
-                Get Emergency Alerts
+                {t('landing.cardAlertsTitle', 'Get Emergency Alerts')}
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-snug">
-                Stay updated in real time
+                {t('landing.cardAlertsDesc', 'Stay updated in real time')}
               </p>
             </div>
           </Link>
@@ -238,10 +247,10 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-teal-600 transition-colors">
-                Learn & Stay Safe
+                {t('landing.cardSafetyTitle', 'Learn & Stay Safe')}
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-snug">
-                Guides for floods, landslides & more
+                {t('landing.cardSafetyDesc', 'Guides for floods, landslides & more')}
               </p>
             </div>
           </Link>
@@ -471,8 +480,8 @@ export const LandingPage: React.FC = () => {
               <ul className="space-y-2 text-xs">
                 <li><Link to="/login" className="hover:text-teal-400">Citizen Sign In</Link></li>
                 <li><Link to="/register" className="hover:text-teal-400">Citizen Registration</Link></li>
-                <li><Link to="/dashboard" className="hover:text-teal-400">Executive Command Dashboard</Link></li>
-                <li><Link to="/login" className="hover:text-teal-400">Officer / Volunteer Login</Link></li>
+                <li><Link to="/login" className="hover:text-teal-400">Officer & Volunteer Access</Link></li>
+                <li><Link to="/citizen/safety-guide" className="hover:text-teal-400">Public Early Warnings</Link></li>
               </ul>
             </div>
 
