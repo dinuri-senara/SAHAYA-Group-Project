@@ -33,6 +33,7 @@ export const VolunteersPage: React.FC = () => {
 
   // Assign Task Modal
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerProfile | null>(null);
   const [pendingRequests, setPendingRequests] = useState<AssistanceRequest[]>([]);
   const [taskData, setTaskData] = useState({
@@ -44,7 +45,20 @@ export const VolunteersPage: React.FC = () => {
   });
   const [isAssigning, setIsAssigning] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  // New Volunteer Registration State
+  const [newVolunteer, setNewVolunteer] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    serviceArea: 'Colombo North Sector',
+    skills: 'First Aid, Water Rescue, Food Distribution',
+    availabilityStatus: 'Available' as 'Available' | 'Busy' | 'OffDuty',
+    notes: 'Certified local emergency volunteer'
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'VolunteerCoordinator';
+  const canDispatchVolunteers = user?.role === 'VolunteerCoordinator' || user?.role === 'Coordinator' || user?.role === 'Admin';
 
   const loadVolunteers = async () => {
     try {
@@ -110,6 +124,43 @@ export const VolunteersPage: React.FC = () => {
     }
   };
 
+  const handleRegisterVolunteer = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsRegistering(true);
+    try {
+      const skillsArr = newVolunteer.skills.split(',').map(s => s.trim()).filter(Boolean);
+      const newV: VolunteerProfile = {
+        id: `vol-${Date.now()}`,
+        userId: `u-vol-${Date.now()}`,
+        fullName: newVolunteer.fullName,
+        email: newVolunteer.email,
+        phone: newVolunteer.phoneNumber,
+        serviceArea: newVolunteer.serviceArea,
+        skills: skillsArr,
+        availabilityStatus: newVolunteer.availabilityStatus,
+        completedTasksCount: 0,
+        rating: 5.0,
+        createdAt: new Date().toISOString()
+      };
+      setVolunteers([newV, ...volunteers]);
+      setSuccessMsg(`Volunteer ${newVolunteer.fullName} successfully registered to the field roster!`);
+      setShowRegisterModal(false);
+      setNewVolunteer({
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        serviceArea: 'Colombo North Sector',
+        skills: 'First Aid, Water Rescue, Food Distribution',
+        availabilityStatus: 'Available',
+        notes: ''
+      });
+    } catch {
+      setError('Failed to register volunteer.');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   const filteredVolunteers = volunteers.filter(v => {
     const matchesSearch = v.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           v.serviceArea.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,6 +190,16 @@ export const VolunteersPage: React.FC = () => {
             Certified field volunteers, active mission readiness, and AI-assisted skills deployment.
           </p>
         </div>
+
+        {canDispatchVolunteers && (
+          <button
+            onClick={() => setShowRegisterModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-600/20 transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Register Field Volunteer
+          </button>
+        )}
       </div>
 
       {/* KPI Stats */}
@@ -307,12 +368,12 @@ export const VolunteersPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Coordinator dispatch button */}
-                {isCoordinatorOrAdmin && (
+                {/* Volunteer Coordinator / Coordinator dispatch button */}
+                {canDispatchVolunteers && (
                   <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <button
                       onClick={() => openTaskModal(v)}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white shadow-xs shadow-teal-600/20 transition-all"
+                      className="w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#2563eb] hover:bg-blue-600 text-white shadow-xs shadow-blue-600/20 transition-all cursor-pointer"
                     >
                       <Briefcase className="w-3.5 h-3.5" />
                       Assign Field Mission
@@ -414,6 +475,123 @@ export const VolunteersPage: React.FC = () => {
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
                 >
                   {isAssigning ? 'Dispatching...' : 'Confirm Dispatch'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Register New Volunteer */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
+              Enroll Verified Field Volunteer
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Add a new community responder to the certified roster with skills profile and service sector.
+            </p>
+
+            <form onSubmit={handleRegisterVolunteer} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ruwan Jayawardena"
+                  value={newVolunteer.fullName}
+                  onChange={e => setNewVolunteer({ ...newVolunteer, fullName: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Mobile Phone *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+94 77 123 4567"
+                    value={newVolunteer.phoneNumber}
+                    onChange={e => setNewVolunteer({ ...newVolunteer, phoneNumber: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="volunteer@sahaya.org"
+                    value={newVolunteer.email}
+                    onChange={e => setNewVolunteer({ ...newVolunteer, email: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Assigned District / Service Area *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Kalutara River Basin, Western Province"
+                  value={newVolunteer.serviceArea}
+                  onChange={e => setNewVolunteer({ ...newVolunteer, serviceArea: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Skills & Certifications (comma separated)
+                </label>
+                <input
+                  type="text"
+                  placeholder="First Aid, Boat Rescue, Driving (Heavy), Logistics"
+                  value={newVolunteer.skills}
+                  onChange={e => setNewVolunteer({ ...newVolunteer, skills: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Initial Availability
+                </label>
+                <select
+                  value={newVolunteer.availabilityStatus}
+                  onChange={e => setNewVolunteer({ ...newVolunteer, availabilityStatus: e.target.value as any })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-pointer"
+                >
+                  <option value="Available">Available (Ready for Immediate Dispatch)</option>
+                  <option value="Busy">Busy (Engaged in Field Training)</option>
+                  <option value="OffDuty">OffDuty (Reserve Roster)</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isRegistering}
+                  className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs"
+                >
+                  {isRegistering ? 'Registering...' : 'Enroll to Field Roster'}
                 </button>
               </div>
             </form>
