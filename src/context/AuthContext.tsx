@@ -68,16 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     try {
-      const saved = localStorage.getItem('sahaya_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed) {
-          parsed.role = normalizeRole(parsed.role);
-          setUser(parsed);
-          setIsLoading(false);
-          return;
-        }
-      }
       const u = await api.getCurrentUser();
       u.role = normalizeRole(u.role);
       setUser(u);

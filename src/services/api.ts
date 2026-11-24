@@ -639,6 +639,15 @@ export const api = {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.email) {
+          // Sync with mockUsers in case status was updated by admin
+          const found = mockUsers.find(
+            (u) => u.email.toLowerCase() === parsed.email.toLowerCase() || u.id === parsed.id
+          );
+          if (found) {
+            parsed.isActive = found.isActive;
+            parsed.role = found.role;
+            localStorage.setItem('sahaya_user', JSON.stringify(parsed));
+          }
           return parsed;
         }
       }

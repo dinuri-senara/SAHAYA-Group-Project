@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Clock,
@@ -9,18 +9,54 @@ import {
   CheckCircle2,
   LogOut,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { SahayaLogo } from '../components/SahayaLogo';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 
 export const PendingApprovalPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const [checking, setChecking] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleCheckApproval = async () => {
+    setChecking(true);
+    setStatusMessage(null);
+    try {
+      await refreshUser();
+      const updatedUser = await api.getCurrentUser();
+      if (updatedUser && updatedUser.isActive) {
+        setStatusMessage('Your official staff account has been approved by the Administrator! Redirecting...');
+        setTimeout(() => {
+          const role = updatedUser.role;
+          let target = '/dashboard';
+          if (role === 'ShelterAdmin') target = '/shelters';
+          else if (role === 'LogisticsManager') target = '/resources';
+          else if (role === 'PartnerOfficer') target = '/partner/dashboard';
+          else if (role === 'Coordinator') target = '/coordinator/dashboard';
+          else if (role === 'CaseManager') target = '/coordinator/incidents';
+          else if (role === 'VolunteerCoordinator') target = '/volunteers';
+          else if (role === 'Volunteer') target = '/volunteer/dashboard';
+          else if (role === 'Donor') target = '/donor/dashboard';
+          window.location.href = target;
+        }, 1500);
+      } else {
+        setStatusMessage('Your account is still awaiting approval by a System Administrator.');
+      }
+    } catch {
+      setStatusMessage('Unable to reach server. Please try again in a moment.');
+    } finally {
+      setChecking(false);
+    }
   };
 
   return (
@@ -96,14 +132,33 @@ export const PendingApprovalPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Status Message Toast / Feedback */}
+        {statusMessage && (
+          <div
+            className={`w-full mt-4 p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition animate-fade-in ${
+              statusMessage.includes('approved')
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                : 'bg-amber-500/20 text-amber-200 border border-amber-500/40'
+            }`}
+          >
+            {statusMessage.includes('approved') ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            )}
+            <span>{statusMessage}</span>
+          </div>
+        )}
+
         {/* Action Controls */}
         <div className="w-full mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
-            onClick={() => window.location.reload()}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
+            onClick={handleCheckApproval}
+            disabled={checking}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Check Approval Status</span>
+            <RefreshCw className={`w-4 h-4 ${checking ? 'animate-spin' : ''}`} />
+            <span>{checking ? 'Checking Status...' : 'Check Approval Status'}</span>
           </button>
 
           <button
