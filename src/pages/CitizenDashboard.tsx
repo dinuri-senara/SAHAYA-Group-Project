@@ -17,7 +17,10 @@ import {
   PhoneCall,
   UserCheck,
   BookOpen,
-  ShieldCheck
+  ShieldCheck,
+  ArrowRight,
+  Megaphone,
+  Users
 } from 'lucide-react';
 import { api } from '../services/api';
 import { AssistanceRequest, Shelter, NotificationItem } from '../types';
@@ -121,71 +124,101 @@ export const CitizenDashboard: React.FC = () => {
         }
       />
 
-      {/* Quick Action Navigation Hero - Direct, clear choices for citizens in stress */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 4 Vibrant Action Cards (Matching platform UI theme & visual hierarchy) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Emergency Aid SOS (Red) */}
         <Link
-          to="/request/new"
-          className="p-5 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 text-white shadow-md shadow-teal-700/20 transition-all flex flex-col justify-between group cursor-pointer"
+          to="/citizen/create-request"
+          className="group rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white p-5 shadow-lg shadow-red-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-white/20 text-white">
-              <PlusCircle className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-              Primary Step
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <PlusCircle className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              Instant SOS
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold group-hover:translate-x-0.5 transition-transform flex items-center gap-1.5">
-              Request Emergency Aid <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-teal-100 mt-1 leading-relaxed">
-              Need rescue, medical care, food, or clean water? Submit an aid request with your GPS pin.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Submit Aid Request</span>
+              <span className="text-[11px] text-red-100 font-medium">Food, water, rescue & medical</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
 
+        {/* Card 2: Find Safe Shelters (Teal / Emerald) */}
         <Link
           to="/shelters"
-          className="p-5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-teal-400 shadow-xs transition-all flex flex-col justify-between group cursor-pointer"
+          className="group rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-700 text-white p-5 shadow-lg shadow-teal-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-teal-50 text-teal-600">
-              <Home className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-              {shelters.filter(s => s.availableCapacity > 0).length} Safe Zones Open
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Home className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              {shelters.filter(s => s.availableCapacity > 0).length} Open
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold text-slate-900 group-hover:text-teal-600 transition-colors flex items-center gap-1.5">
-              Find Safe Shelters <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Locate verified disaster evacuation centers with available beds, medical staff, and food.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Nearby Safe Camps</span>
+              <span className="text-[11px] text-teal-100 font-medium">Verified shelters with beds</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
 
-        <a
-          href="tel:117"
-          className="p-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-800 shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+        {/* Card 3: Disaster Safety Guides (Blue) */}
+        <Link
+          to="/citizen/safety-guide"
+          className="group rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
-              <PhoneCall className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              Bilingual Guides
             </span>
-            <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+          </div>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Crisis Safety Guides</span>
+              <span className="text-[11px] text-blue-100 font-medium">Floods, landslides & storms</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </Link>
+
+        {/* Card 4: 24/7 National Emergency Hotline (Amber / Slate) */}
+        <a
+          href="tel:117"
+          className="group rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white border border-slate-800 p-5 shadow-lg shadow-slate-900/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[120px]"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <PhoneCall className="w-5 h-5 text-amber-400" />
+            </div>
+            <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
               24/7 Hotline
             </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-base font-extrabold text-white group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
-              Call Hotline: 117 / 1990 <ChevronRight className="w-4 h-4" />
-            </h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              For immediate aquatic rescue or life-threatening medical emergencies, dial national disaster lines.
-            </p>
+          <div className="flex items-end justify-between mt-3">
+            <div>
+              <span className="font-extrabold text-sm leading-snug block">Call Hotline: 117 / 1990</span>
+              <span className="text-[11px] text-slate-300 font-medium">Disaster center & 1990 Suwa Seriya</span>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0 text-amber-300">
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </a>
       </div>
