@@ -59,6 +59,7 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [district, setDistrict] = useState('');
+  const [role, setRole] = useState<string>('Citizen');
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -110,17 +111,42 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const regEmail = email.trim() || `citizen-${Date.now()}@sahaya.lk`;
+      const regEmail = email.trim() || `user-${Date.now()}@sahaya.lk`;
+      
+      const roleMapping: Record<string, number> = {
+        'Citizen': 1,
+        'Coordinator': 2,
+        'Volunteer': 3,
+        'Donor': 4,
+        'Admin': 5,
+        'CaseManager': 6,
+        'LogisticsManager': 7,
+        'ShelterAdmin': 8,
+        'VolunteerCoordinator': 9,
+        'PartnerOfficer': 10
+      };
+
       await register({
         fullName: fullName.trim(),
         email: regEmail,
         phoneNumber: phoneNumber.trim(),
         password,
-        role: 1, // Citizen
+        role: roleMapping[role] || 1,
       });
 
-      // Navigate to Citizen Dashboard
-      window.location.href = '/citizen/dashboard';
+      // Role-specific redirect upon successful registration
+      let target = '/citizen/dashboard';
+      if (role === 'ShelterAdmin') target = '/shelters';
+      else if (role === 'LogisticsManager') target = '/resources';
+      else if (role === 'PartnerOfficer') target = '/partner/dashboard';
+      else if (role === 'Coordinator') target = '/coordinator/dashboard';
+      else if (role === 'CaseManager') target = '/coordinator/incidents';
+      else if (role === 'VolunteerCoordinator') target = '/volunteers';
+      else if (role === 'Volunteer') target = '/volunteer/dashboard';
+      else if (role === 'Donor') target = '/donor/dashboard';
+      else if (role === 'Admin') target = '/dashboard';
+
+      window.location.href = target;
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -408,6 +434,46 @@ export const RegisterPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* Role-Based Selection */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Requested Role Tier <span className="text-red-500">*</span>
+                    </label>
+                    {role !== 'Citizen' && role !== 'Donor' && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                        Requires Admin Approval
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition cursor-pointer"
+                    >
+                      <optgroup label="Public Accounts (Instant Access)">
+                        <option value="Citizen">Affected Person / Citizen</option>
+                        <option value="Donor">Donor / Funding Officer</option>
+                      </optgroup>
+                      <optgroup label="Official Staff Roles (Admin Verified)">
+                        <option value="Volunteer">Field Volunteer Candidate</option>
+                        <option value="VolunteerCoordinator">Volunteer Coordinator</option>
+                        <option value="ShelterAdmin">Shelter Administrator</option>
+                        <option value="LogisticsManager">Resource & Logistics Manager</option>
+                        <option value="CaseManager">Incident / Case Manager</option>
+                        <option value="Coordinator">Emergency Coordinator</option>
+                        <option value="PartnerOfficer">Partner Organisation Officer</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {role === 'Citizen' || role === 'Donor'
+                      ? 'Instant access to emergency assistance requests and relief portfolios.'
+                      : 'Operational roles are created in pending verification status until authorized by System Administration.'}
+                  </p>
                 </div>
 
                 {/* District Dropdown */}

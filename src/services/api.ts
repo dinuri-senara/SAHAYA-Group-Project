@@ -581,12 +581,24 @@ export const api = {
   },
 
   async register(data: any): Promise<AuthResponse> {
+    const roleNum = Number(data.role);
+    let resolvedRole: UserRole = 'Citizen';
+    if (roleNum === 2) resolvedRole = 'Coordinator';
+    else if (roleNum === 3) resolvedRole = 'Volunteer';
+    else if (roleNum === 4) resolvedRole = 'Donor';
+    else if (roleNum === 5) resolvedRole = 'Admin';
+    else if (roleNum === 6) resolvedRole = 'CaseManager';
+    else if (roleNum === 7) resolvedRole = 'LogisticsManager';
+    else if (roleNum === 8) resolvedRole = 'ShelterAdmin';
+    else if (roleNum === 9) resolvedRole = 'VolunteerCoordinator';
+    else if (roleNum === 10) resolvedRole = 'PartnerOfficer';
+
     return {
       token: 'mock-jwt-token-new-reg',
-      userId: 'u-new',
+      userId: `u-reg-${Date.now()}`,
       email: data.email,
       fullName: data.fullName,
-      role: 'Citizen',
+      role: resolvedRole,
       expiresIn: 86400,
     };
   },
