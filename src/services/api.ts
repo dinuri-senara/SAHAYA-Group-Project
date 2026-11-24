@@ -533,28 +533,88 @@ const mockUsers: UserSummary[] = [
 export const api = {
   // Auth
   async login(email: string, _password: string): Promise<AuthResponse> {
+    const lowEmail = (email || '').toLowerCase().trim();
+    let detectedRole: UserRole = 'Citizen';
+    let fullName = 'Citizen User';
+
+    // Explicit exact matching first, then fuzzy
+    if (lowEmail === 'shelteradmin@sahaya.org' || lowEmail.startsWith('shelter')) {
+      detectedRole = 'ShelterAdmin';
+      fullName = 'Camp & Shelter Administrator';
+    } else if (lowEmail === 'admin@sahaya.org' || lowEmail.startsWith('admin')) {
+      detectedRole = 'Admin';
+      fullName = 'Operational System Administrator';
+    } else if (lowEmail.startsWith('coordinator')) {
+      detectedRole = 'Coordinator';
+      fullName = 'Chief Emergency Coordinator';
+    } else if (lowEmail.startsWith('case')) {
+      detectedRole = 'CaseManager';
+      fullName = 'Senior Incident Case Manager';
+    } else if (lowEmail.startsWith('logistics')) {
+      detectedRole = 'LogisticsManager';
+      fullName = 'Resource & Logistics Director';
+    } else if (lowEmail.startsWith('volcoord') || lowEmail.startsWith('volunteercoord')) {
+      detectedRole = 'VolunteerCoordinator';
+      fullName = 'Volunteer Mobilization Lead';
+    } else if (lowEmail.startsWith('donor')) {
+      detectedRole = 'Donor';
+      fullName = 'Aid Funding & Donor Officer';
+    } else if (lowEmail.startsWith('partner')) {
+      detectedRole = 'PartnerOfficer';
+      fullName = 'UN / Red Cross Partner Officer';
+    } else if (lowEmail.startsWith('volunteer')) {
+      detectedRole = 'Volunteer';
+      fullName = 'Field Response Volunteer';
+    } else if (lowEmail.startsWith('citizen')) {
+      detectedRole = 'Citizen';
+      fullName = 'Affected Citizen';
+    }
+
     return {
       token: 'mock-jwt-token-active-session',
-      userId: mockUser.id,
+      userId: `u-${detectedRole.toLowerCase()}-1`,
       email: email || mockUser.email,
-      fullName: mockUser.fullName,
-      role: 'Admin',
+      fullName: fullName,
+      role: detectedRole,
       expiresIn: 86400,
     };
   },
 
   async register(data: any): Promise<AuthResponse> {
+    const roleNum = Number(data.role);
+    let resolvedRole: UserRole = 'Citizen';
+    if (roleNum === 2) resolvedRole = 'Coordinator';
+    else if (roleNum === 3) resolvedRole = 'Volunteer';
+    else if (roleNum === 4) resolvedRole = 'Donor';
+    else if (roleNum === 5) resolvedRole = 'Admin';
+    else if (roleNum === 6) resolvedRole = 'CaseManager';
+    else if (roleNum === 7) resolvedRole = 'LogisticsManager';
+    else if (roleNum === 8) resolvedRole = 'ShelterAdmin';
+    else if (roleNum === 9) resolvedRole = 'VolunteerCoordinator';
+    else if (roleNum === 10) resolvedRole = 'PartnerOfficer';
+
     return {
       token: 'mock-jwt-token-new-reg',
-      userId: 'u-new',
+      userId: `u-reg-${Date.now()}`,
       email: data.email,
       fullName: data.fullName,
-      role: 'Citizen',
+      role: resolvedRole,
       expiresIn: 86400,
     };
   },
 
   async getCurrentUser(): Promise<User> {
+    try {
+      const saved = localStorage.getItem('sahaya_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.email) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Fallback to default
+    }
     return mockUser;
   },
 

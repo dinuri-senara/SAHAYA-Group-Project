@@ -35,11 +35,15 @@ export const LoginPage: React.FC = () => {
   }, []);
 
   const demoAccounts: { role: UserRole; email: string; pass: string; title: string; desc: string }[] = [
-    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Citizen@123', title: 'Citizen Portal', desc: 'Submit requests & track emergency aid' },
-    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Coordinator@123', title: 'Coordinator Operations', desc: 'Triage, approve, and allocate resources' },
-    { role: 'Volunteer', email: 'volunteer@sahaya.org', pass: 'Volunteer@123', title: 'Volunteer Dispatch', desc: 'Accept field mission tasks & updates' },
-    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor Hub', desc: 'Support campaigns & track aid impact' },
-    { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'Audit trails & platform governance' },
+    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Citizen@123', title: 'Affected Person / Citizen', desc: 'Aid requests, emergency SOS & status tracking' },
+    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Coordinator@123', title: 'Emergency Coordinator', desc: 'Case triage, AI assessment & crisis escalation' },
+    { role: 'CaseManager', email: 'casemanager@sahaya.org', pass: 'Case@123', title: 'Incident / Case Manager', desc: 'Incidents registry & request lifecycle audit' },
+    { role: 'LogisticsManager', email: 'logistics@sahaya.org', pass: 'Logistics@123', title: 'Resource & Logistics Manager', desc: 'Inventory depot, aid dispatches & shortages' },
+    { role: 'ShelterAdmin', email: 'shelteradmin@sahaya.org', pass: 'Shelter@123', title: 'Shelter Administrator', desc: 'Shelter capacity, occupancies & facilities' },
+    { role: 'VolunteerCoordinator', email: 'volunteercoord@sahaya.org', pass: 'VolCoord@123', title: 'Volunteer Coordinator', desc: 'Mobilization rosters & mission task allocation' },
+    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor / Funding Officer', desc: 'Fund pledges, in-kind supplies & audit log' },
+    { role: 'PartnerOfficer', email: 'partner@sahaya.org', pass: 'Partner@123', title: 'Partner Organisation Officer', desc: 'Inter-agency requisition & joint response' },
+    { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'National executive command & system telemetry' },
   ];
 
   const handleLogin = async (e?: React.FormEvent, customEmail?: string, customPass?: string) => {
@@ -67,14 +71,30 @@ export const LoginPage: React.FC = () => {
 
   const redirectToDashboard = (role: UserRole) => {
     let target = '/citizen/dashboard';
-    switch (role) {
-      case 'Citizen': target = '/citizen/dashboard'; break;
-      case 'Coordinator': target = '/coordinator/dashboard'; break;
-      case 'Volunteer': target = '/volunteer/dashboard'; break;
-      case 'Donor': target = '/donor/dashboard'; break;
-      case 'Admin': target = '/admin/dashboard'; break;
-      default: target = '/citizen/dashboard';
+    const cleanRole = String(role).trim();
+
+    if (cleanRole === 'ShelterAdmin' || cleanRole === '8') {
+      target = '/shelters';
+    } else if (cleanRole === 'LogisticsManager' || cleanRole === '7') {
+      target = '/resources';
+    } else if (cleanRole === 'CaseManager' || cleanRole === '6') {
+      target = '/coordinator/incidents';
+    } else if (cleanRole === 'Coordinator' || cleanRole === '2') {
+      target = '/coordinator/dashboard';
+    } else if (cleanRole === 'VolunteerCoordinator' || cleanRole === '9') {
+      target = '/volunteers';
+    } else if (cleanRole === 'Donor' || cleanRole === '4') {
+      target = '/donor/dashboard';
+    } else if (cleanRole === 'PartnerOfficer' || cleanRole === '10') {
+      target = '/partner/dashboard';
+    } else if (cleanRole === 'Volunteer' || cleanRole === '3') {
+      target = '/volunteer/dashboard';
+    } else if (cleanRole === 'Admin' || cleanRole === '5') {
+      target = '/dashboard';
+    } else {
+      target = '/citizen/dashboard';
     }
+
     window.location.href = target;
   };
 
@@ -299,29 +319,38 @@ export const LoginPage: React.FC = () => {
                 </Link>
               </div>
 
-              {/* BOTTOM ALERT: Need immediate help without login (Matching uploaded reference image) */}
-              <div className="mt-6 p-3.5 rounded-2xl bg-red-50/90 border border-red-200/80 flex items-center justify-between gap-3 group">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse" />
+              {/* BOTTOM ALERT: Need immediate help without login */}
+              <div className="mt-6 p-3.5 rounded-2xl bg-red-50/90 border border-red-200/80 flex flex-col gap-2 group">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-red-900">
+                        Need immediate help?
+                      </h4>
+                      <p className="text-[11px] text-red-700">
+                        Request emergency assistance without login.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black text-red-900">
-                      Need immediate help?
-                    </h4>
-                    <p className="text-[11px] text-red-700">
-                      Request emergency assistance without login.
-                    </p>
-                  </div>
+
+                  <Link
+                    to="/emergency/request"
+                    className="w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 shadow-xs flex items-center justify-center text-white group-hover:translate-x-0.5 transition shrink-0 cursor-pointer"
+                    title="Request without login"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
 
-                <Link
-                  to="/citizen/create-request"
-                  className="w-7 h-7 rounded-full bg-white shadow-xs flex items-center justify-center text-red-600 group-hover:translate-x-0.5 transition-transform shrink-0 cursor-pointer"
-                  title="Request without login"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="pt-2 border-t border-red-200/60 flex items-center justify-between text-[11px] font-semibold text-red-800">
+                  <span>Already requested emergency aid?</span>
+                  <Link to="/emergency/track" className="font-bold underline hover:text-red-950 flex items-center gap-1">
+                    Track status &rarr;
+                  </Link>
+                </div>
               </div>
 
               {/* ONE-CLICK ACADEMIC DEMO LOGINS (Collapsible for easy evaluation) */}

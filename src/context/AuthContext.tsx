@@ -22,6 +22,11 @@ const normalizeRole = (roleVal: any): UserRole => {
     if (roleVal === '3' || roleVal === 'Volunteer') return 'Volunteer';
     if (roleVal === '4' || roleVal === 'Donor') return 'Donor';
     if (roleVal === '5' || roleVal === 'Admin') return 'Admin';
+    if (roleVal === '6' || roleVal === 'CaseManager') return 'CaseManager';
+    if (roleVal === '7' || roleVal === 'LogisticsManager') return 'LogisticsManager';
+    if (roleVal === '8' || roleVal === 'ShelterAdmin') return 'ShelterAdmin';
+    if (roleVal === '9' || roleVal === 'VolunteerCoordinator') return 'VolunteerCoordinator';
+    if (roleVal === '10' || roleVal === 'PartnerOfficer') return 'PartnerOfficer';
     return roleVal as UserRole;
   }
   switch (Number(roleVal)) {
@@ -30,6 +35,11 @@ const normalizeRole = (roleVal: any): UserRole => {
     case 3: return 'Volunteer';
     case 4: return 'Donor';
     case 5: return 'Admin';
+    case 6: return 'CaseManager';
+    case 7: return 'LogisticsManager';
+    case 8: return 'ShelterAdmin';
+    case 9: return 'VolunteerCoordinator';
+    case 10: return 'PartnerOfficer';
     default: return 'Citizen';
   }
 };
@@ -58,6 +68,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     try {
+      const saved = localStorage.getItem('sahaya_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed) {
+          parsed.role = normalizeRole(parsed.role);
+          setUser(parsed);
+          setIsLoading(false);
+          return;
+        }
+      }
       const u = await api.getCurrentUser();
       u.role = normalizeRole(u.role);
       setUser(u);

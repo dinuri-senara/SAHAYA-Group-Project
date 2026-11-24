@@ -199,8 +199,8 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     onClick={() => setSelectedRequest(req)}
                     className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-teal-500/10 border-teal-500/50 shadow-xs'
-                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                        ? 'bg-teal-50 border-teal-500 shadow-sm ring-1 ring-teal-500/20'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -232,7 +232,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
           {selectedRequest ? (
             <>
               {/* Selected Request Detail Banner */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <span className="text-xs font-semibold text-slate-400">Assistance Request #{selectedRequest.id.substring(0, 8)}</span>
@@ -241,18 +241,18 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                   </div>
                   <Link
                     to={`/requests/${selectedRequest.id}`}
-                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                     title="View Full Request Detail"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Link>
                 </div>
 
-                <div className="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
+                <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700">
                   <p className="font-semibold text-slate-500 mb-1">Citizen Narrative:</p>
                   <p className="italic leading-relaxed">"{selectedRequest.description}"</p>
                   {selectedRequest.specialNeeds && (
-                    <p className="mt-2 text-rose-600 dark:text-rose-400 font-semibold">
+                    <p className="mt-2 text-rose-600 font-semibold">
                       Special Needs / Vulnerabilities: {selectedRequest.specialNeeds}
                     </p>
                   )}
@@ -260,16 +260,16 @@ export const CoordinatorAIReviewPage: React.FC = () => {
               </div>
 
               {/* Explainable AI Engine Assessment Card */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-950/20 via-slate-900 to-slate-950 border border-purple-500/30 shadow-md">
-                <div className="flex items-center justify-between pb-4 border-b border-purple-500/20">
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs relative overflow-hidden">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                    <div className="p-2 rounded-xl bg-purple-50 text-purple-600 border border-purple-100">
                       <Bot className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-white text-base">SAHAYA Explainable AI Assessment</h4>
-                      <p className="text-xs text-purple-300/80">
-                        Processing Mode: <strong>{rec?.providerMode || 'Rule-based fallback (Heuristic Safety Engine)'}</strong>
+                      <h4 className="font-bold text-slate-900 text-base">SAHAYA Explainable AI Assessment</h4>
+                      <p className="text-xs text-slate-500">
+                        Processing Mode: <strong className="text-slate-700">{rec?.providerMode || 'Rule-based fallback (Heuristic Safety Engine)'}</strong>
                       </p>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                   {rec && (
                     <div className="text-right">
                       <span className="text-[11px] font-semibold text-slate-400 block">Confidence Score</span>
-                      <span className="text-lg font-bold text-purple-400">
+                      <span className="text-lg font-bold text-purple-600">
                         {Math.round(rec.confidenceScore * 100)}%
                       </span>
                     </div>
@@ -288,12 +288,12 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                   <div className="mt-5 space-y-4">
                     {/* Recommendations grid */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3.5 rounded-xl bg-slate-900/60 border border-purple-500/20">
-                        <span className="text-[11px] font-semibold text-slate-400">Predicted Category</span>
-                        <p className="text-sm font-bold text-white mt-1">{rec.predictedCategory}</p>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <span className="text-[11px] font-semibold text-slate-500">Predicted Category</span>
+                        <p className="text-sm font-bold text-slate-900 mt-1">{rec.predictedCategory}</p>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-slate-900/60 border border-purple-500/20">
-                        <span className="text-[11px] font-semibold text-slate-400">Recommended Priority</span>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <span className="text-[11px] font-semibold text-slate-500">Recommended Priority</span>
                         <div className="mt-1">
                           <UrgencyBadge urgency={rec.suggestedPriority || 'Medium'} />
                         </div>
@@ -301,11 +301,11 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     </div>
 
                     {/* Reasoning explanation */}
-                    <div className="p-4 rounded-xl bg-slate-900/80 border border-purple-500/20">
-                      <p className="text-xs font-bold text-purple-300 uppercase tracking-wider mb-1.5">
+                    <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100">
+                      <p className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-1.5">
                         Explainability & Rationale Breakdown
                       </p>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-700 leading-relaxed">
                         {rec.explanation}
                       </p>
                     </div>
@@ -313,14 +313,14 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     {/* Suggested resources */}
                     {rec.suggestedResources && rec.suggestedResources.length > 0 && (
                       <div>
-                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                           Suggested Resource Mobilization Bundle
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {rec.suggestedResources.map((resItem, idx) => (
                             <span
                               key={idx}
-                              className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-semibold"
+                              className="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold"
                             >
                               {resItem}
                             </span>
@@ -330,15 +330,15 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     )}
 
                     {/* Officer Review Status & Actions */}
-                    <div className="pt-4 border-t border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="text-xs">
-                        <span className="text-slate-400">Review Status: </span>
-                        <strong className="text-white">{rec.reviewStatus}</strong>
+                        <span className="text-slate-500">Review Status: </span>
+                        <strong className="text-slate-900">{rec.reviewStatus}</strong>
                         {rec.reviewingOfficerName && (
-                          <span className="text-slate-400"> by {rec.reviewingOfficerName}</span>
+                          <span className="text-slate-500"> by {rec.reviewingOfficerName}</span>
                         )}
                         {rec.overrideReason && (
-                          <p className="text-amber-400 mt-0.5 text-[11px]">Override Justification: "{rec.overrideReason}"</p>
+                          <p className="text-amber-700 mt-0.5 text-[11px]">Override Justification: "{rec.overrideReason}"</p>
                         )}
                       </div>
 
@@ -367,7 +367,7 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                         </button>
                         <Link
                           to={`/requests/${selectedRequest.id}`}
-                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 transition-all flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-teal-300 transition-all flex items-center gap-1"
                         >
                           Approve Aid &rarr;
                         </Link>
@@ -375,14 +375,14 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-5 text-center p-6 text-xs text-slate-400">
+                  <div className="mt-5 text-center p-8 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-500">
                     No AI assessment recorded yet for this request.
                   </div>
                 )}
               </div>
 
               {/* Duplicate Request Detection Results Matrix */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Copy className="w-5 h-5 text-amber-500" />
@@ -394,27 +394,27 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                 {loadingDuplicates ? (
                   <p className="text-xs text-slate-500 py-3 text-center">Scanning database for duplicate petitions...</p>
                 ) : duplicates.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                     <span>No duplicate requests detected. This appears to be a unique citizen appeal.</span>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <p className="text-xs text-amber-700">
                       Potential duplicate requests found in the same geographic radius:
                     </p>
                     {duplicates.map(dup => (
                       <div
                         key={dup.id}
-                        className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1.5"
+                        className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs space-y-1.5"
                       >
                         <div className="flex justify-between items-start">
                           <strong className="text-slate-900">{dup.matchedTitle}</strong>
-                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold text-[10px]">
                             {Math.round(dup.similarityScore * 100)}% Similarity
                           </span>
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400">
+                        <p className="text-slate-600">
                           Citizen: {dup.matchedCitizenName} • Distance: {dup.proximityKm} km away
                         </p>
                         <p className="text-slate-500 italic text-[11px]">{dup.reason}</p>

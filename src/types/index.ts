@@ -1,4 +1,14 @@
-export type UserRole = 'Citizen' | 'Coordinator' | 'Volunteer' | 'Donor' | 'Admin';
+export type UserRole = 
+  | 'Citizen' 
+  | 'Coordinator' 
+  | 'CaseManager' 
+  | 'LogisticsManager' 
+  | 'ShelterAdmin' 
+  | 'VolunteerCoordinator' 
+  | 'Donor' 
+  | 'PartnerOfficer' 
+  | 'Admin'
+  | 'Volunteer'; // Keep Volunteer for backward compatibility with field mobile profile
 
 export interface User {
   id: string;

@@ -59,7 +59,7 @@ export const ModernDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 1. HERO BANNER USING SRI LANKAN FLOOD RESCUE ASSET */}
-      <div className="relative rounded-3xl overflow-hidden shadow-xl min-h-[380px] flex flex-col justify-between p-6 sm:p-10 border border-white/40">
+      <div className="relative rounded-3xl overflow-hidden shadow-xl min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-6 sm:p-10 border border-white/40">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 hover:scale-105"
           style={{
@@ -82,80 +82,12 @@ export const ModernDashboard: React.FC = () => {
             Coordinate. Prioritise. Assist.
           </p>
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-md leading-relaxed">
-            Unifying citizens affected by disasters, emergency coordinators, volunteers, donors, and shelters into one synchronized operational command system.
+            National command overview and executive governance for crisis incidents, resource allocations, shelter capacities, and multi-agency relief operations.
           </p>
-        </div>
-
-        {/* 2. FOUR VIBRANT QUICK ACTION BUTTON CARDS (Fully Clickable Router Links) */}
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
-          
-          {/* Action 1: Blue - Incidents */}
-          <Link
-            to="/coordinator/incidents"
-            className="group rounded-2xl bg-[#2563eb] text-white p-5 shadow-lg shadow-blue-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-              <Megaphone className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">View Crisis<br />Alerts</span>
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Action 2: Red - Citizen Aid Request Wizard */}
-          <Link
-            to="/citizen/create-request"
-            className="group rounded-2xl bg-[#ef4444] text-white p-5 shadow-lg shadow-red-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-              <Plus className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Submit Aid<br />Request</span>
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Action 3: Green - Find Shelters */}
-          <Link
-            to="/shelters"
-            className="group rounded-2xl bg-[#10b981] text-white p-5 shadow-lg shadow-emerald-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-              <Home className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Find Safe<br />Shelters</span>
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Action 4: Purple - Volunteer Mobilization */}
-          <Link
-            to="/volunteers"
-            className="group rounded-2xl bg-[#8b5cf6] text-white p-5 shadow-lg shadow-purple-600/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[110px]"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm leading-snug">Volunteer<br />Mobilize</span>
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
         </div>
       </div>
 
-      {/* 3. CORE ARCHITECTURE STATS */}
+      {/* 2. CORE ARCHITECTURE STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Architecture Phase"

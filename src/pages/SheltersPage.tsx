@@ -62,7 +62,9 @@ export const SheltersPage: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'ShelterAdmin';
+  // Strict Security Guard: Only authentic Shelter Administrators or System Admins can register shelters or assign persons
+  const canManageShelters = user?.role === 'ShelterAdmin' || user?.role === 'Admin';
 
   const loadShelters = async () => {
     try {
@@ -200,7 +202,7 @@ export const SheltersPage: React.FC = () => {
             </button>
           </div>
 
-          {isCoordinatorOrAdmin && (
+          {canManageShelters && (
             <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-sm transition-all shadow-teal-600/20"
@@ -401,8 +403,8 @@ export const SheltersPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Coordinator action button */}
-                {isCoordinatorOrAdmin && (
+                {/* Shelter Administrator / Admin action button only */}
+                {canManageShelters && (
                   <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <button
                       disabled={isFull}

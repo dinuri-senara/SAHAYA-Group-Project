@@ -5,6 +5,7 @@ import { OfflineBanner } from './OfflineBanner';
 import { RiverAlertTicker } from './RiverAlertTicker';
 import { AIChatDrawer } from './AIChatDrawer';
 import { UserRole } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface AppShellProps {
   children?: React.ReactNode;
@@ -15,10 +16,14 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({
   children,
-  userRole = 'Admin',
-  userName = 'Operational Officer',
+  userRole: propUserRole,
+  userName: propUserName,
   onOpenAiDrawer,
 }) => {
+  const { user } = useAuth();
+  const activeRole: UserRole = propUserRole || user?.role || 'Admin';
+  const activeUserName: string = propUserName || user?.fullName || 'Operational Officer';
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -45,7 +50,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900 flex relative overflow-x-hidden">
       {/* Sidebar navigation */}
       <Sidebar
-        role={userRole}
+        role={activeRole}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isCollapsed={isCollapsed}
@@ -63,8 +68,8 @@ export const AppShell: React.FC<AppShellProps> = ({
         <RiverAlertTicker />
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
-          userName={userName}
-          userRole={userRole}
+          userName={activeUserName}
+          userRole={activeRole}
         />
 
         <main className="flex-1 px-4 sm:px-8 pb-12 w-full max-w-[1550px] mx-auto animate-fade-in">
