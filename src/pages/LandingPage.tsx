@@ -367,11 +367,17 @@ export const LandingPage: React.FC = () => {
               className="group rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between"
             >
               <div>
-                <div className="h-44 bg-slate-900 relative overflow-hidden">
+                <div className="aspect-4/3 bg-slate-900 relative overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&q=80&w=600"
+                    src="/illustrations/flood-safety.webp"
                     alt="Flood Safety"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('.jpg')) {
+                        target.src = '/illustrations/flood-safety.jpg';
+                      }
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white bg-rose-600 shadow-xs flex items-center gap-1">
@@ -399,11 +405,17 @@ export const LandingPage: React.FC = () => {
               className="group rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between"
             >
               <div>
-                <div className="h-44 bg-slate-900 relative overflow-hidden">
+                <div className="aspect-4/3 bg-slate-900 relative overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=600"
+                    src="/illustrations/landslide-safety.webp"
                     alt="Landslide Safety"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('.jpg')) {
+                        target.src = '/illustrations/landslide-safety.jpg';
+                      }
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white bg-amber-600 shadow-xs flex items-center gap-1">
@@ -431,11 +443,17 @@ export const LandingPage: React.FC = () => {
               className="group rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between"
             >
               <div>
-                <div className="h-44 bg-slate-900 relative overflow-hidden">
+                <div className="aspect-4/3 bg-slate-900 relative overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600"
+                    src="/illustrations/fire-safety.webp"
                     alt="Fire Safety"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('.jpg')) {
+                        target.src = '/illustrations/fire-safety.jpg';
+                      }
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white bg-red-600 shadow-xs flex items-center gap-1">
