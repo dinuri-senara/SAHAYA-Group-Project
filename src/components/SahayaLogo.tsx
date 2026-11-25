@@ -15,10 +15,10 @@ export const SahayaLogo: React.FC<LogoProps> = ({
   light = true,
   showText = false
 }) => {
-  const iconSizes = {
-    sm: 'w-7 h-9',
-    md: 'w-9 h-11',
-    lg: 'w-12 h-14'
+  const iconHeights = {
+    sm: 'h-7',
+    md: 'h-9',
+    lg: 'h-12'
   };
 
   const textSizes = {
@@ -28,24 +28,24 @@ export const SahayaLogo: React.FC<LogoProps> = ({
   };
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
-      {/* Humanitarian Logo (Two Hands forming S, Location Pin & Medical Cross - Transparent) */}
-      <div className={`relative flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105 ${iconSizes[size]}`}>
+    <div className={`flex items-center gap-2.5 select-none ${className}`}>
+      {/* Brand Emblem - 100% Clean Transparency, Theme-Adaptive, No Ugly Container, No Green Dot */}
+      <div className={`relative flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105 ${iconHeights[size]}`}>
         <img
           src="/sahaya-logo.png"
           alt="SAHAYA - අපි වෙනුවෙන් අපි"
-          className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(20,184,166,0.35)]"
+          className={`h-full w-auto object-contain transition-all duration-200 ${
+            light
+              ? 'brightness-125 contrast-105'
+              : 'brightness-100 contrast-100 dark:brightness-125 dark:contrast-105'
+          }`}
         />
-        <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 pointer-events-none">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-300"></span>
-        </span>
       </div>
 
       {showText && (
         <div className="flex flex-col overflow-hidden">
           <div className="flex items-center gap-1.5 leading-none">
-            <span className={`font-black tracking-tight ${textSizes[size]} ${light ? 'text-white' : 'text-slate-900'}`}>
+            <span className={`font-black tracking-tight ${textSizes[size]} ${light ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
               SAHAYA
             </span>
             <span className="text-[11px] font-bold text-teal-400">
@@ -53,7 +53,7 @@ export const SahayaLogo: React.FC<LogoProps> = ({
             </span>
           </div>
           {showTagline && (
-            <span className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-wide mt-0.5">
               Humanitarian Aid Coordination
             </span>
           )}
