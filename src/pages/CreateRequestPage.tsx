@@ -23,7 +23,8 @@ import {
   Check,
   Camera,
   UploadCloud,
-  X
+  X,
+  Compass
 } from 'lucide-react';
 import { api } from '../services/api';
 import { CrisisEvent } from '../types';
@@ -63,6 +64,9 @@ export const CreateRequestPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locatingUser, setLocatingUser] = useState(false);
+  const [resolvingAddress, setResolvingAddress] = useState(false);
+  const [locationSuccessMsg, setLocationSuccessMsg] = useState<string | null>(null);
 
   // Evidence / Damage Photos (Coursework 1.1 A)
   interface UploadedPhoto {
@@ -120,6 +124,7 @@ export const CreateRequestPage: React.FC = () => {
           setCrisisEventId(evs[0].id);
           setLatitude(evs[0].latitude);
           setLongitude(evs[0].longitude);
+          resolveLocationAddress(evs[0].latitude, evs[0].longitude);
         }
       } catch {
         // Ignored
@@ -128,9 +133,102 @@ export const CreateRequestPage: React.FC = () => {
     loadEvents();
   }, []);
 
+  // Reverse-geocode coordinates to street address / landmark with Sri Lanka fallback
+  const resolveLocationAddress = async (lat: number, lon: number) => {
+    setResolvingAddress(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`,
+        {
+          signal: controller.signal,
+          headers: { 'Accept-Language': 'en' },
+        }
+      );
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const a = data.address || {};
+        const road = a.road || a.pedestrian || a.street || '';
+        const town = a.suburb || a.neighbourhood || a.village || a.town || a.city_district || a.city || a.county;
+        const district = a.city || a.state_district || a.state || '';
+        const parts: string[] = [];
+        if (road) parts.push(road);
+        if (town && town !== district) parts.push(town);
+        if (district) parts.push(district);
+
+        if (parts.length > 0) {
+          setAddress(parts.join(', '));
+          setResolvingAddress(false);
+          return;
+        }
+      }
+    } catch {
+      // Ignore network/offline error and use coordinate fallback
+    }
+
+    // Intelligent Sri Lanka regional coordinate approximation fallback
+    let fallbackArea = `GPS Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+    if (lat >= 6.85 && lat <= 7.02 && lon >= 79.80 && lon <= 79.95) {
+      fallbackArea = 'Colombo Metro / Kelani Basin';
+    } else if (lat >= 7.00 && lat <= 7.20 && lon >= 79.90 && lon <= 80.15) {
+      fallbackArea = 'Kelaniya / Gampaha District';
+    } else if (lat >= 6.50 && lat <= 6.85 && lon >= 79.90 && lon <= 80.20) {
+      fallbackArea = 'Kalutara / Kalu Ganga Basin';
+    } else if (lat >= 5.95 && lat <= 6.25 && lon >= 80.15 && lon <= 80.40) {
+      fallbackArea = 'Galle / Southern Province';
+    } else if (lat >= 5.90 && lat <= 6.10 && lon >= 80.45 && lon <= 80.75) {
+      fallbackArea = 'Matara / Nilwala Basin';
+    } else if (lat >= 7.20 && lat <= 7.45 && lon >= 80.55 && lon <= 80.75) {
+      fallbackArea = 'Kandy / Central Province';
+    } else if (lat >= 6.60 && lat <= 6.85 && lon >= 80.30 && lon <= 80.60) {
+      fallbackArea = 'Ratnapura / Sabaragamuwa';
+    } else if (lat >= 8.25 && lat <= 8.45 && lon >= 80.35 && lon <= 80.50) {
+      fallbackArea = 'Anuradhapura / North Central';
+    } else if (lat >= 8.50 && lat <= 8.65 && lon >= 81.15 && lon <= 81.30) {
+      fallbackArea = 'Trincomalee / Eastern Province';
+    } else if (lat >= 9.60 && lat <= 9.75 && lon >= 79.95 && lon <= 80.10) {
+      fallbackArea = 'Jaffna / Northern Province';
+    }
+
+    setAddress(fallbackArea);
+    setResolvingAddress(false);
+  };
+
+  const handleUseCurrentGPS = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocatingUser(true);
+    setLocationSuccessMsg(null);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(5));
+        const lon = Number(pos.coords.longitude.toFixed(5));
+        setLatitude(lat);
+        setLongitude(lon);
+        setLocatingUser(false);
+        setLocationSuccessMsg(`Live GPS location locked (${lat}, ${lon}) - Accuracy: ±${Math.round(pos.coords.accuracy)}m`);
+        setTimeout(() => setLocationSuccessMsg(null), 6000);
+        resolveLocationAddress(lat, lon);
+      },
+      (err) => {
+        setLocatingUser(false);
+        setError(`Unable to retrieve GPS location: ${err.message}. Please click on the map to set your rescue pin.`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  };
+
   const handleLocationPicked = (lat: number, lon: number) => {
     setLatitude(lat);
     setLongitude(lon);
+    setLocationSuccessMsg(`Map rescue pin updated (${lat.toFixed(5)}, ${lon.toFixed(5)})`);
+    setTimeout(() => setLocationSuccessMsg(null), 4000);
+    resolveLocationAddress(lat, lon);
   };
 
   const validateStep1 = (): boolean => {
@@ -690,20 +788,52 @@ export const CreateRequestPage: React.FC = () => {
 
           {/* Geospatial Address & Map Pin */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-teal-600" />
-                Location & Geospatial Map Pin
-              </h2>
-              <span className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
-                Click map to reposition rescue pin
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-teal-600" />
+                  Location &amp; Geospatial Rescue Pin
+                </h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Click the map to place your rescue pin, or auto-detect with your device GPS.
+                </p>
+              </div>
+
+              {/* Use My Current GPS Button */}
+              <button
+                type="button"
+                onClick={handleUseCurrentGPS}
+                disabled={locatingUser}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold text-xs shadow-2xs transition-all cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                {locatingUser ? (
+                  <div className="w-3.5 h-3.5 border-2 border-teal-700 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Compass className="w-3.5 h-3.5 text-teal-600" />
+                )}
+                <span>{locatingUser ? 'Acquiring GPS...' : '📍 Use My Current Location'}</span>
+              </button>
             </div>
 
+            {locationSuccessMsg && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{locationSuccessMsg}</span>
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Street Address or Known Landmark *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700">
+                  Street Address or Known Landmark *
+                </label>
+                {resolvingAddress && (
+                  <span className="text-[11px] text-teal-600 font-semibold animate-pulse flex items-center gap-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+                    Detecting address from GPS...
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={address}
@@ -712,20 +842,28 @@ export const CreateRequestPage: React.FC = () => {
                 className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none"
                 required
               />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Auto-detected from map pin or GPS location. You can edit or add specific details like house number or landmark.
+              </p>
             </div>
 
             <div className="space-y-2">
               <MapComponent
                 center={[latitude, longitude]}
-                zoom={13}
+                zoom={14}
                 selectedLocation={[latitude, longitude]}
                 onLocationSelect={handleLocationPicked}
-                height="280px"
+                height="300px"
               />
-              <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                <span>Latitude: <strong>{latitude.toFixed(4)}</strong></span>
-                <span>Longitude: <strong>{longitude.toFixed(4)}</strong></span>
-                <span className="text-teal-700 font-semibold font-sans">Pin saved</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 gap-2">
+                <div className="flex items-center gap-4 font-mono">
+                  <span>Lat: <strong className="text-slate-900">{latitude.toFixed(5)}</strong></span>
+                  <span>Lon: <strong className="text-slate-900">{longitude.toFixed(5)}</strong></span>
+                </div>
+                <div className="flex items-center gap-1.5 text-teal-700 font-semibold text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Pin placed for first responders</span>
+                </div>
               </div>
             </div>
           </div>
