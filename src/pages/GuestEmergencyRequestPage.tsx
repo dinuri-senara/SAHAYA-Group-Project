@@ -311,6 +311,31 @@ export const GuestEmergencyRequestPage: React.FC = () => {
         newRecord,
         ...((window as any).__sahaya_emergency_records || []),
       ];
+
+      // Also sync to sahaya_requests in localStorage so Shelter Admin / Coordinators see it
+      try {
+        const existingReqs = JSON.parse(localStorage.getItem('sahaya_requests') || '[]');
+        const mappedReq = {
+          id: trackingCode,
+          citizenId: 'guest',
+          citizenName: newRecord.contactName,
+          citizenPhone: newRecord.contactPhone,
+          title: `${newRecord.category} (${trackingCode})`,
+          description: newRecord.description,
+          category: newRecord.category.toLowerCase().includes('shelter') ? 'EmergencyShelter' : newRecord.category,
+          urgency: newRecord.urgency,
+          location: newRecord.location,
+          address: newRecord.address,
+          latitude: newRecord.latitude,
+          longitude: newRecord.longitude,
+          peopleCount: newRecord.affectedCount,
+          affectedCount: newRecord.affectedCount,
+          status: 'Submitted',
+          statusHistory: [],
+          createdAt: newRecord.createdAt,
+        };
+        localStorage.setItem('sahaya_requests', JSON.stringify([mappedReq, ...existingReqs]));
+      } catch {}
     }
 
     // Save in localStorage

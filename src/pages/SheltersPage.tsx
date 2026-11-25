@@ -78,12 +78,23 @@ export const SheltersPage: React.FC = () => {
   // Strict Security Guard: Only authentic Shelter Administrators or System Admins can register shelters or assign persons
   const canManageShelters = user?.role === 'ShelterAdmin' || user?.role === 'Admin';
 
+  const [shelterRequestsQueue, setShelterRequestsQueue] = useState<AssistanceRequest[]>([]);
+
   const loadShelters = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getShelters();
+      const [data, allReqs] = await Promise.all([
+        api.getShelters(),
+        api.getRequests().catch(() => [])
+      ]);
       setShelters(data);
+      const waiting = allReqs.filter(
+        r =>
+          (r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted' || r.status === 'Pending') &&
+          String(r.category).toLowerCase().includes('shelter')
+      );
+      setShelterRequestsQueue(waiting);
     } catch (err: any) {
       setError(err.message || 'Failed to load shelters.');
     } finally {
@@ -278,6 +289,35 @@ export const SheltersPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Pending Shelter Placement Requests Alert for Shelter Admin */}
+      {canManageShelters && shelterRequestsQueue.length > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-bold text-amber-950 dark:text-amber-200">
+                {shelterRequestsQueue.length} Citizen Shelter Request{shelterRequestsQueue.length > 1 ? 's' : ''} Waiting for Allocation
+              </h3>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                {shelterRequestsQueue.slice(0, 2).map(r => `${r.citizenName} (${r.affectedCount || r.peopleCount || 1} people - ${r.location || r.address || 'Reported'})`).join(' • ')}
+                {shelterRequestsQueue.length > 2 ? ` • +${shelterRequestsQueue.length - 2} more` : ''}
+              </p>
+            </div>
+          </div>
+          {shelters.some(s => s.availableCapacity > 0) && (
+            <button
+              onClick={() => {
+                const firstOpen = shelters.find(s => s.availableCapacity > 0);
+                if (firstOpen) openAssignModal(firstOpen);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition cursor-pointer"
+            >
+              Assign to Open Shelter
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
