@@ -32,6 +32,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   // 1. Affected Person / Citizen
   { name: 'My Assistance Portal', href: '/citizen/dashboard', icon: LayoutDashboard, roles: ['Citizen'] },
+  { name: 'Household Profile', href: '/citizen/household-profile', icon: Users, roles: ['Citizen'] },
   { name: 'Submit Aid Request (SOS)', href: '/citizen/create-request', icon: ShieldAlert, roles: ['Citizen'] },
   { name: 'Nearby Safe Shelters', href: '/shelters', icon: Home, roles: ['Citizen'] },
   { name: 'Crisis Safety Guides', href: '/citizen/safety-guide', icon: FileBarChart, roles: ['Citizen'] },
@@ -99,6 +100,7 @@ interface SidebarProps {
 
 const navItemTranslations: Record<string, { en: string; si: string }> = {
   'My Assistance Portal': { en: 'My Assistance Portal', si: 'මගේ සහන පෝර්ටලය' },
+  'Household Profile': { en: 'Household Profile', si: 'පවුලේ සාමාජික තොරතුරු' },
   'Submit Aid Request (SOS)': { en: 'Submit Aid Request (SOS)', si: 'හදිසි ආධාර ඉල්ලීම (SOS)' },
   'Nearby Safe Shelters': { en: 'Nearby Safe Shelters', si: 'ආසන්න ආරක්ෂිත කඳවුරු' },
   'Crisis Safety Guides': { en: 'Crisis Safety Guides', si: 'ආපදා ආරක්ෂක උපදෙස්' },

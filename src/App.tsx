@@ -20,6 +20,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CitizenDashboard } from './pages/CitizenDashboard';
 import { CreateRequestPage } from './pages/CreateRequestPage';
+import { HouseholdProfilePage } from './pages/HouseholdProfilePage';
 import { SafetyGuidePage } from './pages/SafetyGuidePage';
 import { SafetyGuideDetailPage } from './pages/SafetyGuideDetailPage';
 import { GuestEmergencyRequestPage } from './pages/GuestEmergencyRequestPage';
@@ -127,6 +128,14 @@ export function App() {
                 element={
                   <AppShell>
                     <CitizenDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/citizen/household-profile"
+                element={
+                  <AppShell>
+                    <HouseholdProfilePage />
                   </AppShell>
                 }
               />

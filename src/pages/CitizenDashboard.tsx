@@ -20,10 +20,11 @@ import {
   ShieldCheck,
   Star,
   Check,
-  X
+  X,
+  Users
 } from 'lucide-react';
 import { api } from '../services/api';
-import { AssistanceRequest, Shelter, NotificationItem, RequestStatus } from '../types';
+import { AssistanceRequest, Shelter, NotificationItem, RequestStatus, HouseholdProfile } from '../types';
 import { StatusBadge, UrgencyBadge, getStatusHumanLabel, getStatusExplanation } from '../components/StatusBadge';
 import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
@@ -33,12 +34,26 @@ import { useAuth } from '../context/AuthContext';
 
 export const CitizenDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [householdProfile, setHouseholdProfile] = useState<HouseholdProfile | null>(null);
   const [requests, setRequests] = useState<AssistanceRequest[]>([]);
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Resolved'>('All');
+
+  // Load saved household profile
+  useEffect(() => {
+    try {
+      const storageKey = `sahaya_household_profile_${user?.id || 'citizen'}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        setHouseholdProfile(JSON.parse(stored));
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, [user?.id]);
 
   // Post-Delivery Feedback Modal State (Coursework 1.1 A)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -371,6 +386,111 @@ export const CitizenDashboard: React.FC = () => {
               <span>•</span>
               <span className="text-teal-300 font-medium">English &amp; සිංහල</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Compact My Household Profile Card */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs hover:border-teal-300 transition-all">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 rounded-2xl bg-teal-50 text-teal-600 shrink-0 border border-teal-100">
+              <Users className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                  My Household Profile
+                </h3>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                    householdProfile?.status === 'Completed'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : householdProfile?.status === 'Incomplete'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                  }`}
+                >
+                  {householdProfile?.status === 'Completed'
+                    ? 'Completed'
+                    : householdProfile?.status === 'Incomplete'
+                    ? 'Incomplete'
+                    : 'Not Created'}
+                </span>
+                {householdProfile?.district && (
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-semibold">
+                    {householdProfile.city ? `${householdProfile.city}, ` : ''}{householdProfile.district}
+                  </span>
+                )}
+              </div>
+
+              {householdProfile ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Household size:{' '}
+                    <strong className="text-slate-900 font-bold">
+                      {householdProfile.composition?.totalMembers || 1} member(s)
+                    </strong>{' '}
+                    ({householdProfile.profileType === 'Individual' ? 'Individual' : 'Family Household'})
+                  </p>
+                  {/* Selected Vulnerabilities Tags */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {householdProfile.noSpecialNeeds ? (
+                      <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                        No special assistance needs
+                      </span>
+                    ) : householdProfile.preferNotToDisclose ? (
+                      <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                        Confidential / Undisclosed
+                      </span>
+                    ) : (
+                      <>
+                        {Object.entries(householdProfile.vulnerabilities || {})
+                          .filter(([_, v]) => v.selected)
+                          .map(([catKey, v]) => {
+                            const labels: Record<string, string> = {
+                              pregnantWomen: 'Pregnant Women',
+                              personsWithDisabilities: 'Disability Support',
+                              chronicMedicalConditions: 'Chronic Medical',
+                              regularMedicationRequired: 'Daily Medication',
+                              mobilityAssistanceRequired: 'Mobility Assistance',
+                              otherSpecialNeeds: 'Special Support'
+                            };
+                            return (
+                              <span
+                                key={catKey}
+                                className="px-2.5 py-0.5 rounded-lg bg-teal-50 text-teal-800 text-[10px] font-bold border border-teal-200/80"
+                              >
+                                {labels[catKey] || catKey} ({v.affectedCount})
+                              </span>
+                            );
+                          })}
+                        {Object.values(householdProfile.vulnerabilities || {}).every((v) => !v.selected) && (
+                          <span className="text-[11px] text-slate-400 italic">
+                            No vulnerability flags recorded
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
+                  You haven&apos;t set up your household profile yet. Adding your family size and any special medical or mobility needs helps rescue teams provide tailored assistance and allocate suitable shelter spaces during crises.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center">
+            <Link
+              to="/citizen/household-profile"
+              id="citizen-dashboard-view-household-btn"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer"
+            >
+              <span>{householdProfile ? 'View & Update Profile' : 'Create Household Profile'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </div>
