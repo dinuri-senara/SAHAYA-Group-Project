@@ -115,7 +115,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-xl hover:shadow-teal-500/25 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+          style={{ zIndex: 9999 }}
+          className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-xl hover:shadow-teal-500/25 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
           aria-label="Open AI Assistant"
         >
           <div className="relative">
@@ -129,7 +130,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       {/* Slide-over Drawer */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end"
+          style={{ zIndex: 10000 }}
+          className="fixed inset-0 z-[10000] overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end"
           onClick={(e) => {
             if (e.target === e.currentTarget) handleClose();
           }}

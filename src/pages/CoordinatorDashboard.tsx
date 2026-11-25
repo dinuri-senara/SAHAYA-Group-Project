@@ -420,7 +420,7 @@ export const CoordinatorDashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="rounded-xl overflow-hidden border border-slate-200">
+        <div style={{ isolation: 'isolate' }} className="rounded-xl overflow-hidden border border-slate-200 relative z-0 isolate">
           <MapComponent
             incidents={data.activeEvents || []}
             shelters={shelters}
