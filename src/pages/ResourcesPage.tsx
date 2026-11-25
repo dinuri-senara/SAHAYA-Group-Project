@@ -84,8 +84,12 @@ export const ResourcesPage: React.FC = () => {
   });
   const [isSubmittingPartnerReq, setIsSubmittingPartnerReq] = useState(false);
 
-  // Authorization check (Coordinators, Admins, and Logistics Managers can manage depot inventory)
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'LogisticsManager';
+  // Authorization check (Coordinators, Admins, Logistics Managers, and Case Managers can manage depot inventory)
+  const isCoordinatorOrAdmin =
+    user?.role === 'Coordinator' ||
+    user?.role === 'Admin' ||
+    user?.role === 'LogisticsManager' ||
+    user?.role === 'CaseManager';
 
   // Restock / Replenishment State (Coursework Spec Page 4 - Section 1.1 E: "Track quantities, availability, allocation, dispatch, utilisation, and replenishment.")
   const [showRestockModal, setShowRestockModal] = useState(false);

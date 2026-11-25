@@ -59,48 +59,7 @@ export const UsersPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const roleQuery = selectedRoleFilter !== 'All' ? selectedRoleFilter : undefined;
-      const data = await api.getUsers(roleQuery).catch(() => [
-        {
-          id: 'u-1',
-          fullName: 'Amal Perera',
-          email: 'amal.perera@sahaya.lk',
-          role: 'Admin' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
-        },
-        {
-          id: 'u-2',
-          fullName: 'Dinuri Senara',
-          email: 'dinuri.senara@sahaya.lk',
-          role: 'Coordinator' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString()
-        },
-        {
-          id: 'u-3',
-          fullName: 'Kasun Wickramasinghe',
-          email: 'kasun.w@sahaya.lk',
-          role: 'Volunteer' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()
-        },
-        {
-          id: 'u-4',
-          fullName: 'Sunil Silva',
-          email: 'sunil.silva@gmail.com',
-          role: 'Citizen' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
-        },
-        {
-          id: 'u-5',
-          fullName: 'Oxfam Aid Foundation',
-          email: 'contact@oxfamaid.org',
-          role: 'Donor' as UserRole,
-          isActive: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString()
-        }
-      ]);
+      const data = await api.getUsers(roleQuery);
       setUsers(data);
     } catch (err: any) {
       console.error(err);
@@ -192,7 +151,11 @@ export const UsersPage: React.FC = () => {
         isActive: true,
         createdAt: new Date().toISOString()
       };
-      setUsers([createdUser, ...users]);
+      const updatedList = [createdUser, ...users];
+      setUsers(updatedList);
+      try {
+        localStorage.setItem('sahaya_registered_users', JSON.stringify(updatedList));
+      } catch {}
       setSuccessBanner(`Official credential for ${newAccount.fullName} (${newAccount.role}) created successfully!`);
       setShowCreateModal(false);
       setNewAccount({
@@ -210,8 +173,27 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<'All' | 'Pending'>('All');
+
+  const pendingRequests = (users || []).filter(u => u.isActive === false);
+
+  const handleApprovePending = async (userToApprove: UserSummary) => {
+    try {
+      await api.toggleUserStatus(userToApprove.id, {
+        isActive: true,
+        justification: `Approved official ${userToApprove.role} account by administrator`,
+      });
+      setSuccessBanner(`Approved & activated official access for ${userToApprove.fullName} (${userToApprove.role})!`);
+      await loadUsers();
+      setTimeout(() => setSuccessBanner(null), 5000);
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to approve account.');
+    }
+  };
+
   const filteredUsers = (users || []).filter(u => {
     if (!u) return false;
+    if (activeTab === 'Pending' && u.isActive !== false) return false;
     return (
       (u.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -247,6 +229,42 @@ export const UsersPage: React.FC = () => {
         </div>
       )}
 
+      {/* Pending Official Account Requests Alert Banner */}
+      {pendingRequests.length > 0 && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-900 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-sm text-amber-950">
+                  {pendingRequests.length} Official Account Registration Request{pendingRequests.length > 1 ? 's' : ''} Awaiting Review
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                  Action Required
+                </span>
+              </div>
+              <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                Staff roles requesting access to operational sectors (Coordinators, Logistics Managers, Shelter Admins) require explicit administrator approval before permissions are unlocked.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setActiveTab(activeTab === 'Pending' ? 'All' : 'Pending')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer ${
+                activeTab === 'Pending'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-white text-amber-900 border border-amber-300 hover:bg-amber-50'
+              }`}
+            >
+              {activeTab === 'Pending' ? 'Show All Users' : `Review Pending Requests (${pendingRequests.length})`}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Security Best Practice Notice */}
       <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 text-purple-900 flex items-start gap-3 shadow-2xs">
         <Shield className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
@@ -261,7 +279,7 @@ export const UsersPage: React.FC = () => {
       {/* Filter and Search Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          {['All', 'Citizen', 'Coordinator', 'Volunteer', 'Donor', 'Admin'].map(r => (
+          {['All', 'Citizen', 'Coordinator', 'CaseManager', 'LogisticsManager', 'ShelterAdmin', 'VolunteerCoordinator', 'Volunteer', 'Donor', 'PartnerOfficer', 'Admin'].map(r => (
             <button
               key={r}
               onClick={() => handleRoleFilterChange(r)}
@@ -361,6 +379,15 @@ export const UsersPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3.5 text-right space-x-2">
+                        {!u.isActive && (
+                          <button
+                            onClick={() => handleApprovePending(u)}
+                            className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition cursor-pointer"
+                            title="Approve and activate official access"
+                          >
+                            Approve Access
+                          </button>
+                        )}
                         <button
                           disabled={isSelf}
                           onClick={() => openRoleModal(u)}
@@ -436,6 +463,11 @@ export const UsersPage: React.FC = () => {
                   <option value={2}>Volunteer (Field Missions & First Responder)</option>
                   <option value={3}>Donor (Campaign Backer & Transparency)</option>
                   <option value={4}>Admin (Full Platform Governance & Audit)</option>
+                  <option value={5}>CaseManager (Incident & Case Lifecycle)</option>
+                  <option value={6}>LogisticsManager (Inventory Depot & Supplies)</option>
+                  <option value={7}>ShelterAdmin (Safe Shelters & Evacuees)</option>
+                  <option value={8}>VolunteerCoordinator (Volunteer Mobilization)</option>
+                  <option value={9}>PartnerOfficer (Red Cross / UN / NGO Partner)</option>
                 </select>
 
                 <div className="mt-2 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200/80 text-[11px] text-purple-900 leading-relaxed">
@@ -597,6 +629,7 @@ export const UsersPage: React.FC = () => {
                     <option value="LogisticsManager">Resource & Logistics Manager</option>
                     <option value="ShelterAdmin">Shelter Administrator</option>
                     <option value="VolunteerCoordinator">Volunteer Coordinator</option>
+                    <option value="Volunteer">Field Volunteer</option>
                     <option value="PartnerOfficer">Partner Organisation Officer</option>
                   </select>
                 </div>
