@@ -26,9 +26,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Official staff account awaiting administrator verification
-  const isPublicRole = user.role === 'Citizen' || user.role === 'Donor';
-  if (!isPublicRole && user.isActive === false) {
+  // Check real-time user status in registered users storage
+  let currentActive = user.isActive;
+  try {
+    const stored = localStorage.getItem('sahaya_registered_users');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        const match = parsed.find(
+          (u: any) => u.email.toLowerCase() === user.email.toLowerCase() || u.id === user.id
+        );
+        if (match && typeof match.isActive === 'boolean') {
+          currentActive = match.isActive;
+        }
+      }
+    }
+  } catch {}
+
+  // Account suspended by admin or pending verification
+  if (!currentActive) {
     return <Navigate to="/pending-approval" replace />;
   }
 

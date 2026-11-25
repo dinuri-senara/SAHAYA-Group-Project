@@ -33,22 +33,42 @@ export const PendingApprovalPage: React.FC = () => {
     setStatusMessage(null);
     try {
       await refreshUser();
-      const updatedUser = await api.getCurrentUser();
-      if (updatedUser && updatedUser.isActive) {
+      
+      // Look up account directly in stored users to avoid session overlap
+      let targetRole = user?.role;
+      let isNowActive = false;
+
+      try {
+        const stored = localStorage.getItem('sahaya_registered_users');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && user) {
+            const match = parsed.find(
+              (u: any) => u.email.toLowerCase() === user.email.toLowerCase() || u.id === user.id
+            );
+            if (match) {
+              targetRole = match.role;
+              isNowActive = match.isActive === true;
+            }
+          }
+        }
+      } catch {}
+
+      if (isNowActive) {
         setStatusMessage('Your official staff account has been approved by the Administrator! Redirecting...');
         setTimeout(() => {
-          const role = updatedUser.role;
           let target = '/dashboard';
-          if (role === 'ShelterAdmin') target = '/shelters';
-          else if (role === 'LogisticsManager') target = '/resources';
-          else if (role === 'PartnerOfficer') target = '/partner/dashboard';
-          else if (role === 'Coordinator') target = '/coordinator/dashboard';
-          else if (role === 'CaseManager') target = '/coordinator/incidents';
-          else if (role === 'VolunteerCoordinator') target = '/volunteers';
-          else if (role === 'Volunteer') target = '/volunteer/dashboard';
-          else if (role === 'Donor') target = '/donor/dashboard';
+          if (targetRole === 'ShelterAdmin') target = '/shelters';
+          else if (targetRole === 'LogisticsManager') target = '/resources';
+          else if (targetRole === 'PartnerOfficer') target = '/partner/dashboard';
+          else if (targetRole === 'Coordinator') target = '/coordinator/dashboard';
+          else if (targetRole === 'CaseManager') target = '/coordinator/incidents';
+          else if (targetRole === 'VolunteerCoordinator') target = '/volunteers';
+          else if (targetRole === 'Volunteer') target = '/volunteer/dashboard';
+          else if (targetRole === 'Donor') target = '/donor/dashboard';
+          else if (targetRole === 'Admin') target = '/dashboard';
           window.location.href = target;
-        }, 1500);
+        }, 1200);
       } else {
         setStatusMessage('Your account is still awaiting approval by a System Administrator.');
       }

@@ -84,7 +84,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleUnauthorized = () => logout();
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+
+    // Cross-tab broadcast & storage listener for real-time suspension/approval sync
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'sahaya_registered_users' || e.key === 'sahaya_user') {
+        refreshUser();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [token]);
 
   const login = async (email: string, pass: string) => {
@@ -93,13 +105,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(res.token);
 
     const mappedRole = normalizeRole(res.role);
+
+    // Check if account is in registered users to respect its current isActive status
+    let isActive = true;
+    try {
+      const stored = localStorage.getItem('sahaya_registered_users');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const match = parsed.find((u: any) => u.email.toLowerCase() === res.email.toLowerCase() || u.id === res.userId);
+          if (match && typeof match.isActive === 'boolean') {
+            isActive = match.isActive;
+          }
+        }
+      }
+    } catch {}
+
     const fullUser: User = {
       id: res.userId,
       email: res.email,
       fullName: res.fullName,
       phoneNumber: '',
       role: mappedRole,
-      isActive: true,
+      isActive: isActive,
       createdAt: new Date().toISOString(),
     };
     setUser(fullUser);
