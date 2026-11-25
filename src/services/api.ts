@@ -99,21 +99,55 @@ const mockIncidents: CrisisEvent[] = [
   },
 ];
 
-const mockRequests: AssistanceRequest[] = [
+const loadStored = <T>(key: string, fallback: T[]): T[] => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { }
+  return [...fallback];
+};
+
+const saveStored = <T>(key: string, data: T[]) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch { }
+};
+
+const initialRequests: AssistanceRequest[] = [
   {
     id: 'req-1',
     citizenId: 'cit-1',
     citizenName: 'Kavinda Fernando',
     citizenPhone: '+94 71 889 2211',
-    category: 'Water' as RequestCategory,
+    title: 'Clean Drinking Water & Rooftop Evacuation',
+    category: 'DrinkingWater' as RequestCategory,
     urgency: 'Immediate' as RequestUrgency,
     description: 'Drinking water contamination. 14 families stranded on upper rooftop of temple.',
     location: 'Sedawatta, Wellampitiya',
+    address: 'Sedawatta, Wellampitiya',
     latitude: 6.942,
     longitude: 79.887,
     peopleCount: 45,
-    status: 'Pending' as RequestStatus,
+    affectedCount: 45,
+    status: 'Submitted' as RequestStatus,
     statusHistory: [],
+    latestRecommendation: {
+      id: 'ai-rec-req-1',
+      assistanceRequestId: 'req-1',
+      suggestedCategory: 'DrinkingWater',
+      predictedCategory: 'DrinkingWater',
+      suggestedUrgency: 'Critical',
+      suggestedPriority: 'Critical',
+      confidenceScore: 0.94,
+      explanation: 'High-density stranded group (45 people) near Kelani flood surge with contaminated water supply.',
+      suggestedResources: ['Clean Water Purification Packs (5L)', 'Inflatable Life Rafts & Life Jackets'],
+      reviewStatus: 'Pending',
+      status: 'Pending',
+      createdAt: '2026-11-19T06:31:00Z',
+    },
     createdAt: '2026-11-19T06:30:00Z',
   },
   {
@@ -121,15 +155,32 @@ const mockRequests: AssistanceRequest[] = [
     citizenId: 'cit-2',
     citizenName: 'Nimali Wickramasinghe',
     citizenPhone: '+94 77 452 9901',
-    category: 'Medical' as RequestCategory,
+    title: 'Emergency Shelter Placement - Family Displaced',
+    category: 'EmergencyShelter' as RequestCategory,
     urgency: 'Critical' as RequestUrgency,
-    description: 'Insulin and emergency pediatric medical care required immediately.',
-    location: 'Pugoda Bridge North',
-    latitude: 6.974,
-    longitude: 80.015,
-    peopleCount: 4,
-    status: 'Assigned' as RequestStatus,
+    description: 'Ground floor flooded to 4 feet. Family of 5 including 2 elders needs immediate safe camp placement.',
+    location: 'Biyagama Rd, Kelaniya',
+    address: 'Biyagama Rd, Kelaniya',
+    latitude: 6.954,
+    longitude: 79.918,
+    peopleCount: 5,
+    affectedCount: 5,
+    status: 'Approved' as RequestStatus,
     statusHistory: [],
+    latestRecommendation: {
+      id: 'ai-rec-req-2',
+      assistanceRequestId: 'req-2',
+      suggestedCategory: 'EmergencyShelter',
+      predictedCategory: 'EmergencyShelter',
+      suggestedUrgency: 'Critical',
+      suggestedPriority: 'Critical',
+      confidenceScore: 0.91,
+      explanation: 'Vulnerable elderly individuals displaced by rising floodwaters; immediate shelter bed allocation advised.',
+      suggestedResources: ['Emergency Shelter Placement', 'Dry Bedding'],
+      reviewStatus: 'Accepted',
+      status: 'Accepted',
+      createdAt: '2026-11-19T07:16:00Z',
+    },
     createdAt: '2026-11-19T07:15:00Z',
   },
   {
@@ -137,18 +188,37 @@ const mockRequests: AssistanceRequest[] = [
     citizenId: 'cit-3',
     citizenName: 'Sunil Shantha',
     citizenPhone: '+94 75 112 3344',
+    title: 'Dry Rations for Elderly Care Hall',
     category: 'Food' as RequestCategory,
     urgency: 'High' as RequestUrgency,
     description: 'Dry rations needed for elderly care home evacuated to community hall.',
     location: 'Biyagama Central',
+    address: 'Biyagama Central',
     latitude: 6.948,
     longitude: 79.992,
     peopleCount: 30,
+    affectedCount: 30,
     status: 'InProgress' as RequestStatus,
     statusHistory: [],
+    latestRecommendation: {
+      id: 'ai-rec-req-3',
+      assistanceRequestId: 'req-3',
+      suggestedCategory: 'Food',
+      predictedCategory: 'Food',
+      suggestedUrgency: 'High',
+      suggestedPriority: 'High',
+      confidenceScore: 0.88,
+      explanation: '30 elderly evacuees require sustained dry food rations.',
+      suggestedResources: ['Emergency High-Energy Biscuit Rations'],
+      reviewStatus: 'Accepted',
+      status: 'Accepted',
+      createdAt: '2026-11-19T08:01:00Z',
+    },
     createdAt: '2026-11-19T08:00:00Z',
   },
 ];
+
+const mockRequests: AssistanceRequest[] = loadStored('sahaya_requests', initialRequests);
 
 const mockShelters: Shelter[] = [
   {
@@ -555,64 +625,73 @@ const getStoredUsers = (): UserSummary[] => {
         return parsed;
       }
     }
-  } catch {}
+  } catch { }
   return [...initialDefaultUsers];
 };
 
 const saveStoredUsers = (users: UserSummary[]) => {
   try {
     localStorage.setItem('sahaya_registered_users', JSON.stringify(users));
-  } catch {}
+  } catch { }
 };
 
 export const api = {
   // Auth
-  async login(email: string, _password: string): Promise<AuthResponse> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     const lowEmail = (email || '').toLowerCase().trim();
-    let detectedRole: UserRole = 'Citizen';
-    let fullName = 'Citizen User';
+    const cleanPass = (password || '').trim();
 
-    // Explicit exact matching first, then fuzzy
-    if (lowEmail === 'shelteradmin@sahaya.org' || lowEmail.startsWith('shelter')) {
-      detectedRole = 'ShelterAdmin';
-      fullName = 'Camp & Shelter Administrator';
-    } else if (lowEmail === 'admin@sahaya.org' || lowEmail.startsWith('admin')) {
-      detectedRole = 'Admin';
-      fullName = 'Operational System Administrator';
-    } else if (lowEmail.startsWith('coordinator')) {
-      detectedRole = 'Coordinator';
-      fullName = 'Chief Emergency Coordinator';
-    } else if (lowEmail.startsWith('case')) {
-      detectedRole = 'CaseManager';
-      fullName = 'Senior Incident Case Manager';
-    } else if (lowEmail.startsWith('logistics')) {
-      detectedRole = 'LogisticsManager';
-      fullName = 'Resource & Logistics Director';
-    } else if (lowEmail.startsWith('volcoord') || lowEmail.startsWith('volunteercoord')) {
-      detectedRole = 'VolunteerCoordinator';
-      fullName = 'Volunteer Mobilization Lead';
-    } else if (lowEmail.startsWith('donor')) {
-      detectedRole = 'Donor';
-      fullName = 'Aid Funding & Donor Officer';
-    } else if (lowEmail.startsWith('partner')) {
-      detectedRole = 'PartnerOfficer';
-      fullName = 'UN / Red Cross Partner Officer';
-    } else if (lowEmail.startsWith('volunteer')) {
-      detectedRole = 'Volunteer';
-      fullName = 'Field Response Volunteer';
-    } else if (lowEmail.startsWith('citizen')) {
-      detectedRole = 'Citizen';
-      fullName = 'Affected Citizen';
+    // Valid demo credentials for testing
+    const demoCredentials: Record<string, { pass: string; role: UserRole; name: string }> = {
+      'admin@sahaya.org': { pass: 'Admin@123', role: 'Admin', name: 'Operational System Administrator' },
+      'admin@sahaya.lk': { pass: 'Admin@123', role: 'Admin', name: 'National Command Admin' },
+      'coordinator@sahaya.org': { pass: 'Coordinator@123', role: 'Coordinator', name: 'Chief Emergency Coordinator' },
+      'casemanager@sahaya.org': { pass: 'Case@123', role: 'CaseManager', name: 'Senior Incident Case Manager' },
+      'logistics@sahaya.org': { pass: 'Logistics@123', role: 'LogisticsManager', name: 'Resource & Logistics Director' },
+      'shelteradmin@sahaya.org': { pass: 'Shelter@123', role: 'ShelterAdmin', name: 'Camp & Shelter Administrator' },
+      'volunteercoord@sahaya.org': { pass: 'VolCoord@123', role: 'VolunteerCoordinator', name: 'Volunteer Mobilization Lead' },
+      'donor@sahaya.org': { pass: 'Donor@123', role: 'Donor', name: 'Aid Funding & Donor Officer' },
+      'partner@sahaya.org': { pass: 'Partner@123', role: 'PartnerOfficer', name: 'UN / Red Cross Partner Officer' },
+      'citizen@sahaya.org': { pass: 'Citizen@123', role: 'Citizen', name: 'Affected Citizen' },
+      'volunteer@sahaya.org': { pass: 'Volunteer@123', role: 'Volunteer', name: 'Field Response Volunteer' },
+    };
+
+    // 1. Check registered users in storage
+    const allUsers = getStoredUsers();
+    const existing = allUsers.find((u) => u.email.toLowerCase() === lowEmail);
+    if (existing) {
+      // In simulated mock, if a password was provided, verify it isn't completely empty
+      if (!cleanPass) {
+        throw new Error('Please enter a valid password.');
+      }
+      return {
+        token: 'mock-jwt-token-active-session',
+        userId: existing.id,
+        email: existing.email,
+        fullName: existing.fullName,
+        role: existing.role,
+        expiresIn: 86400,
+      };
     }
 
-    return {
-      token: 'mock-jwt-token-active-session',
-      userId: `u-${detectedRole.toLowerCase()}-1`,
-      email: email || mockUser.email,
-      fullName: fullName,
-      role: detectedRole,
-      expiresIn: 86400,
-    };
+    // 2. Check official demo accounts
+    const demo = demoCredentials[lowEmail];
+    if (demo) {
+      if (cleanPass !== demo.pass) {
+        throw new Error('Invalid password for this official demo account.');
+      }
+      return {
+        token: 'mock-jwt-token-active-session',
+        userId: `u-demo-${demo.role.toLowerCase()}`,
+        email: lowEmail,
+        fullName: demo.name,
+        role: demo.role,
+        expiresIn: 86400,
+      };
+    }
+
+    // 3. Reject any unregistered or fake accounts
+    throw new Error('No registered account found with this email. Please check your credentials or create an account first.');
   },
 
   async register(data: any): Promise<AuthResponse> {
@@ -640,7 +719,7 @@ export const api = {
       isActive: isActive,
       createdAt: new Date().toISOString(),
     };
-    
+
     // Save to persisted stored users
     const allUsers = getStoredUsers();
     allUsers.unshift(newUser);
@@ -725,115 +804,270 @@ export const api = {
   },
 
   // Assistance Requests
-  async getRequests(_filters?: any): Promise<AssistanceRequest[]> {
-    return mockRequests;
+  async getRequests(filters?: any): Promise<AssistanceRequest[]> {
+    const list = loadStored('sahaya_requests', mockRequests);
+    if (filters?.category) {
+      const targetCat = String(filters.category).toLowerCase();
+      return list.filter((r) => {
+        const cat = String(r.category).toLowerCase();
+        if (targetCat === 'emergencyshelter' || targetCat === 'shelter') {
+          return cat === 'emergencyshelter' || cat === 'shelter';
+        }
+        return cat === targetCat;
+      });
+    }
+    return list;
   },
 
   async getRequest(id: string): Promise<AssistanceRequest> {
-    return mockRequests.find((r) => r.id === id) || mockRequests[0];
+    const list = loadStored('sahaya_requests', mockRequests);
+    return list.find((r) => r.id === id) || list[0];
   },
 
   async createRequest(data: any): Promise<AssistanceRequest> {
+    const catMap: Record<number, RequestCategory> = {
+      1: 'Food',
+      2: 'DrinkingWater',
+      3: 'MedicalAssistance',
+      4: 'EmergencyShelter',
+      5: 'RescueTransport',
+      6: 'Clothing',
+      7: 'Sanitation',
+      8: 'Other',
+    };
+    const urgMap: Record<number, RequestUrgency> = {
+      1: 'Low',
+      2: 'Medium',
+      3: 'High',
+      4: 'Critical',
+    };
+
+    const resolvedCat: RequestCategory =
+      typeof data.category === 'number' ? catMap[data.category] || 'Other' : data.category || 'Other';
+    const resolvedUrg: RequestUrgency =
+      typeof data.urgency === 'number' ? urgMap[data.urgency] || 'Medium' : data.urgency || 'Medium';
+
+    let currentCitizen = mockUser;
+    try {
+      const saved = localStorage.getItem('sahaya_user');
+      if (saved) currentCitizen = JSON.parse(saved);
+    } catch { }
+
+    const reqId = `req-${Date.now()}`;
     const newReq: AssistanceRequest = {
-      id: `req-${Date.now()}`,
-      citizenId: mockUser.id,
-      citizenName: mockUser.fullName,
-      citizenPhone: mockUser.phoneNumber,
-      ...data,
-      status: 'Pending',
+      id: reqId,
+      citizenId: currentCitizen.id || mockUser.id,
+      citizenName: currentCitizen.fullName || mockUser.fullName,
+      citizenPhone: data.contactPhone || currentCitizen.phoneNumber || mockUser.phoneNumber,
+      title: data.title || `${resolvedCat} Assistance Request`,
+      description: data.description || '',
+      category: resolvedCat,
+      urgency: resolvedUrg,
+      location: data.address || data.location || 'Sri Lanka',
+      address: data.address || data.location || 'Sri Lanka',
+      latitude: Number(data.latitude || 6.9271),
+      longitude: Number(data.longitude || 79.8612),
+      peopleCount: Number(data.affectedCount || data.peopleCount || 1),
+      affectedCount: Number(data.affectedCount || data.peopleCount || 1),
+      specialNeeds: data.specialNeeds,
+      crisisEventId: data.crisisEventId,
+      status: 'Submitted',
+      statusHistory: [
+        {
+          id: `h-init-${Date.now()}`,
+          assistanceRequestId: reqId,
+          fromStatus: 'Submitted',
+          toStatus: 'Submitted',
+          changedByEmail: currentCitizen.email || 'citizen@sahaya.org',
+          changedAt: new Date().toISOString(),
+          notes: 'Request submitted by citizen and queued for AI triage & coordinator review.',
+        },
+      ],
+      latestRecommendation: {
+        id: `ai-rec-${reqId}`,
+        assistanceRequestId: reqId,
+        suggestedCategory: resolvedCat,
+        predictedCategory: resolvedCat,
+        suggestedUrgency: resolvedUrg,
+        suggestedPriority: resolvedUrg,
+        confidenceScore: resolvedUrg === 'Critical' ? 0.93 : 0.87,
+        explanation: `Automated triage classified as ${resolvedUrg} priority ${resolvedCat} support for ${data.affectedCount || 1} person(s) at ${data.address || 'reported sector'}.`,
+        suggestedResources:
+          resolvedCat === 'EmergencyShelter'
+            ? ['Emergency Shelter Bed Placement', 'Dry Bedding']
+            : resolvedCat === 'DrinkingWater'
+              ? ['Clean Water Purification Packs (5L)']
+              : ['Emergency High-Energy Biscuit Rations'],
+        reviewStatus: 'Pending',
+        status: 'Pending',
+        createdAt: new Date().toISOString(),
+      },
       createdAt: new Date().toISOString(),
     };
+
+    const list = loadStored('sahaya_requests', mockRequests);
+    list.unshift(newReq);
+    saveStored('sahaya_requests', list);
     mockRequests.unshift(newReq);
     return newReq;
   },
 
-  async updateRequestStatus(id: string, status: RequestStatus, _note?: string): Promise<AssistanceRequest> {
-    const req = mockRequests.find((r) => r.id === id);
-    if (req) req.status = status;
-    return req || mockRequests[0];
+  async updateRequestStatus(id: string, status: RequestStatus, note?: string): Promise<AssistanceRequest> {
+    const list = loadStored('sahaya_requests', mockRequests);
+    const req = list.find((r) => r.id === id);
+    if (req) {
+      const prev = req.status;
+      req.status = status;
+      if (!req.statusHistory) req.statusHistory = [];
+      req.statusHistory.unshift({
+        id: `h-${Date.now()}`,
+        assistanceRequestId: req.id,
+        fromStatus: prev,
+        toStatus: status,
+        changedByEmail: 'coordinator@sahaya.lk',
+        changedAt: new Date().toISOString(),
+        notes: note || `Status updated from ${prev} to ${status}.`,
+      });
+      saveStored('sahaya_requests', list);
+    }
+    return req || list[0];
   },
 
-  async getRequestHistory(_id: string): Promise<RequestStatusHistory[]> {
+  async getRequestHistory(id: string): Promise<RequestStatusHistory[]> {
+    const list = loadStored('sahaya_requests', mockRequests);
+    const req = list.find((r) => r.id === id);
+    if (req && req.statusHistory && req.statusHistory.length > 0) {
+      return req.statusHistory;
+    }
     return [
       {
         id: 'h-1',
-        assistanceRequestId: _id,
-        fromStatus: 'Pending',
-        toStatus: 'Assigned',
+        assistanceRequestId: id,
+        fromStatus: 'Submitted',
+        toStatus: req?.status || 'Assigned',
         changedByEmail: 'coordinator@sahaya.lk',
         changedAt: new Date().toISOString(),
-        notes: 'Dispatched volunteer unit with high-clearance rescue vehicle.',
+        notes: 'Logged in national disaster coordination ledger.',
       },
     ];
   },
 
   async getMyRequests(): Promise<AssistanceRequest[]> {
-    return mockRequests;
+    return loadStored('sahaya_requests', mockRequests);
   },
 
   // Coordinator Dashboard
   async getCoordinatorDashboard(): Promise<CoordinatorDashboardData> {
+    const reqs = loadStored('sahaya_requests', mockRequests);
+    const shlts = loadStored('sahaya_shelters', mockShelters);
+    const resrcs = loadStored('sahaya_resources', mockResources);
+    const incs = loadStored('sahaya_incidents', mockIncidents);
     return {
-      totalRequests: mockRequests.length,
-      pendingRequests: mockRequests.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
-      pendingRequestsCount: mockRequests.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
-      approvedRequests: mockRequests.filter((r) => r.status === 'Approved').length,
-      assignedRequestsCount: mockRequests.filter((r) => r.status === 'Assigned').length,
-      inProgressRequestsCount: mockRequests.filter((r) => r.status === 'InProgress').length,
-      resolvedRequestsCount: 142,
-      criticalRequests: 18,
-      criticalUrgencyCount: 18,
-      activeIncidents: mockIncidents.length,
-      totalShelters: mockShelters.length,
-      availableCapacity: 850,
+      totalRequests: reqs.length,
+      pendingRequests: reqs.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
+      pendingRequestsCount: reqs.filter((r) => r.status === 'Pending' || r.status === 'Submitted').length,
+      approvedRequests: reqs.filter((r) => r.status === 'Approved').length,
+      assignedRequestsCount: reqs.filter((r) => r.status === 'Assigned').length,
+      inProgressRequestsCount: reqs.filter((r) => r.status === 'InProgress').length,
+      resolvedRequestsCount: reqs.filter((r) => r.status === 'Resolved').length + 142,
+      criticalRequests: reqs.filter((r) => r.urgency === 'Critical' || r.urgency === 'Immediate').length,
+      criticalUrgencyCount: reqs.filter((r) => r.urgency === 'Critical' || r.urgency === 'Immediate').length,
+      activeIncidents: incs.length,
+      totalShelters: shlts.length,
+      availableCapacity: shlts.reduce((acc, s) => acc + (s.availableCapacity || 0), 0),
       totalVolunteers: 65,
       activeVolunteers: 42,
-      lowStockResourcesCount: mockResources.filter((r) => r.isLowStock).length,
-      recentRequests: mockRequests,
-      activeEvents: mockIncidents,
-      activeCrisisEvents: mockIncidents,
+      lowStockResourcesCount: resrcs.filter((r) => r.isLowStock).length,
+      recentRequests: reqs,
+      activeEvents: incs,
+      activeCrisisEvents: incs,
       topNeededResources: [
         { resourceName: 'Bottled Water', totalRequested: 2400, totalAvailable: 1250, shortage: 1150 },
         { resourceName: 'Dry Ration Packs', totalRequested: 1800, totalAvailable: 4800, shortage: 0 },
       ],
-      aiTriageQueueCount: 5,
+      aiTriageQueueCount: reqs.filter((r) => r.latestRecommendation?.reviewStatus === 'Pending').length,
     };
   },
 
   // Shelters
   async getShelters(_activeOnly?: boolean): Promise<Shelter[]> {
-    return mockShelters;
+    return loadStored('sahaya_shelters', mockShelters);
   },
 
   async getShelter(id: string): Promise<Shelter> {
-    return mockShelters.find((s) => s.id === id) || mockShelters[0];
+    const list = loadStored('sahaya_shelters', mockShelters);
+    return list.find((s) => s.id === id) || list[0];
   },
 
   async createShelter(data: any): Promise<Shelter> {
+    const list = loadStored('sahaya_shelters', mockShelters);
+    const cap = Number(data.capacity || data.totalCapacity || 50);
     const s: Shelter = {
       id: `sh-${Date.now()}`,
       ...data,
       currentOccupancy: 0,
-      availableCapacity: data.capacity,
-      status: 'Open',
+      availableCapacity: cap,
+      totalCapacity: cap,
+      capacity: cap,
+      status: 'Active',
+      createdAt: new Date().toISOString(),
     };
-    mockShelters.push(s);
+    list.unshift(s);
+    saveStored('sahaya_shelters', list);
     return s;
   },
 
   async updateShelter(id: string, data: any): Promise<Shelter> {
-    const s = mockShelters.find((item) => item.id === id);
-    if (s) Object.assign(s, data);
-    return s || mockShelters[0];
+    const list = loadStored('sahaya_shelters', mockShelters);
+    const s = list.find((item) => item.id === id);
+    if (s) {
+      Object.assign(s, data);
+      saveStored('sahaya_shelters', list);
+    }
+    return s || list[0];
   },
 
   async assignShelter(data: any): Promise<ShelterAssignment> {
+    const shelters = loadStored('sahaya_shelters', mockShelters);
+    const shelter = shelters.find((s) => s.id === data.shelterId);
+    const assignedCount = Number(data.numberOfPeople || 1);
+
+    if (shelter) {
+      shelter.currentOccupancy = (shelter.currentOccupancy || 0) + assignedCount;
+      shelter.availableCapacity = Math.max(0, (shelter.totalCapacity || shelter.capacity || 100) - shelter.currentOccupancy);
+      if (shelter.availableCapacity === 0) {
+        shelter.status = 'Full';
+      }
+      saveStored('sahaya_shelters', shelters);
+    }
+
+    // Link and update citizen's assistance request status to InProgress / Assigned
+    if (data.assistanceRequestId) {
+      const reqs = loadStored('sahaya_requests', mockRequests);
+      const req = reqs.find((r) => r.id === data.assistanceRequestId);
+      if (req) {
+        const prev = req.status;
+        req.status = 'InProgress' as RequestStatus;
+        if (!req.statusHistory) req.statusHistory = [];
+        req.statusHistory.unshift({
+          id: `h-sh-${Date.now()}`,
+          assistanceRequestId: req.id,
+          fromStatus: prev,
+          toStatus: 'InProgress',
+          changedByEmail: 'shelteradmin@sahaya.org',
+          changedAt: new Date().toISOString(),
+          notes: `Evacuee (${assignedCount} person/s) allocated to ${shelter ? shelter.name : 'Safe Camp'}. Bed spaces confirmed.`
+        });
+        saveStored('sahaya_requests', reqs);
+      }
+    }
+
     return {
       id: `sha-${Date.now()}`,
       shelterId: data.shelterId,
       citizenId: data.citizenId || 'cit-1',
       assistanceRequestId: data.assistanceRequestId,
-      numberOfPeople: data.numberOfPeople || 1,
+      numberOfPeople: assignedCount,
       assignedAt: new Date().toISOString(),
       status: 'Occupied',
     };
@@ -841,40 +1075,94 @@ export const api = {
 
   // Resources
   async getResources(): Promise<Resource[]> {
-    return mockResources;
+    return loadStored('sahaya_resources', mockResources);
   },
 
   async getResource(id: string): Promise<Resource> {
-    return mockResources.find((r) => r.id === id) || mockResources[0];
+    const list = loadStored('sahaya_resources', mockResources);
+    return list.find((r) => r.id === id) || list[0];
   },
 
   async createResource(data: any): Promise<Resource> {
-    const r: Resource = { id: `res-${Date.now()}`, ...data };
-    mockResources.push(r);
+    const catMap: Record<number, string> = {
+      0: 'Food',
+      1: 'DrinkingWater',
+      2: 'MedicalSupplies',
+      3: 'ShelterSupplies',
+      4: 'LogisticsEquipment',
+      5: 'Sanitation',
+    };
+    const list = loadStored('sahaya_resources', mockResources);
+    const total = Number(data.totalQuantity || 100);
+    const threshold = Number(data.lowStockThreshold || 20);
+    const r: Resource = {
+      id: `res-${Date.now()}`,
+      ...data,
+      category: typeof data.category === 'number' ? catMap[data.category] || 'Food' : data.category,
+      quantity: total,
+      totalQuantity: total,
+      availableQuantity: total,
+      allocatedQuantity: 0,
+      dispatchedQuantity: 0,
+      warehouseLocation: data.storageLocation || 'Central Relief Depot',
+      isActive: true,
+      isLowStock: total <= threshold,
+      createdAt: new Date().toISOString(),
+    };
+    list.unshift(r);
+    saveStored('sahaya_resources', list);
     return r;
   },
 
   async updateResource(id: string, data: any): Promise<Resource> {
-    const r = mockResources.find((item) => item.id === id);
-    if (r) Object.assign(r, data);
-    return r || mockResources[0];
+    const list = loadStored('sahaya_resources', mockResources);
+    const r = list.find((item) => item.id === id);
+    if (r) {
+      Object.assign(r, data);
+      saveStored('sahaya_resources', list);
+    }
+    return r || list[0];
   },
 
   async allocateResource(data: any): Promise<ResourceAllocation> {
-    const res = mockResources.find((r) => r.id === data.resourceId);
+    const resList = loadStored('sahaya_resources', mockResources);
+    const res = resList.find((r) => r.id === data.resourceId);
+    const qty = Number(data.quantityAllocated || data.quantity || 0);
     if (res) {
-      const qty = Number(data.quantityAllocated || data.quantity || 0);
       res.availableQuantity = Math.max(0, res.availableQuantity - qty);
       res.allocatedQuantity = (res.allocatedQuantity || 0) + qty;
       res.isLowStock = res.availableQuantity <= res.lowStockThreshold;
+      saveStored('sahaya_resources', resList);
     }
+
+    // Link and update citizen's assistance request status to Dispatched/InProgress
+    if (data.assistanceRequestId) {
+      const reqs = loadStored('sahaya_requests', mockRequests);
+      const req = reqs.find((r) => r.id === data.assistanceRequestId);
+      if (req) {
+        const prev = req.status;
+        req.status = 'InProgress' as RequestStatus;
+        if (!req.statusHistory) req.statusHistory = [];
+        req.statusHistory.unshift({
+          id: `h-res-${Date.now()}`,
+          assistanceRequestId: req.id,
+          fromStatus: prev,
+          toStatus: 'InProgress',
+          changedByEmail: 'logistics@sahaya.org',
+          changedAt: new Date().toISOString(),
+          notes: `Dispatched ${qty} ${res ? res.unit : 'units'} of ${res ? res.name : 'supplies'} from depot.`
+        });
+        saveStored('sahaya_requests', reqs);
+      }
+    }
+
     return {
       id: `alloc-${Date.now()}`,
       resourceId: data.resourceId,
       assistanceRequestId: data.assistanceRequestId,
-      quantityAllocated: data.quantityAllocated || data.quantity,
+      quantityAllocated: qty,
       allocatedAt: new Date().toISOString(),
-      allocatedByEmail: 'coordinator@sahaya.lk',
+      allocatedByEmail: 'logistics@sahaya.org',
       status: 'Dispatched',
     };
   },
@@ -911,8 +1199,8 @@ export const api = {
     };
   },
 
-  async acceptAIRecommendation(_id: string): Promise<void> {},
-  async overrideAIRecommendation(_id: string, _data: any): Promise<void> {},
+  async acceptAIRecommendation(_id: string): Promise<void> { },
+  async overrideAIRecommendation(_id: string, _data: any): Promise<void> { },
 
   // Volunteers
   async getVolunteers(): Promise<VolunteerProfile[]> {
@@ -923,13 +1211,13 @@ export const api = {
     return (await this.getVolunteers())[0];
   },
 
-  async updateVolunteerAvailability(_isAvailable: boolean): Promise<void> {},
+  async updateVolunteerAvailability(_isAvailable: boolean): Promise<void> { },
 
   async getVolunteerTasks(): Promise<VolunteerTask[]> {
     return mockVolunteerTasks;
   },
 
-  async updateTaskStatus(_id: string, _status: string): Promise<void> {},
+  async updateTaskStatus(_id: string, _status: string): Promise<void> { },
   async recordVolunteerCheckIn(_data: any): Promise<VolunteerCheckIn> {
     return {
       id: `chk-${Date.now()}`,
@@ -1016,7 +1304,7 @@ export const api = {
 
   // Notifications
   async getNotifications(): Promise<NotificationItem[]> {
-    return [
+    const list: NotificationItem[] = [
       {
         id: 'notif-1',
         title: 'Emergency Flood Alert - Kelani River Levee',
@@ -1025,20 +1313,27 @@ export const api = {
         isRead: false,
         createdAt: new Date().toISOString(),
       },
-      {
-        id: 'notif-2',
-        title: 'New Aid Request Assigned',
-        message: 'Sedawatta Temple aid request assigned to Kelaniya rescue squad.',
-        type: 'Info',
+    ];
+
+    // Check for pending official accounts to notify Admin
+    const pending = getStoredUsers().filter((u) => u.isActive === false);
+    if (pending.length > 0) {
+      list.unshift({
+        id: 'notif-pending-accounts',
+        title: `${pending.length} Staff Account Approval Pending`,
+        message: `New official accounts (${pending.map((p) => `${p.fullName} - ${p.role}`).slice(0, 2).join(', ')}${pending.length > 2 ? '...' : ''}) awaiting administrator review in User Management.`,
+        type: 'EmergencyAlert',
         isRead: false,
         createdAt: new Date().toISOString(),
-      },
-    ];
+      });
+    }
+
+    return list;
   },
 
-  async markNotificationRead(_id: string): Promise<void> {},
-  async markAllNotificationsRead(): Promise<void> {},
-  async broadcastAlert(_data: any): Promise<void> {},
+  async markNotificationRead(_id: string): Promise<void> { },
+  async markAllNotificationsRead(): Promise<void> { },
+  async broadcastAlert(_data: any): Promise<void> { },
 
   // Reports & Governance (Admin Overview & Telemetry)
   async getSystemOverview(): Promise<SystemOverviewReport> {
@@ -1174,12 +1469,23 @@ export const api = {
     return allUsers.find((u) => u.id === id) || allUsers[0];
   },
 
-  async updateUserRole(id: string, data: { newRole: number; justification: string }): Promise<void> {
-    const roles: UserRole[] = ['Citizen', 'Coordinator', 'Volunteer', 'Donor', 'Admin'];
+  async updateUserRole(id: string, data: { newRole: number | UserRole; justification: string }): Promise<void> {
+    const roles: UserRole[] = [
+      'Citizen',
+      'Coordinator',
+      'Volunteer',
+      'Donor',
+      'Admin',
+      'CaseManager',
+      'LogisticsManager',
+      'ShelterAdmin',
+      'VolunteerCoordinator',
+      'PartnerOfficer',
+    ];
     const allUsers = getStoredUsers();
     const u = allUsers.find((item) => item.id === id);
     if (u) {
-      u.role = roles[data.newRole] || 'Citizen';
+      u.role = typeof data.newRole === 'string' ? (data.newRole as UserRole) : roles[data.newRole] || 'Citizen';
       saveStoredUsers(allUsers);
     }
   },
@@ -1333,12 +1639,35 @@ export const api = {
 
   // AI Decision Review
   async reviewAIRecommendation(recommendationId: string, data: any): Promise<any> {
-    const req = mockRequests.find((r) => r.latestRecommendation?.id === recommendationId);
+    const reqs = loadStored('sahaya_requests', mockRequests);
+    const req = reqs.find((r) => r.latestRecommendation?.id === recommendationId);
     if (req && req.latestRecommendation) {
-      req.latestRecommendation.reviewStatus =
-        data.reviewStatus === 1 ? 'Accepted' : data.reviewStatus === 2 ? 'Overridden' : 'Rejected';
+      const decisionLabel =
+        data.reviewStatus === 1 || data.reviewStatus === 2 && !data.overrideReason
+          ? 'Accepted'
+          : data.overrideReason || data.reviewStatus === 3 && data.overriddenPriority
+            ? 'Overridden'
+            : 'Rejected';
+      req.latestRecommendation.reviewStatus = decisionLabel;
+      req.latestRecommendation.status = decisionLabel;
       if (data.overrideReason) req.latestRecommendation.overrideReason = data.overrideReason;
       if (data.notes) req.latestRecommendation.officerDecision = data.notes;
+      if (decisionLabel === 'Accepted' || decisionLabel === 'Overridden') {
+        req.status = 'Approved';
+      } else {
+        req.status = 'Rejected';
+      }
+      if (!req.statusHistory) req.statusHistory = [];
+      req.statusHistory.unshift({
+        id: `h-ai-${Date.now()}`,
+        assistanceRequestId: req.id,
+        fromStatus: 'Submitted',
+        toStatus: req.status,
+        changedByEmail: 'coordinator@sahaya.org',
+        changedAt: new Date().toISOString(),
+        notes: data.notes || `AI Triage Recommendation ${decisionLabel}.`,
+      });
+      saveStored('sahaya_requests', reqs);
     }
     return { success: true };
   },
@@ -1354,17 +1683,46 @@ export const api = {
   },
 
   async reviewRequest(id: string, data: any): Promise<any> {
-    const req = mockRequests.find((r) => r.id === id);
+    const reqs = loadStored('sahaya_requests', mockRequests);
+    const req = reqs.find((r) => r.id === id);
     if (req) {
-      req.status = data.status || req.status;
+      const prev = req.status;
+      if (data.decision === 3) req.status = 'Approved';
+      else if (data.decision === 7) req.status = 'Rejected';
+      else if (data.status) req.status = data.status;
+
+      if (!req.statusHistory) req.statusHistory = [];
+      req.statusHistory.unshift({
+        id: `h-rev-${Date.now()}`,
+        assistanceRequestId: req.id,
+        fromStatus: prev,
+        toStatus: req.status,
+        changedByEmail: 'coordinator@sahaya.org',
+        changedAt: new Date().toISOString(),
+        notes: data.notes || `Request status updated to ${req.status}.`,
+      });
+      saveStored('sahaya_requests', reqs);
     }
     return { success: true, request: req };
   },
 
-  async cancelRequest(id: string, _reason?: string): Promise<any> {
-    const req = mockRequests.find((r) => r.id === id);
+  async cancelRequest(id: string, reason?: string): Promise<any> {
+    const reqs = loadStored('sahaya_requests', mockRequests);
+    const req = reqs.find((r) => r.id === id);
     if (req) {
+      const prev = req.status;
       req.status = 'Cancelled';
+      if (!req.statusHistory) req.statusHistory = [];
+      req.statusHistory.unshift({
+        id: `h-can-${Date.now()}`,
+        assistanceRequestId: req.id,
+        fromStatus: prev,
+        toStatus: 'Cancelled',
+        changedByEmail: 'citizen@sahaya.org',
+        changedAt: new Date().toISOString(),
+        notes: reason || 'Cancelled by requester.',
+      });
+      saveStored('sahaya_requests', reqs);
     }
     return { success: true };
   },
@@ -1375,18 +1733,55 @@ export const api = {
   },
 
   async getMyVolunteerTasks(): Promise<VolunteerTask[]> {
-    return mockVolunteerTasks;
+    return loadStored('sahaya_volunteer_tasks', mockVolunteerTasks);
   },
 
   async getAvailableVolunteerTasks(): Promise<VolunteerTask[]> {
-    return mockVolunteerTasks.filter((t: VolunteerTask) => t.status === 'Assigned');
+    const tasks = loadStored('sahaya_volunteer_tasks', mockVolunteerTasks);
+    return tasks.filter((t: VolunteerTask) => t.status === 'Assigned');
   },
 
-  async updateVolunteerTaskStatus(taskId: string, status: any, notes?: string): Promise<any> {
-    const task = mockVolunteerTasks.find((t: VolunteerTask) => t.id === taskId);
+  async updateVolunteerTaskStatus(taskId: string, statusOrPayload: any, notes?: string): Promise<any> {
+    const tasks = loadStored('sahaya_volunteer_tasks', mockVolunteerTasks);
+    const task = tasks.find((t: VolunteerTask) => t.id === taskId);
+    const rawStatus =
+      typeof statusOrPayload === 'object' && statusOrPayload !== null ? statusOrPayload.status : statusOrPayload;
+    const rawNotes =
+      typeof statusOrPayload === 'object' && statusOrPayload !== null ? statusOrPayload.notes : notes;
+
+    const statusMap: Record<number, VolunteerTask['status']> = {
+      1: 'Accepted',
+      2: 'InProgress',
+      3: 'Completed',
+      4: 'Declined',
+    };
+    const resolvedStatus: VolunteerTask['status'] =
+      typeof rawStatus === 'number' ? statusMap[rawStatus] || 'InProgress' : rawStatus || 'InProgress';
+
     if (task) {
-      task.status = status;
-      if (notes) task.notes = notes;
+      task.status = resolvedStatus;
+      if (rawNotes) task.notes = rawNotes;
+      saveStored('sahaya_volunteer_tasks', tasks);
+
+      if (resolvedStatus === 'Completed' && task.assistanceRequestId) {
+        const reqs = loadStored('sahaya_requests', mockRequests);
+        const req = reqs.find((r) => r.id === task.assistanceRequestId);
+        if (req) {
+          const prev = req.status;
+          req.status = 'Resolved';
+          if (!req.statusHistory) req.statusHistory = [];
+          req.statusHistory.unshift({
+            id: `h-done-${Date.now()}`,
+            assistanceRequestId: req.id,
+            fromStatus: prev,
+            toStatus: 'Resolved',
+            changedByEmail: 'volunteer@sahaya.org',
+            changedAt: new Date().toISOString(),
+            notes: rawNotes || `Field volunteer completed mission "${task.title}".`,
+          });
+          saveStored('sahaya_requests', reqs);
+        }
+      }
     }
     return { success: true, task };
   },
@@ -1396,13 +1791,48 @@ export const api = {
   },
 
   async assignVolunteerTask(dataOrTaskId: any, volunteerId?: string): Promise<any> {
-    const taskId = typeof dataOrTaskId === 'string' ? dataOrTaskId : dataOrTaskId?.taskId || 'task-1';
-    const vId = typeof dataOrTaskId === 'string' ? volunteerId : dataOrTaskId?.volunteerProfileId;
-    const task = mockVolunteerTasks.find((t: VolunteerTask) => t.id === taskId);
-    if (task && vId) {
-      task.volunteerProfileId = vId;
-      task.status = 'Assigned';
+    const isPayloadObj = typeof dataOrTaskId === 'object' && dataOrTaskId !== null;
+    const vId = isPayloadObj ? dataOrTaskId.volunteerProfileId || dataOrTaskId.volunteerId : volunteerId || 'vol-1';
+    const reqId = isPayloadObj ? dataOrTaskId.assistanceRequestId : undefined;
+    const title = isPayloadObj ? dataOrTaskId.title : 'Field Relief Mission';
+    const description = isPayloadObj ? dataOrTaskId.description : 'Field assistance and evacuation support';
+
+    const tasks = loadStored('sahaya_volunteer_tasks', mockVolunteerTasks);
+    const newTask: VolunteerTask = {
+      id: `task-${Date.now()}`,
+      volunteerId: vId,
+      volunteerProfileId: vId,
+      assistanceRequestId: reqId,
+      title: title,
+      description: description,
+      priority: 'High',
+      status: 'Assigned',
+      assignedAt: new Date().toISOString()
+    };
+    tasks.unshift(newTask);
+    saveStored('sahaya_volunteer_tasks', tasks);
+
+    // Link and update citizen's assistance request status to InProgress
+    if (reqId) {
+      const reqs = loadStored('sahaya_requests', mockRequests);
+      const req = reqs.find((r) => r.id === reqId);
+      if (req) {
+        const prev = req.status;
+        req.status = 'InProgress' as RequestStatus;
+        if (!req.statusHistory) req.statusHistory = [];
+        req.statusHistory.unshift({
+          id: `h-vol-${Date.now()}`,
+          assistanceRequestId: req.id,
+          fromStatus: prev,
+          toStatus: 'InProgress',
+          changedByEmail: 'volcoord@sahaya.org',
+          changedAt: new Date().toISOString(),
+          notes: `Volunteer assigned to mission: "${title}". First responder unit en route.`
+        });
+        saveStored('sahaya_requests', reqs);
+      }
     }
-    return { success: true, task };
+
+    return { success: true, task: newTask };
   },
 };
