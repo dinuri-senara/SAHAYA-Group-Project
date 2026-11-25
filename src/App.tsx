@@ -23,6 +23,9 @@ import { SafetyGuidePage } from './pages/SafetyGuidePage';
 import { SafetyGuideDetailPage } from './pages/SafetyGuideDetailPage';
 import { GuestEmergencyRequestPage } from './pages/GuestEmergencyRequestPage';
 import { GuestRequestTrackingPage } from './pages/GuestRequestTrackingPage';
+import { PublicSafetyGuidesPage } from './pages/PublicSafetyGuidesPage';
+import { PublicSheltersPage } from './pages/PublicSheltersPage';
+import { PublicAlertsPage } from './pages/PublicAlertsPage';
 
 // Member 3: Crisis Management & Coordinator Command Hub
 import { CoordinatorDashboard } from './pages/CoordinatorDashboard';
@@ -42,6 +45,7 @@ import { VolunteersPage } from './pages/VolunteersPage';
 import { VolunteerDashboard } from './pages/VolunteerDashboard';
 import { DonationsPage } from './pages/DonationsPage';
 import { DonorDashboard } from './pages/DonorDashboard';
+import { PartnerDashboard } from './pages/PartnerDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +70,9 @@ export function App() {
               <Route path="/emergency/request" element={<GuestEmergencyRequestPage />} />
               <Route path="/emergency/track" element={<GuestRequestTrackingPage />} />
               <Route path="/emergency" element={<Navigate to="/emergency/request" replace />} />
+              <Route path="/safety-guides" element={<PublicSafetyGuidesPage />} />
+              <Route path="/public-shelters" element={<PublicSheltersPage />} />
+              <Route path="/alerts" element={<PublicAlertsPage />} />
 
               {/* Public Landing Page */}
               <Route path="/" element={<LandingPage />} />
@@ -262,6 +269,14 @@ export function App() {
                 element={
                   <AppShell>
                     <DonorDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/partner/dashboard"
+                element={
+                  <AppShell>
+                    <PartnerDashboard />
                   </AppShell>
                 }
               />

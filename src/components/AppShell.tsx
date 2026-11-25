@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { OfflineBanner } from './OfflineBanner';
 import { RiverAlertTicker } from './RiverAlertTicker';
+import { AIChatDrawer } from './AIChatDrawer';
 import { UserRole } from '../types';
 import { useAuth } from '../context/AuthContext';
 
@@ -24,6 +25,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   const activeUserName: string = propUserName || user?.fullName || 'Operational Officer';
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     return localStorage.getItem('sahaya_sidebar_collapsed') === 'true';
   });
@@ -36,6 +38,14 @@ export const AppShell: React.FC<AppShellProps> = ({
     });
   };
 
+  const handleOpenAi = () => {
+    if (onOpenAiDrawer) {
+      onOpenAiDrawer();
+    } else {
+      setAiDrawerOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900 flex relative overflow-x-hidden">
       {/* Sidebar navigation */}
@@ -45,7 +55,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         onClose={() => setSidebarOpen(false)}
         isCollapsed={isCollapsed}
         onToggleCollapse={toggleCollapse}
-        onOpenAiDrawer={onOpenAiDrawer}
+        onOpenAiDrawer={handleOpenAi}
       />
 
       {/* Main Content Area: dynamically offsets based on collapse state */}
@@ -66,6 +76,13 @@ export const AppShell: React.FC<AppShellProps> = ({
           {children}
         </main>
       </div>
+
+      {/* Global AI Chat Drawer */}
+      <AIChatDrawer
+        isOpen={aiDrawerOpen}
+        onClose={() => setAiDrawerOpen(false)}
+        onOpen={() => setAiDrawerOpen(true)}
+      />
     </div>
   );
 };

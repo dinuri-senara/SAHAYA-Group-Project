@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { SahayaLogo } from './SahayaLogo';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface NavItem {
   name: string;
@@ -63,7 +64,8 @@ export const navItems: NavItem[] = [
   { name: 'Relief Campaigns & Pledges', href: '/donations', icon: DollarSign, roles: ['Donor'] },
 
   // 8. Partner Organisation Officer
-  { name: 'Partner Requisitions Depot', href: '/resources', icon: Package, roles: ['PartnerOfficer'] },
+  { name: 'Partner Operations Hub', href: '/partner/dashboard', icon: LayoutDashboard, roles: ['PartnerOfficer'] },
+  { name: 'Depot Relief Supplies', href: '/resources', icon: Package, roles: ['PartnerOfficer'] },
   { name: 'Joint Crisis GIS Map', href: '/map', icon: MapPin, roles: ['PartnerOfficer'] },
 
   // 9. System Administrator (National Command & Governance)
@@ -95,6 +97,46 @@ interface SidebarProps {
   onOpenAiDrawer?: () => void;
 }
 
+const navItemTranslations: Record<string, { en: string; si: string }> = {
+  'My Assistance Portal': { en: 'My Assistance Portal', si: 'මගේ සහන පෝර්ටලය' },
+  'Submit Aid Request (SOS)': { en: 'Submit Aid Request (SOS)', si: 'හදිසි ආධාර ඉල්ලීම (SOS)' },
+  'Nearby Safe Shelters': { en: 'Nearby Safe Shelters', si: 'ආසන්න ආරක්ෂිත කඳවුරු' },
+  'Crisis Safety Guides': { en: 'Crisis Safety Guides', si: 'ආපදා ආරක්ෂක උපදෙස්' },
+  'Coordinator Command Hub': { en: 'Coordinator Command Hub', si: 'සම්බන්ධීකාරක මෙහෙයුම් මැදිරිය' },
+  'Explainable AI Triage': { en: 'Explainable AI Triage', si: 'AI ප්‍රමුඛතා නිර්දේශ' },
+  'Crisis Incidents Registry': { en: 'Crisis Incidents Registry', si: 'ආපදා සිදුවීම් ලේඛනය' },
+  'Resource Allocation Depot': { en: 'Resource Allocation Depot', si: 'සම්පත් හා උපකරණ ගබඩාව' },
+  'Operational Analytics': { en: 'Operational Analytics', si: 'මෙහෙයුම් විශ්ලේෂණ' },
+  'Active Incidents Registry': { en: 'Active Incidents Registry', si: 'ක්‍රියාකාරී සිදුවීම් ලේඛනය' },
+  'Case Review & AI Triage': { en: 'Case Review & AI Triage', si: 'සිද්ධි සමාලෝචන සහ AI Triage' },
+  'GIS Crisis Map': { en: 'GIS Crisis Map', si: 'භූගෝලීය ආපදා සිතියම' },
+  'Inventory Depot & Supplies': { en: 'Inventory Depot & Supplies', si: 'ගබඩා තොග සහ සැපයුම්' },
+  'Supply Logistics Analytics': { en: 'Supply Logistics Analytics', si: 'සැපයුම් ලොජිස්ටික්ස් වාර්තා' },
+  'Safe Shelters & Camp Roster': { en: 'Safe Shelters & Camp Roster', si: 'ආරක්ෂිත කඳවුරු ලේඛනය' },
+  'Shelter Locations Map': { en: 'Shelter Locations Map', si: 'නවාතැන් පිහිටීම් සිතියම' },
+  'Volunteer Mobilization Hub': { en: 'Volunteer Mobilization Hub', si: 'ස්වේච්ඡා බලකා මෙහෙයුම්' },
+  'Field Mission GIS Map': { en: 'Field Mission GIS Map', si: 'ක්ෂේත්‍ර මෙහෙයුම් සිතියම' },
+  'My Funding Portfolio': { en: 'My Funding Portfolio', si: 'මගේ පරිත්‍යාග කළඹ' },
+  'Relief Campaigns & Pledges': { en: 'Relief Campaigns & Pledges', si: 'සහන අරමුදල් සහ පරිත්‍යාග' },
+  'Partner Operations Hub': { en: 'Partner Operations Hub', si: 'හවුල්කාර මෙහෙයුම් කේන්ද්‍රය' },
+  'Depot Relief Supplies': { en: 'Depot Relief Supplies', si: 'සහන සැපයුම් ගබඩාව' },
+  'Joint Crisis GIS Map': { en: 'Joint Crisis GIS Map', si: 'ඒකාබද්ධ ආපදා සිතියම' },
+  'National Command Overview': { en: 'National Command Overview', si: 'ජාතික ආපදා මෙහෙයුම් මධ්‍යස්ථානය' },
+  'System Telemetry & Audit': { en: 'System Telemetry & Audit', si: 'පද්ධති විගණන වාර්තා' },
+  'User Management & RBAC': { en: 'User Management & RBAC', si: 'පරිශීලක සහ අවසර කළමනාකරණය' },
+  'Incidents Registry': { en: 'Incidents Registry', si: 'සිදුවීම් ලේඛනය' },
+  'AI Decision Oversight': { en: 'AI Decision Oversight', si: 'AI තීරණ අධීක්ෂණය' },
+  'All Shelters': { en: 'All Shelters', si: 'සියලුම ආරක්ෂිත කඳවුරු' },
+  'All Resources Depot': { en: 'All Resources Depot', si: 'සියලුම සම්පත් ගබඩා' },
+  'All Volunteers': { en: 'All Volunteers', si: 'සියලුම ස්වේච්ඡා සේවකයින්' },
+  'Donations & Campaigns': { en: 'Donations & Campaigns', si: 'පරිත්‍යාග සහ ව්‍යාපාර' },
+  'Command GIS Map': { en: 'Command GIS Map', si: 'භූගෝලීය ආපදා සිතියම' },
+  'System Analytics & Reports': { en: 'System Analytics & Reports', si: 'පද්ධති විශ්ලේෂණ වාර්තා' },
+  'Field Mission Dispatch': { en: 'Field Mission Dispatch', si: 'ක්ෂේත්‍ර මෙහෙයුම් අංශය' },
+  'Assigned Shelters': { en: 'Assigned Shelters', si: 'පවරන ලද කඳවුරු' },
+  'Field Navigation Map': { en: 'Field Navigation Map', si: 'ක්ෂේත්‍ර ගමන් සිතියම' },
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   role = 'Admin',
   isOpen,
@@ -104,6 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   onOpenAiDrawer,
 }) => {
+  const { language } = useLanguage();
   const filteredNav = navItems.filter((item) => item.roles.includes(role));
 
   const handleSignOut = () => {
@@ -179,7 +222,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }
               >
                 <Icon className="w-5 h-5 shrink-0" />
-                {!isCollapsed && <span className="truncate">{item.name}</span>}
+                {!isCollapsed && (
+                  <span className="truncate">
+                    {language === 'si' && navItemTranslations[item.name]?.si
+                      ? navItemTranslations[item.name].si
+                      : item.name}
+                  </span>
+                )}
               </NavLink>
             );
           })}

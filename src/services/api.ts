@@ -581,12 +581,24 @@ export const api = {
   },
 
   async register(data: any): Promise<AuthResponse> {
+    const roleNum = Number(data.role);
+    let resolvedRole: UserRole = 'Citizen';
+    if (roleNum === 2) resolvedRole = 'Coordinator';
+    else if (roleNum === 3) resolvedRole = 'Volunteer';
+    else if (roleNum === 4) resolvedRole = 'Donor';
+    else if (roleNum === 5) resolvedRole = 'Admin';
+    else if (roleNum === 6) resolvedRole = 'CaseManager';
+    else if (roleNum === 7) resolvedRole = 'LogisticsManager';
+    else if (roleNum === 8) resolvedRole = 'ShelterAdmin';
+    else if (roleNum === 9) resolvedRole = 'VolunteerCoordinator';
+    else if (roleNum === 10) resolvedRole = 'PartnerOfficer';
+
     return {
       token: 'mock-jwt-token-new-reg',
-      userId: 'u-new',
+      userId: `u-reg-${Date.now()}`,
       email: data.email,
       fullName: data.fullName,
-      role: 'Citizen',
+      role: resolvedRole,
       expiresIn: 86400,
     };
   },
@@ -1115,16 +1127,139 @@ export const api = {
 
   // AI Chat Assistant
   async sendAIChat(
-    _message: string,
-    language?: string
+    message: string,
+    language: string = 'en',
+    requestContextId?: string
   ): Promise<{ reply: string; isFromFallback?: boolean; quickSuggestions?: string[] }> {
+    try {
+      const res = await fetch('/api/v1/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, language, requestContextId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          reply: data.reply || data.message,
+          isFromFallback: data.isFromFallback ?? false,
+          quickSuggestions: data.quickSuggestions || [],
+        };
+      }
+    } catch {
+      // Backend unavailable; seamlessly switch to local intelligent Rule-Based NLP engine
+    }
+
+    const lower = message.toLowerCase();
+    const isSi = language === 'si';
+
+    if (
+      lower.includes('shelter') ||
+      lower.includes('stay') ||
+      lower.includes('sleep') ||
+      lower.includes('evacuat') ||
+      lower.includes('කඳවුර') ||
+      lower.includes('නවාතැන්') ||
+      lower.includes('ඉන්න තැනක්')
+    ) {
+      return {
+        reply: isSi
+          ? 'SAHAYA පද්ධතිය සක්‍රීය සහන කඳවුරු, පානීය ජලය සහ වෛද්‍ය පහසුකම් පිළිබඳ තොරතුරු සජීවීව පවත්වාගෙන යයි. අපගේ Interactive Map එකෙන් හෝ "Submit Request" හරහා ආරක්ෂිත කඳවුරක් ඉල්ලා සිටිය හැක. ජීවිත අවදානමක් ඇත්නම් වහාම ආරක්ෂිත උස් ස්ථාන කරා යොමුවන්න.'
+          : 'SAHAYA maintains real-time records of active emergency shelters with verified water, medical bays, and capacity. You can view all nearby shelters on our interactive map or request emergency shelter through the Submit Request portal. If in immediate danger, head to designated community refuge centers.',
+        isFromFallback: true,
+        quickSuggestions: isSi
+          ? ['ළඟම තියෙන කඳවුර කොහෙද?', 'කඳවුරක් ඉල්ලන්නේ කොහොමද?', 'කඳවුරුවල කෑම තියෙනවද?']
+          : ['Where is the nearest shelter?', 'How do I request shelter?', 'Is food provided at shelters?'],
+      };
+    }
+
+    if (
+      lower.includes('medic') ||
+      lower.includes('injur') ||
+      lower.includes('doctor') ||
+      lower.includes('bleed') ||
+      lower.includes('hospital') ||
+      lower.includes('බෙහෙත්') ||
+      lower.includes('තුවාල') ||
+      lower.includes('දොස්තර') ||
+      lower.includes('රෝහල')
+    ) {
+      return {
+        reply: isSi
+          ? 'ජීවිත අවදානම් සහිත හදිසි අවස්ථාවලදී කරුණාකර ජාතික හදිසි ගිලන්රථ සේවාව (1990 සුවසැරිය) හෝ පොලිස් හදිසි ඇමතුම් (119) වහාම අමතන්න. SAHAYA හරහා Critical මට්ටමේ "Medical Assistance" ඉල්ලීමක් යොමු කිරීමෙන් Coordinator කණ්ඩායම් ක්ෂණිකව ක්‍රියාත්මක වේ.'
+          : 'For life-threatening medical emergencies, please call national emergency services immediately (119 / 1990). Within SAHAYA, submit a Medical Assistance request marked Critical to trigger immediate coordinator review and mobile clinic dispatch.',
+        isFromFallback: true,
+        quickSuggestions: isSi
+          ? ['හදිසි වෛද්‍ය ආධාර ඉල්ලන්න', 'ළඟම වෛද්‍ය මධ්‍යස්ථානය', 'හදිසි දුරකථන අංක']
+          : ['Request medical aid', 'Locate emergency clinic', 'Emergency hotline numbers'],
+      };
+    }
+
+    if (
+      lower.includes('food') ||
+      lower.includes('water') ||
+      lower.includes('ration') ||
+      lower.includes('hungry') ||
+      lower.includes('කෑම') ||
+      lower.includes('ආහාර') ||
+      lower.includes('වතුර') ||
+      lower.includes('බීමට ජලය')
+    ) {
+      return {
+        reply: isSi
+          ? 'ආපදාවට ලක්වූ ප්‍රදේශ සඳහා හදිසි ආහාර සලාක සහ පිරිසිදු පානීය ජලය බෙදාහැරීම ක්‍රියාත්මක වේ. පුරවැසියන්ට තම පවුලේ සාමාජික ගණන ඇතුළත් කර සහන ඉල්ලීමක් ඉදිරිපත් කිරීමෙන් සලාක ලබාගැනීමේ ටෝකන් හෝ බෙදාහැරීම් ලබාගත හැක.'
+          : 'Emergency food rations and clean drinking water containers are being coordinated across active disaster zones. Citizens can register their household and affected headcount to receive scheduled drop-offs or pick-up tokens from community distribution centers.',
+        isFromFallback: true,
+        quickSuggestions: isSi
+          ? ['ආහාර සලාක ඉල්ලන්න', 'ජලය බෙදාහරින ස්ථාන', 'ඉල්ලීමේ තත්ත්වය පරීක්ෂා කරන්න']
+          : ['Request food rations', 'Find water distribution point', 'Check request status'],
+      };
+    }
+
+    if (
+      lower.includes('volunteer') ||
+      lower.includes('help') ||
+      lower.includes('join') ||
+      lower.includes('ස්වේච්ඡා') ||
+      lower.includes('උදව් කරන්න')
+    ) {
+      return {
+        reply: isSi
+          ? 'උදව් කිරීමට ඉදිරිපත් වීම පිළිබඳව ස්තූතියි! ලියාපදිංචි ස්වේච්ඡා සේවකයන්ට ප්‍රථමාධාර, සෙවීම් සහ මුදාගැනීම් (Search & Rescue), ප්‍රවාහන ආදී ක්ෂේත්‍ර තෝරාගත හැක. අනුමත වූ පසු ඔබේ Dashboard එකට මෙහෙයුම් විස්තර ලැබෙනු ඇත.'
+          : 'Thank you for your willingness to help! Registered volunteers can specify skills such as First Aid, Search & Rescue, Logistics, and Medical expertise. Once approved, coordinators dispatch mission tasks with geo-coordinates directly to your dashboard.',
+        isFromFallback: true,
+        quickSuggestions: isSi
+          ? ['ස්වේච්ඡා සේවකයෙකු ලෙස ලියාපදිංචි වන්න', 'ක්‍රියාකාරී මෙහෙයුම් බලන්න']
+          : ['Register as volunteer', 'View active tasks', 'Update availability'],
+      };
+    }
+
+    if (
+      lower.includes('donate') ||
+      lower.includes('donation') ||
+      lower.includes('money') ||
+      lower.includes('fund') ||
+      lower.includes('ආධාර') ||
+      lower.includes('මුදල්')
+    ) {
+      return {
+        reply: isSi
+          ? 'දානපතියන්ට සහ ආයතන වලට නිශ්චිත ආපදා මෙහෙයුම් සඳහා මූල්‍යමය හෝ ද්‍රව්‍යමය (වියළි ආහාර, වතුර, බෙහෙත්) ආධාර ලබාදිය හැක. සෑම ආධාරයක්ම විනිවිදභාවයෙන් යුතුව ලුහුබැඳිය හැක.'
+          : 'Donors can support specific crisis campaigns through monetary aid or in-kind supplies (clean water, medical packs, dry rations). Every allocation is logged and tracked transparently on SAHAYA.',
+        isFromFallback: true,
+        quickSuggestions: isSi
+          ? ['සක්‍රීය ආධාර ව්‍යාපාර', 'මුදල් ආධාර කරන්න', 'ද්‍රව්‍ය ආධාර ලබාදෙන්න']
+          : ['Active disaster campaigns', 'Record monetary donation', 'Donate supplies in-kind'],
+      };
+    }
+
     return {
-      reply:
-        language === 'si'
-          ? 'සහාය පද්ධතියට සාදරයෙන් පිළිගනිමු. ඔබගේ සහන ඉල්ලීම හෝ ආපදා තොරතුරු අප වෙත යොමු කරන්න.'
-          : 'Welcome to SAHAYA Humanitarian Operations. How can I assist you with disaster relief or shelter information today?',
+      reply: isSi
+        ? 'ආයුබෝවන්! මම SAHAYA AI සහායකයා වෙමි. සහන ඉල්ලීම් ඉදිරිපත් කිරීම, ආරක්ෂිත කඳවුරු සෙවීම, ආහාර/වතුර සහන ලබාගැනීම හෝ ස්වේච්ඡා සේවයට එක්වීම සඳහා මට ඔබට මඟපෙන්විය හැක. මට ඔබට උදව් කළ හැක්කේ කෙසේද?'
+        : 'Hello! I am SAHAYA AI Assistant. I can help guide you through submitting assistance requests, finding verified shelters, checking distribution hubs, or connecting with emergency coordinators and volunteers. How can I assist you right now?',
       isFromFallback: true,
-      quickSuggestions: ['Safe Shelters nearby', 'Emergency Food & Water', 'Report Flooding'],
+      quickSuggestions: isSi
+        ? ['ළඟම කඳවුර කොහෙද?', 'හදිසි ආහාර සලාක ඉල්ලන්නේ කොහොමද?', 'හදිසි ඇමතුම් අංක', 'ස්වේච්ඡා සේවයට එක්වන්න']
+        : ['Where is the nearest shelter?', 'How do I request emergency food rations?', 'Emergency hotline contacts', 'Register as a volunteer'],
     };
   },
 
