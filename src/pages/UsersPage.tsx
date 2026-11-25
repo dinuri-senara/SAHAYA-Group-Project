@@ -151,7 +151,11 @@ export const UsersPage: React.FC = () => {
         isActive: true,
         createdAt: new Date().toISOString()
       };
-      setUsers([createdUser, ...users]);
+      const updatedList = [createdUser, ...users];
+      setUsers(updatedList);
+      try {
+        localStorage.setItem('sahaya_registered_users', JSON.stringify(updatedList));
+      } catch {}
       setSuccessBanner(`Official credential for ${newAccount.fullName} (${newAccount.role}) created successfully!`);
       setShowCreateModal(false);
       setNewAccount({
@@ -275,7 +279,7 @@ export const UsersPage: React.FC = () => {
       {/* Filter and Search Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          {['All', 'Citizen', 'Coordinator', 'Volunteer', 'Donor', 'Admin'].map(r => (
+          {['All', 'Citizen', 'Coordinator', 'CaseManager', 'LogisticsManager', 'ShelterAdmin', 'VolunteerCoordinator', 'Volunteer', 'Donor', 'PartnerOfficer', 'Admin'].map(r => (
             <button
               key={r}
               onClick={() => handleRoleFilterChange(r)}
@@ -459,6 +463,11 @@ export const UsersPage: React.FC = () => {
                   <option value={2}>Volunteer (Field Missions & First Responder)</option>
                   <option value={3}>Donor (Campaign Backer & Transparency)</option>
                   <option value={4}>Admin (Full Platform Governance & Audit)</option>
+                  <option value={5}>CaseManager (Incident & Case Lifecycle)</option>
+                  <option value={6}>LogisticsManager (Inventory Depot & Supplies)</option>
+                  <option value={7}>ShelterAdmin (Safe Shelters & Evacuees)</option>
+                  <option value={8}>VolunteerCoordinator (Volunteer Mobilization)</option>
+                  <option value={9}>PartnerOfficer (Red Cross / UN / NGO Partner)</option>
                 </select>
 
                 <div className="mt-2 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200/80 text-[11px] text-purple-900 leading-relaxed">
@@ -620,6 +629,7 @@ export const UsersPage: React.FC = () => {
                     <option value="LogisticsManager">Resource & Logistics Manager</option>
                     <option value="ShelterAdmin">Shelter Administrator</option>
                     <option value="VolunteerCoordinator">Volunteer Coordinator</option>
+                    <option value="Volunteer">Field Volunteer</option>
                     <option value="PartnerOfficer">Partner Organisation Officer</option>
                   </select>
                 </div>
