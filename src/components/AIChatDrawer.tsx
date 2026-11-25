@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, MessageSquare, AlertCircle } from 'lucide-react';
+import { Bot, X, Send, Sparkles, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 
 interface Message {
@@ -10,8 +10,37 @@ interface Message {
   timestamp: string;
 }
 
-export const AIChatDrawer: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface AIChatDrawerProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  onOpen?: () => void;
+}
+
+export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
+  isOpen: controlledIsOpen,
+  onClose,
+  onOpen,
+}) => {
+  const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : uncontrolledIsOpen;
+
+  const handleOpen = () => {
+    if (isControlled && onOpen) {
+      onOpen();
+    } else {
+      setUncontrolledIsOpen(true);
+    }
+  };
+
+  const handleClose = () => {
+    if (isControlled && onClose) {
+      onClose();
+    } else {
+      setUncontrolledIsOpen(false);
+    }
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -64,7 +93,7 @@ export const AIChatDrawer: React.FC = () => {
       if (response.quickSuggestions?.length) {
         setQuickSuggestions(response.quickSuggestions);
       }
-    } catch (err: any) {
+    } catch {
       setMessages(prev => [
         ...prev,
         {
@@ -83,21 +112,28 @@ export const AIChatDrawer: React.FC = () => {
   return (
     <>
       {/* Floating trigger button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-xl hover:shadow-teal-500/25 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-        aria-label="Open AI Assistant"
-      >
-        <div className="relative">
-          <Bot className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
-        </div>
-        <span className="text-sm tracking-wide">AI Assistance</span>
-      </button>
+      {!isOpen && (
+        <button
+          onClick={handleOpen}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-xl hover:shadow-teal-500/25 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+          aria-label="Open AI Assistant"
+        >
+          <div className="relative">
+            <Bot className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+          </div>
+          <span className="text-sm tracking-wide">AI Assistance</span>
+        </button>
+      )}
 
       {/* Slide-over Drawer */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end">
+        <div
+          className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleClose();
+          }}
+        >
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             {/* Header */}
             <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
@@ -120,7 +156,7 @@ export const AIChatDrawer: React.FC = () => {
                 <select
                   value={language}
                   onChange={e => setLanguage(e.target.value)}
-                  className="bg-slate-800 text-xs text-slate-300 rounded-lg px-2 py-1 border border-slate-700 outline-none"
+                  className="bg-slate-800 text-xs text-slate-300 rounded-lg px-2 py-1 border border-slate-700 outline-none cursor-pointer"
                 >
                   <option value="en">English</option>
                   <option value="si">Sinhala</option>
@@ -129,8 +165,9 @@ export const AIChatDrawer: React.FC = () => {
                   <option value="fr">Français</option>
                 </select>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
