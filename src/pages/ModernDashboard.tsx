@@ -48,12 +48,11 @@ interface RoadmapItem {
 
 export const ModernDashboard: React.FC = () => {
   const sampleModules: RoadmapItem[] = [
-    { id: 'MOD-01', name: 'Core Architecture & Layout Shell', lead: 'Lead Architect', status: 'Approved', progress: 'Completed' },
-    { id: 'MOD-02', name: 'Authentication & Citizen Portal', lead: 'Security & Citizen Lead', status: 'Approved', progress: 'Completed' },
-    { id: 'MOD-03', name: 'Incident Registry & Coordinator Hub', lead: 'Crisis Coordinator', status: 'Pending', progress: 'In Progress' },
-    { id: 'MOD-04', name: 'Inventory Depot & Safe Shelters', lead: 'Logistics Lead', status: 'Pending', progress: 'Pending' },
-    { id: 'MOD-05', name: 'Explainable AI Review & Notifications', lead: 'AI Engineer', status: 'Pending', progress: 'Pending' },
-    { id: 'MOD-06', name: 'GIS Command Map & Volunteers', lead: 'GIS & Field Lead', status: 'Pending', progress: 'Pending' },
+    { id: 'ZONE-01', name: 'Gin Ganga Flood Basin & Baddegama Evacuations', lead: 'Southern Command / DMC', status: 'Approved', progress: 'Active Deployment' },
+    { id: 'ZONE-02', name: 'Kelani River Rising Water Level & Sedawatta', lead: 'Western Command / SL Navy', status: 'Approved', progress: 'Rescue Operations' },
+    { id: 'ZONE-03', name: 'Attanagalu Oya Inundation & Gampaha Safe Camps', lead: 'Gampaha District Secretariat', status: 'Approved', progress: 'Relief Distribution' },
+    { id: 'ZONE-04', name: 'Kalu Ganga Riverbank Alert & Ratnapura Relief Base', lead: 'Sabaragamuwa Command', status: 'Approved', progress: 'Continuous Monitoring' },
+    { id: 'ZONE-05', name: 'Hanwella & Pugoda Landslide Risk Buffer', lead: 'NBRO & First Responders', status: 'Pending', progress: 'Precautionary Evac' },
   ];
 
   return (
@@ -87,35 +86,38 @@ export const ModernDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. CORE ARCHITECTURE STATS */}
+      {/* 2. CORE CRISIS COMMAND STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Architecture Phase"
-          value="Phase 1 & 2"
-          subtitle="Core Foundations & Citizen"
-          icon={<Layers className="w-5 h-5" />}
-          trend="100% Operational"
+          title="Active Crisis Sectors"
+          value="4 Active"
+          subtitle="Western & Southern Basins"
+          icon={<Layers className="w-5 h-5 text-teal-600" />}
+          trend="100% Monitored"
           variant="success"
         />
         <StatCard
-          title="System Readiness"
-          value="Online"
-          subtitle="National SLA 99.9%"
-          icon={<ShieldCheck className="w-5 h-5" />}
+          title="Emergency Triage SLA"
+          value="3.8h Avg"
+          subtitle="Triage to Aid Dispatch"
+          icon={<ShieldCheck className="w-5 h-5 text-emerald-600" />}
+          trend="Target: < 4.0h"
           variant="default"
         />
         <StatCard
-          title="UI Design System"
-          value="12 Ready"
-          subtitle="Reusable Design System"
-          icon={<Cpu className="w-5 h-5" />}
+          title="Relief Shelter Load"
+          value="24 Camps"
+          subtitle="68% Safe Bed Capacity"
+          icon={<Cpu className="w-5 h-5 text-blue-600" />}
+          trend="450 Beds Available"
           variant="default"
         />
         <StatCard
-          title="Active Mode"
-          value="Operations"
-          subtitle="Command Center"
-          icon={<GitBranch className="w-5 h-5" />}
+          title="Field Mobilization"
+          value="142 Teams"
+          subtitle="Search, Medical & Rations"
+          icon={<GitBranch className="w-5 h-5 text-purple-600" />}
+          trend="All Sectors Active"
           variant="default"
         />
       </div>
@@ -262,17 +264,17 @@ export const ModernDashboard: React.FC = () => {
           {/* 5. ROADMAP DATA TABLE */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
             <div className="p-5 border-b border-slate-200">
-              <h2 className="text-base font-bold text-slate-800">Operational System Architecture Modules</h2>
-              <p className="text-xs text-slate-500">Real-time status of integrated humanitarian services.</p>
+              <h2 className="text-base font-bold text-slate-800">Designated Humanitarian Response Operational Sectors</h2>
+              <p className="text-xs text-slate-500">Real-time multi-agency deployment status across active crisis zones in Sri Lanka.</p>
             </div>
             <DataTable<RoadmapItem>
               keyExtractor={(item) => item.id}
               columns={[
-                { key: 'id', header: 'Module ID', render: (item) => <span className="font-mono font-bold text-blue-600">{item.id}</span> },
-                { key: 'name', header: 'Technical Focus', render: (item) => <span className="font-medium text-slate-900">{item.name}</span> },
-                { key: 'lead', header: 'Lead Role', render: (item) => <span className="text-slate-600 font-medium">{item.lead}</span> },
-                { key: 'status', header: 'Operational Status', render: (item) => <StatusBadge status={item.status} /> },
-                { key: 'progress', header: 'Delivery Stage', render: (item) => <span className="text-xs font-semibold text-slate-500">{item.progress}</span> },
+                { key: 'id', header: 'Sector ID', render: (item) => <span className="font-mono font-bold text-teal-600">{item.id}</span> },
+                { key: 'name', header: 'Crisis Operational Sector', render: (item) => <span className="font-medium text-slate-900">{item.name}</span> },
+                { key: 'lead', header: 'Command Authority', render: (item) => <span className="text-slate-600 font-medium">{item.lead}</span> },
+                { key: 'status', header: 'Response Status', render: (item) => <StatusBadge status={item.status} /> },
+                { key: 'progress', header: 'Deployment Stage', render: (item) => <span className="text-xs font-semibold text-slate-500">{item.progress}</span> },
               ]}
               data={sampleModules}
             />
