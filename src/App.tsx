@@ -31,6 +31,7 @@ import { PublicAlertsPage } from './pages/PublicAlertsPage';
 import { CoordinatorDashboard } from './pages/CoordinatorDashboard';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { RequestDetailPage } from './pages/RequestDetailPage';
+import { CoordinatorAnalyticsPage } from './pages/CoordinatorAnalyticsPage';
 
 // Member 4: Logistics, Inventory Depot & Safe Shelters
 import { SheltersPage } from './pages/SheltersPage';
@@ -98,7 +99,7 @@ export function App() {
                 path="/reports"
                 element={
                   <AppShell>
-                    <ModernDashboard />
+                    <CoordinatorAnalyticsPage />
                   </AppShell>
                 }
               />
@@ -175,6 +176,14 @@ export function App() {
                 element={
                   <AppShell>
                     <CoordinatorDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/coordinator/analytics"
+                element={
+                  <AppShell>
+                    <CoordinatorAnalyticsPage />
                   </AppShell>
                 }
               />

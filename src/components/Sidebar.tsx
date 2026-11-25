@@ -36,11 +36,11 @@ export const navItems: NavItem[] = [
   { name: 'Crisis Safety Guides', href: '/citizen/safety-guide', icon: FileBarChart, roles: ['Citizen'] },
 
   // 2. Emergency Coordinator
-  { name: 'Coordinator Command Hub', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator'] },
+  { name: 'Emergency Coordination Dashboard', href: '/coordinator/dashboard', icon: LayoutDashboard, roles: ['Coordinator'] },
   { name: 'Explainable AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['Coordinator'] },
   { name: 'Crisis Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['Coordinator'] },
   { name: 'Resource Allocation Depot', href: '/resources', icon: Package, roles: ['Coordinator'] },
-  { name: 'Operational Analytics', href: '/reports', icon: FileBarChart, roles: ['Coordinator'] },
+  { name: 'Operational Analytics', href: '/coordinator/analytics', icon: FileBarChart, roles: ['Coordinator'] },
 
   // 3. Incident / Case Manager
   { name: 'Active Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['CaseManager'] },
@@ -102,7 +102,8 @@ const navItemTranslations: Record<string, { en: string; si: string }> = {
   'Submit Aid Request (SOS)': { en: 'Submit Aid Request (SOS)', si: 'හදිසි ආධාර ඉල්ලීම (SOS)' },
   'Nearby Safe Shelters': { en: 'Nearby Safe Shelters', si: 'ආසන්න ආරක්ෂිත කඳවුරු' },
   'Crisis Safety Guides': { en: 'Crisis Safety Guides', si: 'ආපදා ආරක්ෂක උපදෙස්' },
-  'Coordinator Command Hub': { en: 'Coordinator Command Hub', si: 'සම්බන්ධීකාරක මෙහෙයුම් මැදිරිය' },
+  'Emergency Coordination Dashboard': { en: 'Emergency Coordination Dashboard', si: 'හදිසි ආපදා සම්බන්ධීකරණ මෙහෙයුම් පුවරුව' },
+  'Coordinator Command Hub': { en: 'Emergency Coordination Dashboard', si: 'හදිසි ආපදා සම්බන්ධීකරණ මෙහෙයුම් පුවරුව' },
   'Explainable AI Triage': { en: 'Explainable AI Triage', si: 'AI ප්‍රමුඛතා නිර්දේශ' },
   'Crisis Incidents Registry': { en: 'Crisis Incidents Registry', si: 'ආපදා සිදුවීම් ලේඛනය' },
   'Resource Allocation Depot': { en: 'Resource Allocation Depot', si: 'සම්පත් හා උපකරණ ගබඩාව' },
@@ -214,10 +215,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 to={item.href}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    isActive
-                      ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 font-bold'
-                      : 'text-slate-400 hover:text-white hover:bg-[#162744]'
+                  `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
+                    ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 font-bold'
+                    : 'text-slate-400 hover:text-white hover:bg-[#162744]'
                   }`
                 }
               >
@@ -260,9 +260,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3 border-t border-[#172a48] space-y-2">
           <button
             onClick={handleSignOut}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/20 transition-all ${
-              isCollapsed ? 'justify-center px-0' : ''
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/20 transition-all ${isCollapsed ? 'justify-center px-0' : ''
+              }`}
             title="Sign Out"
           >
             <LogOut className="w-4 h-4 shrink-0" />
