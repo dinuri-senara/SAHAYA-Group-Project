@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Home,
   MapPin,
@@ -50,7 +51,17 @@ export const SheltersPage: React.FC = () => {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
+  const [editForm, setEditForm] = useState({
+    totalCapacity: 100,
+    currentOccupancy: 0,
+    status: 'Active' as 'Active' | 'Full' | 'Closed',
+    facilities: '',
+    accessibilityInfo: '',
+    contactPhone: ''
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Supply Requisitions State (Coursework Spec Page 4 - Section 1.1 F)
   const [supplyRequests, setSupplyRequests] = useState<ShelterSupplyRequest[]>([]);
@@ -196,7 +207,7 @@ export const SheltersPage: React.FC = () => {
       const cap = Math.max(1, Number(editForm.totalCapacity));
       const occ = Math.min(cap, Math.max(0, Number(editForm.currentOccupancy)));
       const avail = Math.max(0, cap - occ);
-      const facilitiesList = editForm.facilities.split(',').map(f => f.trim()).filter(Boolean);
+      const facilitiesList = editForm.facilities.split(',').map((f: string) => f.trim()).filter(Boolean);
       const computedStatus = editForm.status === 'Closed' ? 'Closed' : avail === 0 ? 'Full' : 'Active';
 
       await api.updateShelter(selectedShelter.id, {
