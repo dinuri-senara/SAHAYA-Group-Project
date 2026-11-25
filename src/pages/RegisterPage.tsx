@@ -136,15 +136,15 @@ export const RegisterPage: React.FC = () => {
 
       // Role-specific redirect upon successful registration
       let target = '/citizen/dashboard';
-      if (role === 'ShelterAdmin') target = '/shelters';
-      else if (role === 'LogisticsManager') target = '/resources';
-      else if (role === 'PartnerOfficer') target = '/partner/dashboard';
-      else if (role === 'Coordinator') target = '/coordinator/dashboard';
-      else if (role === 'CaseManager') target = '/coordinator/incidents';
-      else if (role === 'VolunteerCoordinator') target = '/volunteers';
-      else if (role === 'Volunteer') target = '/volunteer/dashboard';
-      else if (role === 'Donor') target = '/donor/dashboard';
-      else if (role === 'Admin') target = '/dashboard';
+      const isPublicRole = role === 'Citizen' || role === 'Donor';
+
+      if (!isPublicRole) {
+        target = '/pending-approval';
+      } else if (role === 'Donor') {
+        target = '/donor/dashboard';
+      } else {
+        target = '/citizen/dashboard';
+      }
 
       window.location.href = target;
     } catch (err: any) {

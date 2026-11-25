@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertOctagon,
   AlertTriangle,
@@ -16,7 +17,8 @@ import {
   RotateCcw,
   Activity,
   Layers,
-  Inbox
+  Inbox,
+  ArrowRight
 } from 'lucide-react';
 import { CrisisEvent } from '../types';
 import { api } from '../services/api';
@@ -577,6 +579,24 @@ export const IncidentsPage: React.FC = () => {
                   }`}>
                     {isIncActive ? 'Active Theater' : 'Resolved'}
                   </span>
+                </div>
+
+                {/* Incident Operations Action Shortcuts */}
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2">
+                  <Link
+                    to="/resources"
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
+                  >
+                    <span>Dispatch Depot</span>
+                    <ArrowRight className="w-3 h-3 text-slate-400" />
+                  </Link>
+                  <Link
+                    to="/volunteers"
+                    className="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
+                  >
+                    <span>Deploy Squad</span>
+                    <ArrowRight className="w-3 h-3 text-teal-500" />
+                  </Link>
                 </div>
               </div>
             );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
   LifeBuoy,
   MapPin,
@@ -31,15 +31,27 @@ import { MapComponent } from '../components/MapComponent';
 
 export const CreateRequestPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<CrisisEvent[]>([]);
+
+  const initialCatParam = Number(searchParams.get('category'));
+  const initialShelterParam = searchParams.get('shelterName');
 
   // Wizard Step State (1: Aid Type & Details, 2: People & Location, 3: Review & Submit)
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Form fields
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<number>(1); // 1 = Food Rations
+  const [title, setTitle] = useState(
+    initialShelterParam ? `Emergency Shelter Placement - ${initialShelterParam}` : ''
+  );
+  const [description, setDescription] = useState(
+    initialShelterParam
+      ? `Requesting emergency shelter bed allocation at ${initialShelterParam} due to flooding.`
+      : ''
+  );
+  const [category, setCategory] = useState<number>(
+    initialCatParam >= 1 && initialCatParam <= 8 ? initialCatParam : 1
+  ); // 1 = Food Rations, 4 = Emergency Shelter
   const [urgency, setUrgency] = useState<number>(2); // 2 = Medium
   const [affectedCount, setAffectedCount] = useState<number>(4);
   const [specialNeeds, setSpecialNeeds] = useState('');

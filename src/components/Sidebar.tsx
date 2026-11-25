@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Truck,
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { SahayaLogo } from './SahayaLogo';
@@ -45,11 +46,12 @@ export const navItems: NavItem[] = [
   // 3. Incident / Case Manager
   { name: 'Active Incidents Registry', href: '/coordinator/incidents', icon: ShieldAlert, roles: ['CaseManager'] },
   { name: 'Case Review & AI Triage', href: '/coordinator/ai-review', icon: Bot, roles: ['CaseManager'] },
+  { name: 'Supply Depot Allocation', href: '/resources', icon: Package, roles: ['CaseManager'] },
   { name: 'GIS Crisis Map', href: '/map', icon: MapPin, roles: ['CaseManager'] },
 
   // 4. Resource and Logistics Manager
   { name: 'Inventory Depot & Supplies', href: '/resources', icon: Package, roles: ['LogisticsManager'] },
-  { name: 'Supply Logistics Analytics', href: '/reports', icon: FileBarChart, roles: ['LogisticsManager'] },
+  { name: 'Inter-Agency Requisitions', href: '/partner/dashboard', icon: Truck, roles: ['LogisticsManager'] },
 
   // 5. Shelter Administrator
   { name: 'Safe Shelters & Camp Roster', href: '/shelters', icon: Home, roles: ['ShelterAdmin'] },
@@ -79,7 +81,6 @@ export const navItems: NavItem[] = [
   { name: 'All Volunteers', href: '/volunteers', icon: HeartHandshake, roles: ['Admin'] },
   { name: 'Donations & Campaigns', href: '/donations', icon: DollarSign, roles: ['Admin'] },
   { name: 'Command GIS Map', href: '/map', icon: MapPin, roles: ['Admin'] },
-  { name: 'System Analytics & Reports', href: '/reports', icon: FileBarChart, roles: ['Admin'] },
 
   // Optional: Field Volunteer Mobile Dispatch
   { name: 'Field Mission Dispatch', href: '/volunteer/dashboard', icon: LayoutDashboard, roles: ['Volunteer'] },
@@ -209,24 +210,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1">
           {filteredNav.map((item) => {
             const Icon = item.icon;
+            const isUserManagement = item.href === '/admin/users';
+            let pendingCount = 0;
+            if (isUserManagement) {
+              try {
+                const stored = localStorage.getItem('sahaya_registered_users');
+                if (stored) {
+                  const parsed = JSON.parse(stored);
+                  if (Array.isArray(parsed)) {
+                    pendingCount = parsed.filter((u: any) => u.isActive === false).length;
+                  }
+                }
+              } catch {}
+            }
+
             return (
               <NavLink
                 key={item.name}
                 to={item.href}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
-                    ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 font-bold'
-                    : 'text-slate-400 hover:text-white hover:bg-[#162744]'
+                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 font-bold'
+                      : 'text-slate-400 hover:text-white hover:bg-[#162744]'
                   }`
                 }
               >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!isCollapsed && (
-                  <span className="truncate">
-                    {language === 'si' && navItemTranslations[item.name]?.si
-                      ? navItemTranslations[item.name].si
-                      : item.name}
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <Icon className="w-5 h-5 shrink-0" />
+                  {!isCollapsed && (
+                    <span className="truncate">
+                      {language === 'si' && navItemTranslations[item.name]?.si
+                        ? navItemTranslations[item.name].si
+                        : item.name}
+                    </span>
+                  )}
+                </div>
+
+                {!isCollapsed && isUserManagement && pendingCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 shadow-xs animate-pulse">
+                    {pendingCount}
                   </span>
                 )}
               </NavLink>

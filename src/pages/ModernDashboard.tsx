@@ -1,21 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Megaphone,
-  Plus,
-  Home,
+  ShieldAlert,
+  Activity,
   Users,
-  AlertTriangle,
+  Home,
+  Package,
+  HeartHandshake,
   Clock,
   MapPin,
   TrendingUp,
-  Heart,
-  ChevronRight,
   ArrowRight,
+  Server,
   Layers,
-  ShieldCheck,
-  Cpu,
-  GitBranch
+  CheckCircle2,
+  AlertTriangle,
+  Bot,
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -28,6 +30,8 @@ import {
 import { StatCard } from '../components/StatCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { DataTable } from '../components/DataTable';
+import { api } from '../services/api';
+import { SystemOverviewReport } from '../types';
 
 const chartData = [
   { time: '00:00', requests: 180 },
@@ -38,21 +42,45 @@ const chartData = [
   { time: '20:00', requests: 1248 },
 ];
 
-interface RoadmapItem {
+interface OperationalZoneSummary {
   id: string;
   name: string;
-  lead: string;
-  status: 'Approved' | 'Pending';
-  progress: string;
+  province: string;
+  activeRequests: number;
+  criticalTriage: number;
+  sheltersOpen: number;
+  depotStatus: 'Adequate' | 'Warning' | 'Critical';
 }
 
 export const ModernDashboard: React.FC = () => {
-  const sampleModules: RoadmapItem[] = [
-    { id: 'ZONE-01', name: 'Gin Ganga Flood Basin & Baddegama Evacuations', lead: 'Southern Command / DMC', status: 'Approved', progress: 'Active Deployment' },
-    { id: 'ZONE-02', name: 'Kelani River Rising Water Level & Sedawatta', lead: 'Western Command / SL Navy', status: 'Approved', progress: 'Rescue Operations' },
-    { id: 'ZONE-03', name: 'Attanagalu Oya Inundation & Gampaha Safe Camps', lead: 'Gampaha District Secretariat', status: 'Approved', progress: 'Relief Distribution' },
-    { id: 'ZONE-04', name: 'Kalu Ganga Riverbank Alert & Ratnapura Relief Base', lead: 'Sabaragamuwa Command', status: 'Approved', progress: 'Continuous Monitoring' },
-    { id: 'ZONE-05', name: 'Hanwella & Pugoda Landslide Risk Buffer', lead: 'NBRO & First Responders', status: 'Pending', progress: 'Precautionary Evac' },
+  const [overview, setOverview] = useState<SystemOverviewReport>({
+    activeIncidents: 6,
+    totalRequests: 1420,
+    pendingRequests: 42,
+    resolvedRequests: 1378,
+    totalShelters: 18,
+    totalShelterCapacity: 5000,
+    shelterOccupancyPercentage: 74,
+    totalDonationsRaised: 1845000,
+    totalInKindDonations: 320,
+    activeVolunteers: 65,
+    totalRegisteredUsers: 480,
+  });
+
+  useEffect(() => {
+    api.getSystemOverview()
+      .then((data) => {
+        if (data) setOverview(data);
+      })
+      .catch((err) => console.warn('Using baseline overview stats:', err));
+  }, []);
+
+  const crisisZones: OperationalZoneSummary[] = [
+    { id: 'ZN-GALLE', name: 'Galle & Nilwala Basin', province: 'Southern Province', activeRequests: 142, criticalTriage: 18, sheltersOpen: 6, depotStatus: 'Warning' },
+    { id: 'ZN-GAMPAHA', name: 'Kelani River - Gampaha & Ja-Ela', province: 'Western Province', activeRequests: 284, criticalTriage: 31, sheltersOpen: 8, depotStatus: 'Critical' },
+    { id: 'ZN-RATNAPURA', name: 'Kalu Ganga - Ratnapura Flood Plain', province: 'Sabaragamuwa', activeRequests: 118, criticalTriage: 9, sheltersOpen: 4, depotStatus: 'Adequate' },
+    { id: 'ZN-KALUTARA', name: 'Kalutara & Millaniya Lowlands', province: 'Western Province', activeRequests: 95, criticalTriage: 7, sheltersOpen: 3, depotStatus: 'Adequate' },
+    { id: 'ZN-MATARA', name: 'Matara & Akuressa Sector', province: 'Southern Province', activeRequests: 160, criticalTriage: 14, sheltersOpen: 5, depotStatus: 'Warning' },
   ];
 
   return (
@@ -81,51 +109,51 @@ export const ModernDashboard: React.FC = () => {
             Coordinate. Prioritise. Assist.
           </p>
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-md leading-relaxed">
-            National command overview and executive governance for crisis incidents, resource allocations, shelter capacities, and multi-agency relief operations.
+            National executive command overview: multi-agency relief operations, emergency request triage, depot allocations, and shelter safe zones.
           </p>
         </div>
       </div>
 
-      {/* 2. CORE CRISIS COMMAND STATS */}
+      {/* 2. OPERATIONAL HUMANITARIAN STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Active Crisis Sectors"
-          value="4 Active"
-          subtitle="Western & Southern Basins"
-          icon={<Layers className="w-5 h-5 text-teal-600" />}
-          trend="100% Monitored"
+          title="Active Crisis Incidents"
+          value={overview.activeIncidents}
+          subtitle="Monitored flood sectors"
+          icon={<ShieldAlert className="w-5 h-5" />}
+          trend="High Alert"
+          variant="default"
+        />
+        <StatCard
+          title="Total Aid Requests"
+          value={overview.totalRequests.toLocaleString()}
+          subtitle={`${overview.pendingRequests} awaiting dispatch`}
+          icon={<Activity className="w-5 h-5" />}
+          trend={`${overview.resolvedRequests} resolved`}
+          variant="default"
+        />
+        <StatCard
+          title="Safe Shelter Capacity"
+          value={`${overview.shelterOccupancyPercentage || 0}%`}
+          subtitle={`${overview.totalShelters || 0} active evacuation camps`}
+          icon={<Home className="w-5 h-5" />}
+          trend={`${(overview.totalShelterCapacity || 0).toLocaleString()} max capacity`}
+          variant="default"
+        />
+        <StatCard
+          title="Mobilized Aid Funds"
+          value={`$${overview.totalDonationsRaised.toLocaleString()}`}
+          subtitle={`${overview.totalInKindDonations} in-kind shipments`}
+          icon={<HeartHandshake className="w-5 h-5" />}
+          trend={`${overview.activeVolunteers} active volunteers`}
           variant="success"
-        />
-        <StatCard
-          title="Emergency Triage SLA"
-          value="3.8h Avg"
-          subtitle="Triage to Aid Dispatch"
-          icon={<ShieldCheck className="w-5 h-5 text-emerald-600" />}
-          trend="Target: < 4.0h"
-          variant="default"
-        />
-        <StatCard
-          title="Relief Shelter Load"
-          value="24 Camps"
-          subtitle="68% Safe Bed Capacity"
-          icon={<Cpu className="w-5 h-5 text-blue-600" />}
-          trend="450 Beds Available"
-          variant="default"
-        />
-        <StatCard
-          title="Field Mobilization"
-          value="142 Teams"
-          subtitle="Search, Medical & Rations"
-          icon={<GitBranch className="w-5 h-5 text-purple-600" />}
-          trend="All Sectors Active"
-          variant="default"
         />
       </div>
 
-      {/* 4. MAIN ANALYTICS & CRISIS MONITORING GRID */}
+      {/* 3. MAIN ANALYTICS & CRISIS MONITORING GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* LEFT 2 COLUMNS: System Overview + Recent Activity */}
+        {/* LEFT 2 COLUMNS: System Overview + Recent Activity + Crisis Zones */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* System Overview Chart */}
@@ -133,7 +161,7 @@ export const ModernDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-5 rounded-full bg-blue-600" />
-                <h3 className="font-extrabold text-base text-slate-900 tracking-tight">System Overview</h3>
+                <h3 className="font-extrabold text-base text-slate-900 tracking-tight">Real-Time Request Influx</h3>
               </div>
               <span className="text-xs font-semibold text-slate-500 bg-slate-100 rounded-lg px-3 py-1.5">
                 Last 24 Hours
@@ -143,25 +171,25 @@ export const ModernDashboard: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
               <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100">
                 <span className="text-[11px] font-bold text-blue-600 uppercase">Total Requests</span>
-                <p className="text-2xl font-black text-slate-900 mt-0.5">1,248</p>
+                <p className="text-2xl font-black text-slate-900 mt-0.5">{overview.totalRequests.toLocaleString()}</p>
                 <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1">
-                  <TrendingUp className="w-3 h-3" /> ↑ 12%
+                  <TrendingUp className="w-3 h-3" /> Influx Active
                 </span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-100">
                 <span className="text-[11px] font-bold text-emerald-600 uppercase">Resolved</span>
-                <p className="text-2xl font-black text-slate-900 mt-0.5">892</p>
+                <p className="text-2xl font-black text-slate-900 mt-0.5">{overview.resolvedRequests.toLocaleString()}</p>
                 <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1">
-                  <TrendingUp className="w-3 h-3" /> ↑ 8%
+                  <CheckCircle2 className="w-3 h-3" /> Complete
                 </span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-100">
-                <span className="text-[11px] font-bold text-amber-600 uppercase">Pending</span>
-                <p className="text-2xl font-black text-slate-900 mt-0.5">356</p>
+                <span className="text-[11px] font-bold text-amber-600 uppercase">Pending Triage</span>
+                <p className="text-2xl font-black text-slate-900 mt-0.5">{overview.pendingRequests}</p>
                 <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5 mt-1">
-                  ↑ 5%
+                  Queue Priority
                 </span>
               </div>
 
@@ -169,7 +197,7 @@ export const ModernDashboard: React.FC = () => {
                 <span className="text-[11px] font-bold text-purple-600 uppercase">Avg Response</span>
                 <p className="text-2xl font-black text-slate-900 mt-0.5">4.5h</p>
                 <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1">
-                  Fast SLA
+                  Target SLA: 6h
                 </span>
               </div>
             </div>
@@ -206,10 +234,10 @@ export const ModernDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-slate-700" />
-                <h3 className="font-extrabold text-base text-slate-900 tracking-tight">Recent System Activities</h3>
+                <h3 className="font-extrabold text-base text-slate-900 tracking-tight">Recent Crisis Dispatch Activities</h3>
               </div>
-              <Link to="/citizen/dashboard" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition">
-                <span>View All</span>
+              <Link to="/coordinator/incidents" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition">
+                <span>View All Incidents</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -219,10 +247,10 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">Assistance request #AR-1024</h4>
+                    <h4 className="text-sm font-bold text-slate-900">Emergency Request #AR-1024</h4>
                     <span className="text-[11px] text-slate-400 font-medium">2m ago</span>
                   </div>
-                  <p className="text-xs text-slate-500">New request for emergency medical kit – Galle District</p>
+                  <p className="text-xs text-slate-500">New high-priority medical & water request – Galle District</p>
                 </div>
               </div>
 
@@ -230,10 +258,10 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">AI Triage Recommendation</h4>
+                    <h4 className="text-sm font-bold text-slate-900">AI Triage Recommendation Confirmed</h4>
                     <span className="text-[11px] text-slate-400 font-medium">5m ago</span>
                   </div>
-                  <p className="text-xs text-slate-500">High Priority Emergency (Confidence: 92%)</p>
+                  <p className="text-xs text-slate-500">Human coordinator approved: 50 ration packs dispatched</p>
                 </div>
               </div>
 
@@ -241,10 +269,10 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">Shelter Safe Zone Allocated</h4>
+                    <h4 className="text-sm font-bold text-slate-900">Shelter Safe Zone Re-allocated</h4>
                     <span className="text-[11px] text-slate-400 font-medium">8m ago</span>
                   </div>
-                  <p className="text-xs text-slate-500">Family of 5 assigned to Sunanda Shelter</p>
+                  <p className="text-xs text-slate-500">Displaced family accommodated at Sunanda Temple Camp</p>
                 </div>
               </div>
 
@@ -252,43 +280,72 @@ export const ModernDashboard: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1.5 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900">Relief Donation Received</h4>
+                    <h4 className="text-sm font-bold text-slate-900">Inter-Agency Partner Delivery</h4>
                     <span className="text-[11px] text-slate-400 font-medium">12m ago</span>
                   </div>
-                  <p className="text-xs text-slate-500">Rs. 100,000 pledged from Global Care Relief Fund</p>
+                  <p className="text-xs text-slate-500">Sri Lanka Red Cross Society replenished Ja-Ela central medical depot</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 5. ROADMAP DATA TABLE */}
+          {/* 4. OPERATIONAL CRISIS ZONES TABLE */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="p-5 border-b border-slate-200">
-              <h2 className="text-base font-bold text-slate-800">Designated Humanitarian Response Operational Sectors</h2>
-              <p className="text-xs text-slate-500">Real-time multi-agency deployment status across active crisis zones in Sri Lanka.</p>
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-slate-800">Operational Crisis Sectors & Resource Depots</h2>
+                <p className="text-xs text-slate-500">Active disaster zones requiring emergency resource dispatch.</p>
+              </div>
+              <Link to="/resources" className="text-xs font-bold text-blue-600 hover:text-blue-700">
+                Depot Inventory &rarr;
+              </Link>
             </div>
-            <DataTable<RoadmapItem>
+            <DataTable<OperationalZoneSummary>
               keyExtractor={(item) => item.id}
               columns={[
-                { key: 'id', header: 'Sector ID', render: (item) => <span className="font-mono font-bold text-teal-600">{item.id}</span> },
-                { key: 'name', header: 'Crisis Operational Sector', render: (item) => <span className="font-medium text-slate-900">{item.name}</span> },
-                { key: 'lead', header: 'Command Authority', render: (item) => <span className="text-slate-600 font-medium">{item.lead}</span> },
-                { key: 'status', header: 'Response Status', render: (item) => <StatusBadge status={item.status} /> },
-                { key: 'progress', header: 'Deployment Stage', render: (item) => <span className="text-xs font-semibold text-slate-500">{item.progress}</span> },
+                { key: 'id', header: 'Sector ID', render: (item) => <span className="font-mono font-bold text-blue-600">{item.id}</span> },
+                { key: 'name', header: 'Crisis Zone & River Basin', render: (item) => <span className="font-medium text-slate-900">{item.name}</span> },
+                { key: 'province', header: 'Province', render: (item) => <span className="text-slate-600 font-medium">{item.province}</span> },
+                { key: 'activeRequests', header: 'Active Requests', render: (item) => <span className="font-bold text-slate-800">{item.activeRequests}</span> },
+                {
+                  key: 'criticalTriage',
+                  header: 'Critical Urgency',
+                  render: (item) => (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                      {item.criticalTriage} urgent
+                    </span>
+                  )
+                },
+                {
+                  key: 'depotStatus',
+                  header: 'Depot Stock',
+                  render: (item) => {
+                    const color = item.depotStatus === 'Adequate'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : item.depotStatus === 'Warning'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200';
+                    return (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border ${color}`}>
+                        {item.depotStatus}
+                      </span>
+                    );
+                  }
+                },
               ]}
-              data={sampleModules}
+              data={crisisZones}
             />
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Live Crisis Alert Card & Donation Campaign */}
+        {/* RIGHT COLUMN: Live Crisis Alert Card & Administrative Governance Panel */}
         <div className="space-y-6">
           {/* Live Crisis Card */}
           <div className="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 space-y-4">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-extrabold border border-rose-200/60">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                Live Crisis Alert
+                Priority Disaster Incident
               </span>
               <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
                 <Clock className="w-3 h-3" /> Updated: 2 min ago
@@ -298,7 +355,7 @@ export const ModernDashboard: React.FC = () => {
             <div>
               <h3 className="text-base font-extrabold text-slate-900">Flood Emergency – Galle District</h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Heavy monsoon rains have caused severe flooding in Galle and surrounding coastal areas.
+                Heavy monsoon rains have caused severe flooding in Galle and Nilwala basin, displacing coastal communities.
               </p>
             </div>
 
@@ -311,67 +368,88 @@ export const ModernDashboard: React.FC = () => {
               <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-red-800 leading-tight">
-                  Urgent: Food, Medicine and Shelter Needed
+                  Urgent: Drinking Water, Dry Rations & Tarpaulins
                 </p>
-                <p className="text-[11px] text-red-600 mt-0.5">High vulnerability population evacuated</p>
+                <p className="text-[11px] text-red-600 mt-0.5">High-vulnerability families awaiting rescue boats</p>
               </div>
             </div>
 
             <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-slate-800">Quick Stats</span>
-                <Link to="/coordinator/incidents" className="text-xs font-bold text-blue-600 hover:underline">View Details →</Link>
+                <span className="text-xs font-bold text-slate-800">Sector Tally</span>
+                <Link to="/coordinator/incidents" className="text-xs font-bold text-blue-600 hover:underline">View Incident Details →</Link>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                   <Users className="w-4 h-4 text-blue-600 mx-auto mb-1" />
                   <p className="text-sm font-black text-slate-900">12,450</p>
-                  <span className="text-[10px] text-slate-500 font-medium">Affected</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Displaced</span>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                   <Home className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
                   <p className="text-sm font-black text-slate-900">24</p>
-                  <span className="text-[10px] text-slate-500 font-medium">Shelters</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Safe Shelters</span>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                   <div className="w-4 h-4 text-amber-600 mx-auto mb-1 font-bold text-xs">📦</div>
                   <p className="text-sm font-black text-slate-900">8.5K</p>
-                  <span className="text-[10px] text-slate-500 font-medium">Resources</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Aid Packs</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Relief Campaign Card */}
-          <div className="relative rounded-3xl overflow-hidden shadow-md text-white p-6 min-h-[220px] flex flex-col justify-between group">
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-              style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800')`
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20" />
-
-            <div className="relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3">
-                <Heart className="w-5 h-5 text-white" />
+          {/* Administrative Control Hub Card */}
+          <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Server className="w-5 h-5 text-teal-400" />
+                <h3 className="text-sm font-extrabold">System Administration</h3>
               </div>
-              <h3 className="text-lg font-black tracking-tight leading-tight">Stronger Together</h3>
-              <p className="text-xs text-slate-200 mt-1 max-w-xs leading-relaxed">
-                Your support helps us reach more citizens in need across flood-affected zones in Sri Lanka.
-              </p>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Governance Active
+              </span>
             </div>
 
-            <div className="relative z-10 pt-4">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Access the immutable compliance audit logs, runtime telemetry, and manage role-based permissions across platform accounts.
+            </p>
+
+            <div className="space-y-2 pt-2">
               <Link
-                to="/donations"
-                className="w-full py-2.5 px-4 rounded-xl bg-[#2563eb] hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2"
+                to="/admin/dashboard"
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center justify-between"
               >
-                <span>Donate Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-purple-400" />
+                  <span>Telemetry & Audit Logs</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+
+              <Link
+                to="/admin/users"
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-teal-400" />
+                  <span>User Management (RBAC)</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+
+              <Link
+                to="/coordinator/ai-review"
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-amber-400" />
+                  <span>AI Decision Review & Governance</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
             </div>
           </div>
