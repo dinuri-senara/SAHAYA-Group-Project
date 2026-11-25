@@ -210,12 +210,12 @@ export const ResourcesPage: React.FC = () => {
         res.category === 'DrinkingWater'
           ? { name: 'Sri Lanka Red Cross Society (SLRCS)', type: 'Humanitarian NGO', eta: 3 }
           : res.category === 'Food'
-          ? { name: 'UN World Food Programme (WFP)', type: 'UN Agency', eta: 12 }
-          : res.category === 'LogisticsEquipment'
-          ? { name: 'Sri Lanka Army Disaster Relief Wing', type: 'Military / Civil Defence', eta: 2 }
-          : res.category === 'MedicalSupplies'
-          ? { name: 'WHO Sri Lanka Emergency Mission', type: 'UN Agency', eta: 6 }
-          : { name: 'Disaster Management Centre (DMC) National Stockpile', type: 'Government Agency', eta: 4 };
+            ? { name: 'UN World Food Programme (WFP)', type: 'UN Agency', eta: 12 }
+            : res.category === 'LogisticsEquipment'
+              ? { name: 'Sri Lanka Army Disaster Relief Wing', type: 'Military / Civil Defence', eta: 2 }
+              : res.category === 'MedicalSupplies'
+                ? { name: 'WHO Sri Lanka Emergency Mission', type: 'UN Agency', eta: 6 }
+                : { name: 'Disaster Management Centre (DMC) National Stockpile', type: 'Government Agency', eta: 4 };
 
       setPartnerForm({
         partnerName: suggestedPartner.name,
@@ -417,22 +417,20 @@ export const ResourcesPage: React.FC = () => {
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${
-            activeTab === 'inventory'
-              ? 'border-teal-600 text-teal-600 dark:text-teal-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
+          className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'inventory'
+            ? 'border-teal-600 text-teal-600 dark:text-teal-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
         >
           <Layers className="w-4 h-4" />
           Internal Depot Inventory ({resources.length})
         </button>
         <button
           onClick={() => setActiveTab('partner-requests')}
-          className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${
-            activeTab === 'partner-requests'
-              ? 'border-amber-600 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
+          className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'partner-requests'
+            ? 'border-amber-600 text-amber-600 dark:text-amber-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
         >
           <Building2 className="w-4 h-4" />
           Inter-Agency Partner Requisitions ({partnerRequests.length})
@@ -482,11 +480,10 @@ export const ResourcesPage: React.FC = () => {
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    categoryFilter === cat
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${categoryFilter === cat
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    }`}
                 >
                   {cat === 'DrinkingWater' ? 'Water' : cat === 'MedicalSupplies' ? 'Medical' : cat === 'ShelterSupplies' ? 'Shelter' : cat === 'LogisticsEquipment' ? 'Logistics' : cat}
                 </button>
@@ -494,11 +491,10 @@ export const ResourcesPage: React.FC = () => {
 
               <button
                 onClick={() => setLowStockOnly(!lowStockOnly)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  lowStockOnly
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${lowStockOnly
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+                  }`}
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
                 Shortage / Low Stock ({lowStockCount})
@@ -553,11 +549,10 @@ export const ResourcesPage: React.FC = () => {
                         {/* Item + Recommendation banner if depleted */}
                         <td className="px-5 py-4">
                           <div className="flex items-start gap-3">
-                            <div className={`p-2.5 rounded-xl shrink-0 ${
-                              isOutOfStock
-                                ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600'
-                                : 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400'
-                            }`}>
+                            <div className={`p-2.5 rounded-xl shrink-0 ${isOutOfStock
+                              ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600'
+                              : 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400'
+                              }`}>
                               <Package className="w-5 h-5" />
                             </div>
                             <div className="space-y-1.5">
@@ -614,13 +609,12 @@ export const ResourcesPage: React.FC = () => {
                             </div>
                             <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all ${
-                                  isOutOfStock
-                                    ? 'bg-rose-600'
-                                    : res.isLowStock
+                                className={`h-full rounded-full transition-all ${isOutOfStock
+                                  ? 'bg-rose-600'
+                                  : res.isLowStock
                                     ? 'bg-amber-500'
                                     : 'bg-teal-500'
-                                }`}
+                                  }`}
                                 style={{ width: `${Math.min(availabilityPct, 100)}%` }}
                               />
                             </div>
@@ -799,13 +793,12 @@ export const ResourcesPage: React.FC = () => {
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        req.priority === 'Critical'
-                          ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                          : req.priority === 'High'
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${req.priority === 'Critical'
+                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                        : req.priority === 'High'
                           ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                           : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-                      }`}>
+                        }`}>
                         {req.priority}
                       </span>
                     </td>
@@ -819,15 +812,14 @@ export const ResourcesPage: React.FC = () => {
 
                     <td className="px-5 py-4">
                       <div className="space-y-1">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          req.status === 'InTransit'
-                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-                            : req.status === 'Approved'
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${req.status === 'InTransit'
+                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                          : req.status === 'Approved'
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : req.status === 'Delivered'
-                            ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20'
-                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                        }`}>
+                              ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                          }`}>
                           {req.status === 'InTransit' && <Truck className="w-3 h-3" />}
                           {req.status === 'Approved' && <CheckCircle2 className="w-3 h-3" />}
                           {req.status === 'Pending' && <Clock className="w-3 h-3" />}

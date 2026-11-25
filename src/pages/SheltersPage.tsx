@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Home,
   MapPin,
@@ -51,17 +50,7 @@ export const SheltersPage: React.FC = () => {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
-  const [editForm, setEditForm] = useState({
-    totalCapacity: 100,
-    currentOccupancy: 0,
-    status: 'Active' as 'Active' | 'Full' | 'Closed',
-    facilities: '',
-    accessibilityInfo: '',
-    contactPhone: ''
-  });
-  const [isUpdating, setIsUpdating] = useState(false);
 
   // Supply Requisitions State (Coursework Spec Page 4 - Section 1.1 F)
   const [supplyRequests, setSupplyRequests] = useState<ShelterSupplyRequest[]>([]);
@@ -223,21 +212,13 @@ export const SheltersPage: React.FC = () => {
     setSelectedShelter(shelter);
     setShowAssignModal(true);
     try {
-      const allRequests = await api.getRequests();
-      // Filter requests that are approved, under review, submitted or pending and not yet resolved
-      const eligible = allRequests
-        .filter(
-          r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted' || r.status === 'Pending'
-        )
-        .sort((a, b) => {
-          const aIsShelter = String(a.category).toLowerCase().includes('shelter') ? 0 : 1;
-          const bIsShelter = String(b.category).toLowerCase().includes('shelter') ? 0 : 1;
-          return aIsShelter - bIsShelter;
-        });
+      const requests = await api.getRequests({ category: 'EmergencyShelter' });
+      // Filter requests that are approved or under review and not yet resolved
+      const eligible = requests.filter(r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted');
       setPendingRequests(eligible);
       if (eligible.length > 0) {
         setSelectedRequestId(eligible[0].id);
-        setAssignCount(eligible[0].affectedCount || eligible[0].peopleCount || 1);
+        setAssignCount(eligible[0].affectedCount || 1);
       }
     } catch {
       // Fallback
@@ -407,22 +388,20 @@ export const SheltersPage: React.FC = () => {
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2">
         <button
           onClick={() => setActiveShelterTab('shelters')}
-          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${
-            activeShelterTab === 'shelters'
-              ? 'border-teal-500 text-teal-600 dark:text-teal-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
+          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${activeShelterTab === 'shelters'
+            ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
         >
           <Home className="w-4 h-4" />
           Safe Shelters & Camps ({shelters.length})
         </button>
         <button
           onClick={() => setActiveShelterTab('supply-requisitions')}
-          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${
-            activeShelterTab === 'supply-requisitions'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
+          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${activeShelterTab === 'supply-requisitions'
+            ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
         >
           <Truck className="w-4 h-4" />
           Camp Supply Requisitions ({supplyRequests.length})
@@ -708,13 +687,12 @@ export const SheltersPage: React.FC = () => {
                         </td>
                         <td className="px-5 py-4">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                              req.urgency === 'Critical'
-                                ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 animate-pulse'
-                                : req.urgency === 'High'
-                                  ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
-                                  : 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
-                            }`}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${req.urgency === 'Critical'
+                              ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 animate-pulse'
+                              : req.urgency === 'High'
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                                : 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
+                              }`}
                           >
                             <AlertTriangle className="w-3 h-3" />
                             {req.urgency}
@@ -722,15 +700,14 @@ export const SheltersPage: React.FC = () => {
                         </td>
                         <td className="px-5 py-4">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                              req.status === 'Delivered'
-                                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                                : req.status === 'Dispatched'
-                                  ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
-                                  : req.status === 'Approved'
-                                    ? 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
-                                    : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
-                            }`}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${req.status === 'Delivered'
+                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                              : req.status === 'Dispatched'
+                                ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
+                                : req.status === 'Approved'
+                                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
+                                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                              }`}
                           >
                             {req.status === 'Delivered' ? (
                               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -1170,18 +1147,6 @@ export const SheltersPage: React.FC = () => {
                     min="1"
                     value={editForm.totalCapacity}
                     onChange={e => setEditForm({ ...editForm, totalCapacity: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Occupancy *</label>
-                  <input
-                    required
-                    type="number"
-                    min="0"
-                    max={editForm.totalCapacity}
-                    value={editForm.currentOccupancy}
-                    onChange={e => setEditForm({ ...editForm, currentOccupancy: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                   />
                 </div>
