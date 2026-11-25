@@ -107,6 +107,7 @@ const mockRequests: AssistanceRequest[] = [
     citizenPhone: '+94 71 889 2211',
     category: 'Water' as RequestCategory,
     urgency: 'Immediate' as RequestUrgency,
+    title: 'Drinking Water Contamination & Flood Stranding',
     description: 'Drinking water contamination. 14 families stranded on upper rooftop of temple.',
     location: 'Sedawatta, Wellampitiya',
     latitude: 6.942,
@@ -115,6 +116,20 @@ const mockRequests: AssistanceRequest[] = [
     status: 'Pending' as RequestStatus,
     statusHistory: [],
     createdAt: '2026-11-19T06:30:00Z',
+    latestRecommendation: {
+      id: 'ai-rec-1',
+      assistanceRequestId: 'req-1',
+      predictedCategory: 'Water',
+      suggestedCategory: 'Water',
+      suggestedPriority: 'Immediate',
+      suggestedUrgency: 'Immediate',
+      confidenceScore: 0.94,
+      explanation: 'NLP crisis keywords extracted: "drinking water contamination", "14 families stranded on upper rooftop". Proximity to Kelani levee flood surge indicates acute dehydration and waterborne disease contamination risk within 6 hours.',
+      suggestedResources: ['Clean Water Purification Packs (5L)', 'Emergency Biscuit Rations', 'Inflatable Rescue Rafts'],
+      providerMode: 'Heuristic NLP Safety Engine & LLM Triage',
+      reviewStatus: 'Pending',
+      createdAt: '2026-11-19T06:35:00Z',
+    },
   },
   {
     id: 'req-2',
@@ -123,6 +138,7 @@ const mockRequests: AssistanceRequest[] = [
     citizenPhone: '+94 77 452 9901',
     category: 'Medical' as RequestCategory,
     urgency: 'Critical' as RequestUrgency,
+    title: 'Urgent Insulin & Pediatric Emergency Care',
     description: 'Insulin and emergency pediatric medical care required immediately.',
     location: 'Pugoda Bridge North',
     latitude: 6.974,
@@ -131,6 +147,20 @@ const mockRequests: AssistanceRequest[] = [
     status: 'Assigned' as RequestStatus,
     statusHistory: [],
     createdAt: '2026-11-19T07:15:00Z',
+    latestRecommendation: {
+      id: 'ai-rec-2',
+      assistanceRequestId: 'req-2',
+      predictedCategory: 'Medical',
+      suggestedCategory: 'Medical',
+      suggestedPriority: 'Critical',
+      suggestedUrgency: 'Critical',
+      confidenceScore: 0.98,
+      explanation: 'Critical medical vulnerability flag detected: "insulin dependent" and "emergency pediatric care needed immediately". High mortality risk requires immediate dispatch of medical officer and cold-chain insulin transportation.',
+      suggestedResources: ['Emergency Medical Trauma & First Aid Kits', 'Mobile Paramedic Unit'],
+      providerMode: 'Medical Emergency Triage Pipeline',
+      reviewStatus: 'Pending',
+      createdAt: '2026-11-19T07:20:00Z',
+    },
   },
   {
     id: 'req-3',
@@ -139,6 +169,7 @@ const mockRequests: AssistanceRequest[] = [
     citizenPhone: '+94 75 112 3344',
     category: 'Food' as RequestCategory,
     urgency: 'High' as RequestUrgency,
+    title: 'Dry Rations for Evacuated Elderly Care Home',
     description: 'Dry rations needed for elderly care home evacuated to community hall.',
     location: 'Biyagama Central',
     latitude: 6.948,
@@ -147,6 +178,23 @@ const mockRequests: AssistanceRequest[] = [
     status: 'InProgress' as RequestStatus,
     statusHistory: [],
     createdAt: '2026-11-19T08:00:00Z',
+    latestRecommendation: {
+      id: 'ai-rec-3',
+      assistanceRequestId: 'req-3',
+      predictedCategory: 'Food',
+      suggestedCategory: 'Food',
+      suggestedPriority: 'High',
+      suggestedUrgency: 'High',
+      confidenceScore: 0.89,
+      explanation: 'Evacuated elderly population (30 individuals) requiring immediate nutritional support and dry ration distribution at designated community hall shelter.',
+      suggestedResources: ['Emergency High-Energy Biscuit Rations', 'Bottled Mineral Drinking Water (1L Bottles)'],
+      providerMode: 'Relief Rations Allocation Engine',
+      reviewStatus: 'Accepted',
+      createdAt: '2026-11-19T08:05:00Z',
+      reviewingOfficerName: 'Chief Emergency Coordinator',
+      officerDecision: 'Approved direct ration dispatch',
+      reviewedAt: '2026-11-19T08:15:00Z',
+    },
   },
 ];
 
@@ -1089,7 +1137,23 @@ export const api = {
     return this.assignShelter({ shelterId, ...data });
   },
 
-  async detectDuplicates(_requestId?: string): Promise<DuplicateMatch[]> {
+  async detectDuplicates(requestId?: string): Promise<DuplicateMatch[]> {
+    if (requestId === 'req-1') {
+      return [
+        {
+          id: 'dup-1',
+          sourceRequestId: 'req-1',
+          matchedRequestId: 'req-102',
+          matchedTitle: 'Urgent Drinking Water Appeal for Sedawatta Temple Flood Victims',
+          matchedCategory: 'Water',
+          matchedCitizenName: 'Ven. Ananda Thero (Temple Custodian)',
+          similarityScore: 0.88,
+          proximityKm: 0.25,
+          reason: 'High NLP narrative overlap (88%) regarding stranded families at Sedawatta temple and identical geographic coordinates (0.25 km distance).',
+          status: 'FlaggedForMerge',
+        },
+      ];
+    }
     return [];
   },
 
