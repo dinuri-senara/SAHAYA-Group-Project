@@ -26,7 +26,8 @@ import {
   UserRoleCounts,
   SystemHealthMetrics,
   VolunteerCheckIn,
-  PartnerRequest
+  PartnerRequest,
+  ShelterSupplyRequest
 } from '../types';
 
 // Mock DB for pure client-side standalone execution
@@ -430,6 +431,39 @@ const mockPartnerRequests: PartnerRequest[] = [
   }
 ];
 
+const mockShelterSupplyRequests: ShelterSupplyRequest[] = [
+  {
+    id: 'ssr-1',
+    shelterId: 'sh-1',
+    shelterName: 'Kelaniya Maha Vidyalaya Safe Camp',
+    category: 'DrinkingWater',
+    itemName: 'Clean Water Purification Packs (5L)',
+    quantityRequested: 150,
+    unit: 'Packs',
+    urgency: 'Critical',
+    justification: 'Camp water main contaminated by Kelani surge. 420 displaced persons on site.',
+    sourceDepot: 'Depot A - Kelaniya, Gampaha District',
+    status: 'Dispatched',
+    requestedAt: '2026-11-24T09:00:00Z',
+    requestedBy: 'Shelter Lead Officer (Kelaniya)'
+  },
+  {
+    id: 'ssr-2',
+    shelterId: 'sh-2',
+    shelterName: 'Ratnapura Town Hall Relief Centre',
+    category: 'Food',
+    itemName: 'Emergency High-Energy Biscuit Rations',
+    quantityRequested: 400,
+    unit: 'Boxes',
+    urgency: 'High',
+    justification: 'Shelter reached 85% capacity with newly evacuated landslide families.',
+    sourceDepot: 'Ratnapura Central Relief Depot, Sabaragamuwa Province',
+    status: 'Approved',
+    requestedAt: '2026-11-24T14:30:00Z',
+    requestedBy: 'Shelter Officer (Ratnapura)'
+  }
+];
+
 const mockCampaigns: DonationCampaign[] = [
   {
     id: 'camp-1',
@@ -829,6 +863,37 @@ export const api = {
       requestedAt: new Date().toISOString(),
     };
     mockPartnerRequests.unshift(newReq);
+    return newReq;
+  },
+
+  // Replenish Resource Inventory (Stock Inflow / Shipment Receipt)
+  async replenishResource(resourceId: string, quantity: number, _notes?: string, _batchNumber?: string): Promise<Resource> {
+    const res = mockResources.find((r) => r.id === resourceId);
+    if (!res) throw new Error('Resource item not found in relief depot');
+    const qty = Number(quantity);
+    res.totalQuantity = (res.totalQuantity || 0) + qty;
+    res.availableQuantity = (res.availableQuantity || 0) + qty;
+    res.isLowStock = res.availableQuantity <= res.lowStockThreshold;
+    return { ...res };
+  },
+
+  // Shelter Relief Supply Requisitions (Coursework Spec Page 4 - Section 1.1 F)
+  async getShelterSupplyRequests(shelterId?: string): Promise<ShelterSupplyRequest[]> {
+    if (shelterId) {
+      return mockShelterSupplyRequests.filter((r) => r.shelterId === shelterId);
+    }
+    return mockShelterSupplyRequests;
+  },
+
+  async createShelterSupplyRequest(data: Omit<ShelterSupplyRequest, 'id' | 'status' | 'requestedAt' | 'requestedBy'> & { requestedBy?: string }): Promise<ShelterSupplyRequest> {
+    const newReq: ShelterSupplyRequest = {
+      requestedBy: 'Shelter Lead Administrator',
+      ...data,
+      id: `ssr-${Date.now()}`,
+      status: 'Pending',
+      requestedAt: new Date().toISOString(),
+    };
+    mockShelterSupplyRequests.unshift(newReq);
     return newReq;
   },
 

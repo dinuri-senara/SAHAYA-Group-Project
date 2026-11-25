@@ -15,7 +15,10 @@ import {
   Building2,
   Send,
   ExternalLink,
-  Layers
+  Layers,
+  TrendingUp,
+  PackagePlus,
+  X
 } from 'lucide-react';
 import { Resource, AssistanceRequest, PartnerRequest } from '../types';
 import { api } from '../services/api';
@@ -81,7 +84,47 @@ export const ResourcesPage: React.FC = () => {
   });
   const [isSubmittingPartnerReq, setIsSubmittingPartnerReq] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  // Authorization check (Coordinators, Admins, and Logistics Managers can manage depot inventory)
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'LogisticsManager';
+
+  // Restock / Replenishment State (Coursework Spec Page 4 - Section 1.1 E: "Track quantities, availability, allocation, dispatch, utilisation, and replenishment.")
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [selectedRestockResource, setSelectedRestockResource] = useState<Resource | null>(null);
+  const [restockQty, setRestockQty] = useState<number>(100);
+  const [restockBatch, setRestockBatch] = useState<string>('CONSIGNMENT-2026-A');
+  const [restockSource, setRestockSource] = useState<string>('National Emergency Relief Buffer Reserve');
+  const [restockNotes, setRestockNotes] = useState<string>('');
+  const [isRestocking, setIsRestocking] = useState(false);
+
+  const openRestockModal = (res: Resource) => {
+    setSelectedRestockResource(res);
+    setRestockQty(Math.max(res.lowStockThreshold || 50, 100));
+    setRestockBatch(`BATCH-${Date.now().toString().slice(-6)}`);
+    setRestockNotes('Inbound shipment verified by depot receiver');
+    setShowRestockModal(true);
+  };
+
+  const handleRestock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRestockResource || restockQty <= 0) return;
+    setIsRestocking(true);
+    setError(null);
+    try {
+      const updated = await api.replenishResource(
+        selectedRestockResource.id,
+        restockQty,
+        restockNotes,
+        restockBatch
+      );
+      setResources(prev => prev.map(r => r.id === updated.id ? updated : r));
+      setSuccessMsg(`Successfully replenished +${restockQty} ${selectedRestockResource.unit} of ${selectedRestockResource.name}! Available stock updated to ${updated.availableQuantity} ${selectedRestockResource.unit}.`);
+      setShowRestockModal(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to replenish stock.');
+    } finally {
+      setIsRestocking(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -611,6 +654,14 @@ export const ResourcesPage: React.FC = () => {
                               <>
                                 {isOutOfStock ? (
                                   <div className="flex flex-wrap items-center justify-end gap-1.5">
+                                    <button
+                                      onClick={() => openRestockModal(res)}
+                                      title="Restock this depleted inventory item"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs"
+                                    >
+                                      <PackagePlus className="w-3 h-3" />
+                                      Restock
+                                    </button>
                                     {altRecommendation && (
                                       <button
                                         onClick={() => openAllocateModal(altRecommendation)}
@@ -632,6 +683,14 @@ export const ResourcesPage: React.FC = () => {
                                   </div>
                                 ) : (
                                   <div className="flex items-center gap-1.5">
+                                    <button
+                                      onClick={() => openRestockModal(res)}
+                                      title="Add new shipment batch to inventory"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-all"
+                                    >
+                                      <PackagePlus className="w-3 h-3" />
+                                      Restock
+                                    </button>
                                     {res.isLowStock && (
                                       <button
                                         onClick={() => openPartnerModalForResource(res)}
@@ -1172,6 +1231,127 @@ export const ResourcesPage: React.FC = () => {
                 >
                   <Send className="w-3.5 h-3.5" />
                   {isSubmittingPartnerReq ? 'Submitting Requisition...' : 'Submit Partner Requisition'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Restock / Replenish Modal */}
+      {showRestockModal && selectedRestockResource && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <PackagePlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white">
+                    Replenish Depot Inventory
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Add verified shipment or relief consignment to existing stock
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRestockModal(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Target Item</p>
+                <p className="font-bold text-sm text-slate-900 dark:text-white">{selectedRestockResource.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Depot: {selectedRestockResource.storageLocation}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Current Balance</p>
+                <p className="font-bold text-base text-slate-900 dark:text-white">
+                  {selectedRestockResource.totalQuantity} <span className="text-xs font-normal text-slate-500">{selectedRestockResource.unit}</span>
+                </p>
+                <p className="text-[11px] text-teal-600 dark:text-teal-400 font-medium">
+                  {selectedRestockResource.availableQuantity} available
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleRestock} className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Restock Quantity *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={restockQty}
+                    onChange={e => setRestockQty(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white font-medium"
+                    placeholder="e.g. 500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Batch / Consignment No.
+                  </label>
+                  <input
+                    type="text"
+                    value={restockBatch}
+                    onChange={e => setRestockBatch(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                    placeholder="e.g. BATCH-2026-04"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Supplier / Donating Agency
+                </label>
+                <input
+                  type="text"
+                  value={restockSource}
+                  onChange={e => setRestockSource(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  placeholder="e.g. Ministry of Health, UNICEF, National Water Board"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Logistics & Inspection Notes
+                </label>
+                <textarea
+                  rows={2}
+                  value={restockNotes}
+                  onChange={e => setRestockNotes(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  placeholder="e.g. Goods verified at depot gate, quality inspected, seals intact."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowRestockModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isRestocking}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                >
+                  <PackagePlus className="w-3.5 h-3.5" />
+                  {isRestocking ? 'Updating Stock...' : `Restock (+${restockQty} ${selectedRestockResource.unit})`}
                 </button>
               </div>
             </form>

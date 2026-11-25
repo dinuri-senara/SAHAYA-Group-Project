@@ -162,10 +162,12 @@ export interface CoordinatorDashboardData {
   activeCrisisEvents?: CrisisEvent[];
 }
 
+export type ResourceCategory = 'Food' | 'DrinkingWater' | 'MedicalSupplies' | 'ShelterSupplies' | 'Sanitation' | 'Clothing' | 'LogisticsEquipment';
+
 export interface Resource {
   id: string;
   name: string;
-  category: 'Food' | 'DrinkingWater' | 'MedicalSupplies' | 'ShelterSupplies' | 'Sanitation' | 'Clothing' | 'LogisticsEquipment';
+  category: ResourceCategory;
   unit: string;
   totalQuantity: number;
   quantity?: number;
@@ -428,5 +430,22 @@ export interface PartnerRequest {
   requestedAt: string;
   etaHours: number;
 }
+
+export interface ShelterSupplyRequest {
+  id: string;
+  shelterId: string;
+  shelterName: string;
+  category: ResourceCategory;
+  itemName: string;
+  quantityRequested: number;
+  unit: string;
+  urgency: 'Low' | 'Medium' | 'High' | 'Critical';
+  justification: string;
+  sourceDepot?: string;
+  status: 'Pending' | 'Approved' | 'Dispatched' | 'Delivered';
+  requestedAt: string;
+  requestedBy: string;
+}
+
 
 
