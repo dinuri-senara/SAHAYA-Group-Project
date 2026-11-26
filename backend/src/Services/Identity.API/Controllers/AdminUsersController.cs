@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,9 @@ namespace Sahaya.Identity.API.Controllers
         [HttpPut("users/{id}/status")]
         public async Task<ActionResult<Result>> UpdateUserStatus(Guid id, [FromBody] UpdateUserStatusRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(Result.Failure("Invalid status update parameters."));
+
             var user = await _db.Users.FindAsync(id);
             if (user == null || user.IsDeleted)
                 return NotFound(Result.Failure("User not found."));
@@ -67,13 +71,66 @@ namespace Sahaya.Identity.API.Controllers
             user.IsActive = request.IsActive;
             user.UpdatedAtUtc = DateTime.UtcNow;
 
+            var currentAdminIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            Guid.TryParse(currentAdminIdClaim, out var adminUserId);
+
+            // STRIDE Non-Repudiation (R) Audit Ledger
             var audit = new AuditLog
             {
-                UserId = id,
+                UserId = adminUserId != Guid.Empty ? adminUserId : id,
                 Action = request.IsActive ? "UserApproved" : "UserSuspended",
                 EntityName = "User",
                 EntityId = id.ToString(),
-                ChangesJson = $"{{\"IsActive\": {request.IsActive.ToString().ToLower()}, \"Justification\": \"{request.Justification}\"}}",
+                ChangesJson = System.Text.Json.JsonSerializer.Serialize(new 
+                {
+                    TargetUserId = id,
+                    TargetUserEmail = user.Email,
+                    NewStatus = request.IsActive ? "Active" : "Suspended",
+                    Justification = request.Justification,
+                    ActionTimestampUtc = DateTime.UtcNow
+                }),
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1"
+            };
+
+            _db.AuditLogs.Add(audit);
+            await _db.SaveChangesAsync();
+
+            return Ok(Result.Success());
+        }
+
+        [HttpPut("users/{id}/role")]
+        public async Task<ActionResult<Result>> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(Result.Failure("Invalid role update parameters."));
+
+            var user = await _db.Users.FindAsync(id);
+            if (user == null || user.IsDeleted)
+                return NotFound(Result.Failure("User not found."));
+
+            var oldRole = user.Role;
+            user.Role = request.NewRole;
+            user.UpdatedAtUtc = DateTime.UtcNow;
+
+            var currentAdminIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            Guid.TryParse(currentAdminIdClaim, out var adminUserId);
+
+            // STRIDE Non-Repudiation (R) Audit Trail for Role Changes
+            var audit = new AuditLog
+            {
+                UserId = adminUserId != Guid.Empty ? adminUserId : id,
+                Action = "RoleEscalatedByAdmin",
+                EntityName = "User",
+                EntityId = id.ToString(),
+                ChangesJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    TargetUserId = id,
+                    TargetEmail = user.Email,
+                    OldRole = oldRole.ToString(),
+                    NewRole = request.NewRole.ToString(),
+                    Justification = request.Justification,
+                    ActionTimestampUtc = DateTime.UtcNow
+                }),
                 IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1"
             };
 
@@ -89,16 +146,19 @@ namespace Sahaya.Identity.API.Controllers
             var activeUsersCount = await _db.Users.CountAsync(u => u.IsActive && !u.IsDeleted);
             var totalUsersCount = await _db.Users.CountAsync(u => !u.IsDeleted);
             var pendingApprovalsCount = await _db.Users.CountAsync(u => !u.IsActive && !u.IsDeleted && u.Role != UserRole.Citizen && u.Role != UserRole.Donor);
+            var totalAuditLogsCount = await _db.AuditLogs.CountAsync();
 
             var telemetryData = new
             {
                 systemStatus = "Online",
                 service = "Sahaya.Identity.API",
+                securityFramework = "STRIDE Hardened (WorkFactor 11, Gateway TokenBucket, Strict RBAC, Immutable Audit)",
                 databaseConnected = true,
                 databaseLatencyMs = 2,
                 totalUsers = totalUsersCount,
                 activeUsers = activeUsersCount,
                 pendingApprovals = pendingApprovalsCount,
+                totalAuditEventsLogged = totalAuditLogsCount,
                 roleBreakdown = new
                 {
                     citizens = await _db.Users.CountAsync(u => u.Role == UserRole.Citizen && !u.IsDeleted),
