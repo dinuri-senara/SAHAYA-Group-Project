@@ -247,7 +247,7 @@ export const CitizenDashboard: React.FC = () => {
         actions={
           <Link
             to="/request/new"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-600/20 transition cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-white font-bold text-xs sm:text-sm shadow-md shadow-[var(--theme-glow)] transition cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             Submit Emergency Request
@@ -257,37 +257,39 @@ export const CitizenDashboard: React.FC = () => {
 
       {/* Quick Action Navigation Hero - Direct, clear choices for citizens in stress */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1: Primary Action (Harmonized with Active Theme) */}
         <Link
           to="/request/new"
-          className="p-5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-md shadow-blue-700/20 transition-all flex flex-col justify-between group cursor-pointer"
+          className="p-5 rounded-2xl bg-gradient-to-br from-[var(--theme-gradient-from)] to-[var(--theme-gradient-to)] text-white shadow-lg shadow-[var(--theme-glow)] hover:opacity-95 transition-all flex flex-col justify-between group cursor-pointer border border-white/15"
         >
           <div className="flex items-center justify-between">
             <span className="p-2.5 rounded-xl bg-white/20 text-white backdrop-blur-xs">
               <PlusCircle className="w-6 h-6" />
             </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full border border-white/25">
               Primary Step
             </span>
           </div>
           <div className="mt-4">
-            <h3 className="text-base font-extrabold group-hover:translate-x-0.5 transition-transform flex items-center gap-1.5">
+            <h3 className="text-base font-extrabold text-white group-hover:translate-x-0.5 transition-transform flex items-center gap-1.5">
               Request Emergency Aid <ChevronRight className="w-4 h-4" />
             </h3>
-            <p className="text-xs text-blue-100 mt-1 leading-relaxed">
+            <p className="text-xs text-white/85 mt-1 leading-relaxed">
               Need rescue, medical care, food, or clean water? Submit an aid request with your GPS pin.
             </p>
           </div>
         </Link>
 
+        {/* Card 2: Find Safe Shelters */}
         <Link
           to="/shelters"
-          className="p-5 rounded-2xl bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/10 hover:border-emerald-500/50 shadow-xs backdrop-blur-md transition-all flex flex-col justify-between group cursor-pointer"
+          className="p-5 rounded-2xl bg-white/85 dark:bg-slate-900/85 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/10 hover:border-emerald-500/50 shadow-xs backdrop-blur-md transition-all flex flex-col justify-between group cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
               <Home className="w-6 h-6" />
             </span>
-            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60">
               {shelters.filter(s => s.availableCapacity > 0).length} Safe Zones Open
             </span>
           </div>
@@ -301,23 +303,24 @@ export const CitizenDashboard: React.FC = () => {
           </div>
         </Link>
 
+        {/* Card 3: 24/7 Hotline (Clean glassmorphic card matching light and dark modes) */}
         <a
           href="tel:117"
-          className="p-5 rounded-2xl bg-slate-900 dark:bg-slate-800/90 hover:bg-slate-800 dark:hover:bg-slate-700 text-white border border-slate-800 dark:border-white/10 shadow-md backdrop-blur-md transition-all flex flex-col justify-between group cursor-pointer"
+          className="p-5 rounded-2xl bg-white/85 dark:bg-slate-900/85 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/10 hover:border-amber-500/50 shadow-xs backdrop-blur-md transition-all flex flex-col justify-between group cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
+            <span className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
               <PhoneCall className="w-6 h-6" />
             </span>
-            <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 rounded-full border border-amber-200/80 dark:border-amber-800/60">
               24/7 Hotline
             </span>
           </div>
           <div className="mt-4">
-            <h3 className="text-base font-extrabold text-white group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
               Call Hotline: 117 / 1990 <ChevronRight className="w-4 h-4" />
             </h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               For immediate aquatic rescue or life-threatening medical emergencies, dial national disaster lines.
             </p>
           </div>
@@ -325,11 +328,11 @@ export const CitizenDashboard: React.FC = () => {
       </div>
 
       {/* Emergency Advisory Banner */}
-      <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-2xs">
-        <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3 shadow-2xs backdrop-blur-md">
+        <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="text-xs">
-          <p className="font-bold">Active Weather Warning — Humanitarian Response Underway</p>
-          <p className="mt-0.5 text-amber-800 leading-relaxed">
+          <p className="font-bold text-amber-900 dark:text-amber-200">Active Weather Warning — Humanitarian Response Underway</p>
+          <p className="mt-0.5 text-amber-800 dark:text-amber-300 leading-relaxed">
             Severe flooding has affected southern river basins. If waters are entering your home or roads are impassable, please request aid immediately and move to verified high-ground relief shelters listed below.
           </p>
         </div>

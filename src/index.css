@@ -274,6 +274,14 @@ html.dark .bg-amber-50\/90 {
   background-color: rgba(120, 53, 15, 0.25) !important;
   border-color: rgba(245, 158, 11, 0.3) !important;
 }
+html.dark .bg-amber-100 {
+  background-color: rgba(217, 119, 6, 0.25) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+html.dark .border-amber-200,
+html.dark .border-amber-300 {
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
 html.dark .text-amber-900,
 html.dark .text-amber-800 {
   color: #fde68a !important;

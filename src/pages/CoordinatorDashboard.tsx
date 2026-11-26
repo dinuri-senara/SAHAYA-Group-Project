@@ -319,14 +319,14 @@ export const CoordinatorDashboard: React.FC = () => {
 
       {/* Non-blocking background sync error banner */}
       {refreshError && (
-        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="p-3.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 text-xs shadow-2xs backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span><strong>Notice:</strong> Background update failed ({refreshError}). Displaying last verified data.</span>
           </div>
           <button
             onClick={() => setRefreshError(null)}
-            className="p-1 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-lg cursor-pointer"
+            className="p-1 text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg cursor-pointer transition"
             aria-label="Dismiss sync error"
           >
             <X className="w-3.5 h-3.5" />
@@ -336,23 +336,29 @@ export const CoordinatorDashboard: React.FC = () => {
 
       {/* Critical Stock Alert Banner */}
       {lowStockResources.length > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-2xs">
-          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3 shadow-2xs backdrop-blur-md">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="flex-1 text-xs">
-            <p className="font-bold">Inventory Low-Stock Threshold Warning</p>
-            <p className="mt-0.5 text-amber-800">
+            <p className="font-bold text-amber-900 dark:text-amber-200">Inventory Low-Stock Threshold Warning</p>
+            <p className="mt-0.5 text-amber-800 dark:text-amber-300">
               The following essential relief supplies are below safety margins:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
               {lowStockResources.map(r => (
-                <span key={r.id} className="px-2 py-0.5 rounded bg-amber-100 font-bold text-amber-900 border border-amber-300 text-[11px]">
+                <span
+                  key={r.id}
+                  className="px-2.5 py-1 rounded-lg bg-amber-100/90 dark:bg-amber-900/40 font-semibold text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700/60 text-[11px] shadow-2xs"
+                >
                   {r.name} ({r.availableQuantity} {r.unit} remaining, safety target: {r.lowStockThreshold})
                 </span>
               ))}
             </div>
           </div>
-          <Link to="/resources" className="text-xs font-bold text-amber-900 hover:underline shrink-0 flex items-center gap-1">
-            Allocate Stock <ArrowRight className="w-3 h-3" />
+          <Link
+            to="/resources"
+            className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:underline shrink-0 flex items-center gap-1 transition"
+          >
+            Allocate Stock <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       )}

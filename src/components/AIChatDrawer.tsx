@@ -115,31 +115,34 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-xl hover:shadow-teal-500/25 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-full bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-white font-bold shadow-xl shadow-[var(--theme-glow)] border border-white/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-md"
           aria-label="Open AI Assistant"
         >
-          <div className="relative">
-            <Bot className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+          <div className="relative flex items-center justify-center">
+            <Bot className="w-5 h-5 text-white" />
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 ring-2 ring-white/70" />
+            </span>
           </div>
-          <span className="text-sm tracking-wide">AI Assistance</span>
+          <span className="text-xs sm:text-sm font-extrabold tracking-wide text-white">AI Assistance</span>
         </button>
       )}
 
       {/* Slide-over Drawer */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[9999] overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end"
+          className="fixed inset-0 z-[9999] overflow-hidden bg-slate-900/50 backdrop-blur-xs flex justify-end"
           onClick={(e) => {
             if (e.target === e.currentTarget) handleClose();
           }}
         >
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-200 dark:border-white/10 animate-in slide-in-from-right duration-300">
             {/* Header */}
             <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                  <Bot className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-white/10 text-white border border-white/15">
+                  <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -175,8 +178,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             </div>
 
             {/* Disclaimer */}
-            <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+            <div className="px-4 py-2.5 bg-amber-500/10 dark:bg-amber-950/30 border-b border-amber-500/20 text-amber-900 dark:text-amber-200 text-[11px] flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <span>AI recommendations provide guidance. High-stakes triage decisions are validated by authorized coordinators.</span>
             </div>
 
@@ -190,8 +193,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                   <div
                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed shadow-xs ${
                       m.sender === 'user'
-                        ? 'bg-teal-600 text-white rounded-br-xs'
-                        : 'bg-slate-100 text-slate-800 rounded-bl-xs border border-slate-200/80'
+                        ? 'bg-[var(--theme-primary)] text-white rounded-br-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/80 dark:border-white/10'
                     }`}
                   >
                     {m.text}
@@ -209,7 +212,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
 
               {loading && (
                 <div className="flex items-center gap-2 text-slate-400 text-xs p-2">
-                  <Sparkles className="w-4 h-4 animate-spin text-teal-600" />
+                  <Sparkles className="w-4 h-4 animate-spin text-[var(--theme-primary)]" />
                   <span>AI assistant is analyzing disaster guidelines...</span>
                 </div>
               )}
@@ -218,12 +221,12 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
 
             {/* Quick suggestions */}
             {quickSuggestions.length > 0 && (
-              <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-100 dark:border-white/10 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                 {quickSuggestions.map((s, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSend(s)}
-                    className="shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-teal-500 hover:text-teal-700 transition cursor-pointer"
+                    className="shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] transition cursor-pointer"
                   >
                     {s}
                   </button>
@@ -232,7 +235,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             )}
 
             {/* Input Form */}
-            <div className="p-3 bg-white border-t border-slate-200">
+            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10">
               <form
                 onSubmit={e => {
                   e.preventDefault();
@@ -245,12 +248,12 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   placeholder="Ask for assistance, shelters, food rations..."
-                  className="flex-1 text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-slate-50/50"
+                  className="flex-1 text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] bg-slate-50/70 dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="p-2.5 rounded-xl bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+                  className="p-2.5 rounded-xl bg-[var(--theme-primary)] text-white hover:bg-[var(--theme-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer shadow-md shadow-[var(--theme-glow)]"
                 >
                   <Send className="w-4 h-4" />
                 </button>
