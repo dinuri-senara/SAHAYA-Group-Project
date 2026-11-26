@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ProfileModal } from './ProfileModal';
+import { NotificationDropdown } from './NotificationDropdown';
 import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -160,18 +161,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Notification Bell */}
-          <button
-            aria-label="Notifications"
-            className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white text-slate-700 flex items-center justify-center shadow-xs border border-slate-200/80 backdrop-blur-md transition-all duration-200 hover:scale-105 cursor-pointer"
-          >
-            <Bell className="w-4.5 h-4.5 text-slate-700" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          {/* Notification Center */}
+          <NotificationDropdown />
 
           {/* User Profile Button */}
           <button

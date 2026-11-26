@@ -530,6 +530,41 @@ const mockUsers: UserSummary[] = [
   },
 ];
 
+let mockNotificationsList: NotificationItem[] = [
+  {
+    id: 'notif-1',
+    title: 'Emergency Flood Alert - Kelani River Levee',
+    message: 'Water levels exceeded Minor Flood threshold (7.2ft). Evacuation protocols active in Kolonnawa zone.',
+    type: 'EmergencyAlert',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'notif-2',
+    title: 'Safe Shelter Capacity Alert - Ratnapura',
+    message: 'Ratnapura Central Vidyalaya shelter reached 85% capacity. Diverting incoming evacuees to Ferguson High School.',
+    type: 'Warning',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+  },
+  {
+    id: 'notif-3',
+    title: 'New Aid Request Assigned',
+    message: 'Sedawatta Temple critical aid request assigned to Kelaniya rapid response squad.',
+    type: 'Info',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: 'notif-4',
+    title: 'Relief Supplies Dispatched',
+    message: '1,500 clean drinking water cans and dry rations dispatched from Matara Regional Depot.',
+    type: 'Success',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+  },
+];
+
 export const api = {
   // Auth
   async login(email: string, _password: string): Promise<AuthResponse> {
@@ -953,29 +988,62 @@ export const api = {
 
   // Notifications
   async getNotifications(): Promise<NotificationItem[]> {
-    return [
-      {
-        id: 'notif-1',
-        title: 'Emergency Flood Alert - Kelani River Levee',
-        message: 'Water levels exceeded Minor Flood threshold (7.2ft). Evacuation protocols active.',
-        type: 'Warning',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'notif-2',
-        title: 'New Aid Request Assigned',
-        message: 'Sedawatta Temple aid request assigned to Kelaniya rescue squad.',
-        type: 'Info',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    try {
+      const res = await fetch('/api/v1/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
+    } catch {
+      // Fallback to local mock notifications
+    }
+    return [...mockNotificationsList];
   },
 
-  async markNotificationRead(_id: string): Promise<void> {},
-  async markAllNotificationsRead(): Promise<void> {},
-  async broadcastAlert(_data: any): Promise<void> {},
+  async markNotificationRead(id: string): Promise<void> {
+    try {
+      await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
+    } catch {
+      // Fallback
+    }
+    const item = mockNotificationsList.find((n) => n.id === id);
+    if (item) {
+      item.isRead = true;
+    }
+  },
+
+  async markAllNotificationsRead(): Promise<void> {
+    try {
+      await fetch('/api/v1/notifications/read-all', { method: 'POST' });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList.forEach((n) => {
+      n.isRead = true;
+    });
+  },
+
+  async broadcastAlert(data: any): Promise<void> {
+    try {
+      await fetch('/api/v1/notifications/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList.unshift({
+      id: `notif-${Date.now()}`,
+      title: data.title || 'Emergency Broadcast Alert',
+      message: data.message || '',
+      type: data.type || 'EmergencyAlert',
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+  },
 
   // Reports & Governance (Admin Overview & Telemetry)
   async getSystemOverview(): Promise<SystemOverviewReport> {
