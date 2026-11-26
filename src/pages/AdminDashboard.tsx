@@ -216,29 +216,29 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Total Accounts</p>
-            <p className="text-xl font-black text-slate-900 mt-0.5">{roleCounts?.totalUsers || 0}</p>
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Accounts</p>
+            <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{roleCounts?.totalUsers || 0}</p>
           </div>
-          <div className="p-3 rounded-xl bg-teal-50/60 border border-teal-200 text-center">
-            <p className="text-[10px] font-bold text-teal-700 uppercase">Citizens</p>
-            <p className="text-xl font-black text-teal-900 mt-0.5">{roleCounts?.citizens || 0}</p>
+          <div className="p-3 rounded-2xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 dark:border-blue-400/20 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">Citizens</p>
+            <p className="text-xl font-black text-blue-900 dark:text-blue-200 mt-1">{roleCounts?.citizens || 0}</p>
           </div>
-          <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200 text-center">
-            <p className="text-[10px] font-bold text-amber-700 uppercase">Coordinators</p>
-            <p className="text-xl font-black text-amber-900 mt-0.5">{roleCounts?.coordinators || 0}</p>
+          <div className="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 dark:border-amber-400/20 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Coordinators</p>
+            <p className="text-xl font-black text-amber-900 dark:text-amber-200 mt-1">{roleCounts?.coordinators || 0}</p>
           </div>
-          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-center">
-            <p className="text-[10px] font-bold text-emerald-700 uppercase">Volunteers</p>
-            <p className="text-xl font-black text-emerald-900 mt-0.5">{roleCounts?.volunteers || 0}</p>
+          <div className="p-3 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 dark:border-emerald-400/20 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">Volunteers</p>
+            <p className="text-xl font-black text-emerald-900 dark:text-emerald-200 mt-1">{roleCounts?.volunteers || 0}</p>
           </div>
-          <div className="p-3 rounded-xl bg-cyan-50/60 border border-cyan-200 text-center">
-            <p className="text-[10px] font-bold text-cyan-700 uppercase">Donors</p>
-            <p className="text-xl font-black text-cyan-900 mt-0.5">{roleCounts?.donors || 0}</p>
+          <div className="p-3 rounded-2xl bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/20 dark:border-cyan-400/20 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider">Donors</p>
+            <p className="text-xl font-black text-cyan-900 dark:text-cyan-200 mt-1">{roleCounts?.donors || 0}</p>
           </div>
-          <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200 text-center">
-            <p className="text-[10px] font-bold text-purple-700 uppercase">Administrators</p>
-            <p className="text-xl font-black text-purple-900 mt-0.5">{roleCounts?.admins || 0}</p>
+          <div className="p-3 rounded-2xl bg-purple-500/10 dark:bg-purple-500/15 border border-purple-500/20 dark:border-purple-400/20 text-center transition-all hover:scale-[1.02]">
+            <p className="text-[10px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Administrators</p>
+            <p className="text-xl font-black text-purple-900 dark:text-purple-200 mt-1">{roleCounts?.admins || 0}</p>
           </div>
         </div>
       </div>

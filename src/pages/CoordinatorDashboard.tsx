@@ -292,7 +292,7 @@ export const CoordinatorDashboard: React.FC = () => {
                 aria-label="Refresh operational data"
                 className="p-1 rounded-lg hover:bg-slate-200 text-slate-700 transition disabled:opacity-50 cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600 dark:text-blue-400' : ''}`} />
               </button>
             </div>
 
@@ -301,16 +301,16 @@ export const CoordinatorDashboard: React.FC = () => {
               to="/coordinator/incidents"
               className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-teal-400" />
+              <ShieldAlert className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               Incident Registry
             </Link>
 
             {/* AI Triage Link */}
             <Link
               to="/coordinator/ai-review"
-              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5"
             >
-              <Sparkles className="w-3.5 h-3.5 text-teal-100" />
+              <Sparkles className="w-3.5 h-3.5 text-blue-100" />
               AI Decision Review
             </Link>
           </div>
@@ -408,14 +408,14 @@ export const CoordinatorDashboard: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-teal-600" />
+              <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Live Geospatial Situation Overview
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Live spatial coordinates of registered crises, emergency requests, and certified shelters.
             </p>
           </div>
-          <Link to="/map" className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+          <Link to="/map" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 flex items-center gap-1">
             Open Interactive Map <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -439,7 +439,7 @@ export const CoordinatorDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-teal-600" />
+                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Operations Triage Queue ({processedRequests.length})
               </h2>
               <p className="text-xs text-slate-500">
@@ -449,7 +449,7 @@ export const CoordinatorDashboard: React.FC = () => {
             {isFiltersActive && (
               <button
                 onClick={handleClearFilters}
-                className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 flex items-center gap-1 self-start sm:self-auto cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" /> Clear Filters
               </button>
@@ -466,7 +466,7 @@ export const CoordinatorDashboard: React.FC = () => {
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search triage queue by ID, request title, citizen name, or location..."
                 aria-label="Search requests by ID, title, citizen, or location"
-                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-300 bg-white placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-300 bg-white placeholder-slate-400 focus:outline-none focus:border-blue-500 dark:border-blue-400 focus:ring-1 focus:ring-blue-500"
               />
               {searchQuery && (
                 <button
@@ -512,7 +512,7 @@ export const CoordinatorDashboard: React.FC = () => {
                 onClick={() => setTriageFilter('Approved')}
                 aria-pressed={triageFilter === 'Approved'}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                  triageFilter === 'Approved' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  triageFilter === 'Approved' ? 'bg-white text-blue-900 dark:text-blue-200 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Approved ({data.approvedRequests})
@@ -548,7 +548,7 @@ export const CoordinatorDashboard: React.FC = () => {
                     className={`p-4 rounded-2xl bg-white border transition shadow-xs ${
                       isCritical
                         ? 'border-red-300 border-l-4 border-l-red-500 bg-red-50/10'
-                        : 'border-slate-200 hover:border-teal-500/40'
+                        : 'border-slate-200 hover:border-blue-500 dark:border-blue-400/40'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -580,12 +580,12 @@ export const CoordinatorDashboard: React.FC = () => {
 
                         {/* AI Recommendation Snapshot */}
                         {req.latestRecommendation ? (
-                          <div className="mt-2.5 p-2.5 rounded-xl bg-teal-50/70 border border-teal-200/80 text-xs text-teal-950">
-                            <div className="flex items-center gap-1.5 font-bold text-[11px] text-teal-800 mb-0.5">
-                              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                          <div className="mt-2.5 p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-xs text-teal-950">
+                            <div className="flex items-center gap-1.5 font-bold text-[11px] text-blue-900 dark:text-blue-200 mb-0.5">
+                              <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                               <span>AI Decision-Support:</span>
                               <span className="font-extrabold uppercase">{req.latestRecommendation.suggestedPriority} Priority</span>
-                              <span className="text-[10px] text-teal-700 font-medium">
+                              <span className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
                                 ({Math.round(req.latestRecommendation.confidenceScore * 100)}% confidence score)
                               </span>
                             </div>
@@ -605,7 +605,7 @@ export const CoordinatorDashboard: React.FC = () => {
                       <div className="flex sm:flex-col gap-2 shrink-0">
                         <Link
                           to={`/requests/${req.id}`}
-                          className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs text-center transition shadow-xs flex items-center justify-center gap-1"
+                          className="px-3.5 py-2 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white font-bold text-xs text-center transition shadow-xs flex items-center justify-center gap-1"
                         >
                           Review Request &rarr;
                         </Link>
@@ -668,7 +668,7 @@ export const CoordinatorDashboard: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Approved
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-600" /> Approved
                 </span>
                 <span className="font-bold text-slate-800">{data.approvedRequests}</span>
               </div>
@@ -758,57 +758,57 @@ export const CoordinatorDashboard: React.FC = () => {
 
           {/* Quick Operations Links */}
           <div className="p-5 rounded-2xl bg-slate-950 text-white border border-slate-800 shadow-xl space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-teal-400">Coordinator Command Links</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-blue-400 dark:text-blue-300">Coordinator Command Links</h3>
             <div className="space-y-2">
               <Link
                 to="/coordinator/incidents"
                 className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-between transition border border-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-teal-400" />
+                  <ShieldAlert className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                   Incident Registry & Declaration
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-teal-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               </Link>
               <Link
                 to="/resources"
                 className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-between transition border border-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-teal-400" />
+                  <Boxes className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                   Stock Allocation & Inventory
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-teal-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               </Link>
               <Link
                 to="/volunteers"
                 className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-between transition border border-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400" />
+                  <CheckCircle2 className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                   Volunteer Mission Dispatch
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-teal-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               </Link>
               <Link
                 to="/shelters"
                 className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-between transition border border-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-teal-400" />
+                  <CheckSquare className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                   Safe Shelter Capacity
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-teal-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               </Link>
               <Link
                 to="/map"
                 className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-between transition border border-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-teal-400" />
+                  <MapPin className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                   Interactive Geospatial Map
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-teal-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
               </Link>
             </div>
           </div>
