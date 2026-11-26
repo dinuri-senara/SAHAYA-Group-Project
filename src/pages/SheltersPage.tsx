@@ -30,7 +30,10 @@ import {
   TrendingDown,
   Gauge,
   Flame,
-  RefreshCw
+  RefreshCw,
+  Navigation,
+  SlidersHorizontal,
+  Loader2
 } from 'lucide-react';
 import { Shelter, AssistanceRequest, ShelterSupplyRequest, ResourceCategory } from '../types';
 import { api } from '../services/api';
@@ -114,6 +117,15 @@ export const SheltersPage: React.FC = () => {
     contactPhone: '+94 11 234 5678'
   });
   const [isCreating, setIsCreating] = useState(false);
+
+  // Smart Location Hub states for shelter registration (2026 UX Standard)
+  const [isLocating, setIsLocating] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [locationSearchQuery, setLocationSearchQuery] = useState('');
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [locationSearchResults, setLocationSearchResults] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showManualCoords, setShowManualCoords] = useState(false);
+  const [detectedAddress, setDetectedAddress] = useState<string | null>(null);
 
   const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'ShelterAdmin' || user?.role === 'LogisticsManager';
   // Shelter Administrators, Logistics Managers, Coordinators, and Admins can manage shelters and requisition relief supplies
@@ -337,6 +349,90 @@ export const SheltersPage: React.FC = () => {
     }
   };
 
+  const handleDetectCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = Number(position.coords.latitude.toFixed(5));
+        const lng = Number(position.coords.longitude.toFixed(5));
+        setNewShelter(prev => ({ ...prev, latitude: lat, longitude: lng }));
+        setGpsAccuracy(Math.round(position.coords.accuracy));
+        setIsLocating(false);
+        reverseGeocode(lat, lng);
+      },
+      (error) => {
+        console.warn("Geolocation error:", error);
+        setIsLocating(false);
+        alert("Unable to detect GPS location. You can click anywhere on the map or search by landmark.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.display_name) {
+          setDetectedAddress(data.display_name);
+          setNewShelter(prev => {
+            if (!prev.address || prev.address.trim().length === 0) {
+              return { ...prev, address: data.display_name };
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (err) {
+      console.debug("Reverse geocoding error:", err);
+    }
+  };
+
+  const handleSearchLocation = async () => {
+    if (!locationSearchQuery.trim()) return;
+    setIsSearchingLocation(true);
+    try {
+      const query = locationSearchQuery.trim();
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=lk&limit=4`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setLocationSearchResults(data || []);
+        if (!data || data.length === 0) {
+          alert("No matching locations found in Sri Lanka. Try a different school, temple, or city name.");
+        }
+      }
+    } catch (err) {
+      console.warn("Search location error:", err);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
+  const handleSelectLocationResult = (result: { display_name: string; lat: string; lon: string }) => {
+    const lat = Number(parseFloat(result.lat).toFixed(5));
+    const lon = Number(parseFloat(result.lon).toFixed(5));
+    setNewShelter(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lon,
+      address: prev.address && prev.address.trim().length > 0 ? prev.address : result.display_name
+    }));
+    setDetectedAddress(result.display_name);
+    setLocationSearchResults([]);
+    setLocationSearchQuery('');
+    setGpsAccuracy(null);
+  };
+
   const handleCreateShelter = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
@@ -350,6 +446,11 @@ export const SheltersPage: React.FC = () => {
       });
       setSuccessMsg(`Shelter "${newShelter.name}" registered successfully!`);
       setShowCreateModal(false);
+      setLocationSearchQuery('');
+      setLocationSearchResults([]);
+      setGpsAccuracy(null);
+      setDetectedAddress(null);
+      setShowManualCoords(false);
       loadShelters();
     } catch (err: any) {
       setError(err.message || 'Failed to create shelter.');
@@ -1189,7 +1290,7 @@ export const SheltersPage: React.FC = () => {
       {/* Modal: Register Shelter */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Register Safe Shelter</h2>
             <p className="text-xs text-slate-500 mb-4">Add a new verified emergency shelter safe zone to the national crisis registry.</p>
 
@@ -1201,7 +1302,7 @@ export const SheltersPage: React.FC = () => {
                   type="text"
                   value={newShelter.name}
                   onChange={e => setNewShelter({ ...newShelter, name: e.target.value })}
-                  placeholder="e.g. St. Thomas Community Hall"
+                  placeholder="e.g. St. Thomas Community Hall / Rahula College Safe Haven"
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                 />
               </div>
@@ -1216,6 +1317,149 @@ export const SheltersPage: React.FC = () => {
                   placeholder="Full physical street address"
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                 />
+                {detectedAddress && detectedAddress !== newShelter.address && (
+                  <div className="mt-1.5 flex items-center justify-between text-[11px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg px-2.5 py-1 text-emerald-800 dark:text-emerald-300">
+                    <span className="truncate mr-2">📍 Detected: {detectedAddress}</span>
+                    <button
+                      type="button"
+                      onClick={() => setNewShelter({ ...newShelter, address: detectedAddress })}
+                      className="underline font-bold shrink-0 hover:text-emerald-950 dark:hover:text-white"
+                    >
+                      Use as Address
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Smart Location Hub (2026 UX Standard) */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <MapPin className="w-4 h-4 text-emerald-500" />
+                    <span>Shelter Geolocation & Map Pin (ස්ථානය තේරීම)</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                    {newShelter.latitude.toFixed(4)}° N, {newShelter.longitude.toFixed(4)}° E
+                  </span>
+                </div>
+
+                {/* Search Landmark & Instant GPS buttons */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search school, temple, landmark in SL..."
+                      value={locationSearchQuery}
+                      onChange={e => setLocationSearchQuery(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearchLocation(); } }}
+                      className="w-full pl-8 pr-16 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSearchLocation}
+                      disabled={isSearchingLocation || !locationSearchQuery.trim()}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-[10px] font-semibold text-white rounded-lg transition-colors cursor-pointer"
+                    >
+                      {isSearchingLocation ? 'Finding...' : 'Find'}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleDetectCurrentLocation}
+                    disabled={isLocating}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-xs font-semibold text-white shadow-xs transition-colors shrink-0 cursor-pointer"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Locating GPS...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>Auto-Detect GPS</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Search results dropdown if any */}
+                {locationSearchResults.length > 0 && (
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg p-1.5 space-y-1 max-h-40 overflow-y-auto">
+                    <div className="text-[10px] uppercase font-bold text-slate-400 px-2 py-0.5">Matching Sri Lankan Locations:</div>
+                    {locationSearchResults.map((res, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectLocationResult(res)}
+                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs text-slate-800 dark:text-slate-200 flex items-start gap-2 transition-colors cursor-pointer"
+                      >
+                        <Building className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="truncate">{res.display_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interactive Micro Map */}
+                <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <MapComponent
+                    center={[newShelter.latitude, newShelter.longitude]}
+                    zoom={14}
+                    selectedLocation={[newShelter.latitude, newShelter.longitude]}
+                    onLocationSelect={(lat, lon) => {
+                      setNewShelter(prev => ({ ...prev, latitude: lat, longitude: lon }));
+                      reverseGeocode(lat, lon);
+                    }}
+                    height="190px"
+                  />
+                  <div className="absolute top-2 left-2 z-10 bg-slate-900/85 backdrop-blur-xs text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs pointer-events-none flex items-center gap-1">
+                    <span>💡 Click anywhere on map to pin shelter</span>
+                  </div>
+                </div>
+
+                {/* Reverse Geocode Info / GPS Status */}
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span>
+                    {gpsAccuracy ? `✓ GPS Locked (±${gpsAccuracy}m)` : 'Map Pin synchronized with coordinates'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualCoords(!showManualCoords)}
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <SlidersHorizontal className="w-3 h-3" />
+                    <span>{showManualCoords ? 'Hide manual coordinates' : 'Fine-tune coordinates'}</span>
+                  </button>
+                </div>
+
+                {/* Optional Manual Lat/Lng inputs for advanced users */}
+                {showManualCoords && (
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700/60">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Latitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={newShelter.latitude}
+                        onChange={e => setNewShelter({ ...newShelter, latitude: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Longitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={newShelter.longitude}
+                        onChange={e => setNewShelter({ ...newShelter, longitude: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1237,29 +1481,6 @@ export const SheltersPage: React.FC = () => {
                     type="text"
                     value={newShelter.contactPhone}
                     onChange={e => setNewShelter({ ...newShelter, contactPhone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Latitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newShelter.latitude}
-                    onChange={e => setNewShelter({ ...newShelter, latitude: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Longitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newShelter.longitude}
-                    onChange={e => setNewShelter({ ...newShelter, longitude: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                   />
                 </div>
