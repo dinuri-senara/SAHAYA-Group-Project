@@ -187,12 +187,16 @@ export interface ResourceAllocation {
   id: string;
   resourceId: string;
   resourceName?: string;
+  category?: ResourceCategory;
+  unit?: string;
   assistanceRequestId: string;
   requestTitle?: string;
+  recipientName?: string;
+  destinationLocation?: string;
   quantity?: number;
   quantityAllocated?: number;
   allocatedByEmail?: string;
-  status: string;
+  status: 'Allocated' | 'Dispatched' | 'Delivered' | 'InTransit' | string;
   allocatedAt: string;
   dispatchedAt?: string;
   notes?: string;
@@ -214,6 +218,10 @@ export interface Shelter {
   contactPerson?: string;
   status: 'Active' | 'Full' | 'Inactive';
   createdAt: string;
+  waterStockLiters?: number;
+  foodRationBoxes?: number;
+  medicalKitPacks?: number;
+  lastStockAuditAt?: string;
 }
 
 export interface ShelterAssignment {

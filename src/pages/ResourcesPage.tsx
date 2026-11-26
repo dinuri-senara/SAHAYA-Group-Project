@@ -18,9 +18,13 @@ import {
   Layers,
   TrendingUp,
   PackagePlus,
-  X
+  X,
+  ClipboardList,
+  MapPin,
+  User,
+  Filter
 } from 'lucide-react';
-import { Resource, AssistanceRequest, PartnerRequest } from '../types';
+import { Resource, AssistanceRequest, PartnerRequest, ResourceAllocation } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { DistrictFilter } from '../components/DistrictFilter';
@@ -30,12 +34,13 @@ export const ResourcesPage: React.FC = () => {
   const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [partnerRequests, setPartnerRequests] = useState<PartnerRequest[]>([]);
+  const [allocations, setAllocations] = useState<ResourceAllocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Active View Tab
-  const [activeTab, setActiveTab] = useState<'inventory' | 'partner-requests'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'partner-requests' | 'allocations-log'>('inventory');
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +48,10 @@ export const ResourcesPage: React.FC = () => {
   const [lowStockOnly, setLowStockOnly] = useState<boolean>(false);
   const [selectedProvince, setSelectedProvince] = useState<string>('All');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
+
+  // Allocations Log Filters
+  const [allocationSearchTerm, setAllocationSearchTerm] = useState('');
+  const [allocationStatusFilter, setAllocationStatusFilter] = useState<string>('All');
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -134,16 +143,28 @@ export const ResourcesPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const [resData, partnerData] = await Promise.all([
+      const [resData, partnerData, allocData] = await Promise.all([
         api.getResources(),
-        api.getPartnerRequests()
+        api.getPartnerRequests(),
+        api.getAllocations()
       ]);
       setResources(resData);
       setPartnerRequests(partnerData);
+      setAllocations(allocData);
     } catch (err: any) {
       setError(err.message || 'Failed to load depot data.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateAllocationStatus = async (allocId: string, newStatus: string) => {
+    try {
+      const updated = await api.updateAllocationStatus(allocId, newStatus, `Status updated to ${newStatus} by ${user?.email || 'Logistics Officer'}`);
+      setAllocations(prev => prev.map(a => a.id === updated.id ? updated : a));
+      setSuccessMsg(`Dispatch #${allocId} status updated to "${newStatus}" successfully!`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update dispatch status.');
     }
   };
 
@@ -344,6 +365,22 @@ export const ResourcesPage: React.FC = () => {
     return matchesSearch && matchesCategory && matchesLowStock && matchesGeo;
   });
 
+  const filteredAllocations = allocations.filter(a => {
+    const q = allocationSearchTerm.toLowerCase();
+    const matchesSearch =
+      !allocationSearchTerm ||
+      (a.resourceName && a.resourceName.toLowerCase().includes(q)) ||
+      (a.recipientName && a.recipientName.toLowerCase().includes(q)) ||
+      (a.requestTitle && a.requestTitle.toLowerCase().includes(q)) ||
+      (a.destinationLocation && a.destinationLocation.toLowerCase().includes(q)) ||
+      (a.id && a.id.toLowerCase().includes(q));
+
+    const matchesStatus =
+      allocationStatusFilter === 'All' ? true : a.status === allocationStatusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
   const totalStockItems = resources.reduce((acc, r) => acc + r.totalQuantity, 0);
   const lowStockCount = resources.filter(r => r.isLowStock || r.availableQuantity === 0).length;
   const outOfStockCount = resources.filter(r => r.availableQuantity === 0).length;
@@ -407,9 +444,11 @@ export const ResourcesPage: React.FC = () => {
           <p className="text-[11px] text-rose-500 mt-1">Triggering AI alternative recommendation</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Partner Requisitions</p>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{partnerRequests.length}</p>
-          <p className="text-[11px] text-slate-500 mt-1">External inter-agency aid requests</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Dispatches & Allocations</p>
+          <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+            {allocations.length} <span className="text-xs font-normal text-slate-500">({partnerRequests.length} partner)</span>
+          </p>
+          <p className="text-[11px] text-slate-500 mt-1">Recorded relief supply dispatches</p>
         </div>
       </div>
 
@@ -434,6 +473,16 @@ export const ResourcesPage: React.FC = () => {
         >
           <Building2 className="w-4 h-4" />
           Inter-Agency Partner Requisitions ({partnerRequests.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('allocations-log')}
+          className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'allocations-log'
+            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          Dispatches & Allocations Log ({allocations.length})
         </button>
       </div>
 
@@ -837,6 +886,218 @@ export const ResourcesPage: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 3: DISPATCHES & ALLOCATIONS LOG ================= */}
+      {/* Coursework Requirement Page 4 - Section 1.1 E: "Track quantities, availability, allocation, dispatch, utilisation, and replenishment." */}
+      {activeTab === 'allocations-log' && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+                <Truck className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  Emergency Dispatches & Stock Allocation Log (තොග බෙදාහැරීම් ලඝු-සටහන)
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Audit trail of depot stock allocated and dispatched to verified citizen assistance requests, field rescue convoys, and relief camps.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 shrink-0">
+              <ClipboardList className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>{allocations.length} Historical Dispatches Logged</span>
+            </div>
+          </div>
+
+          {/* Sub KPI Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Dispatches</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">{allocations.length}</p>
+              <p className="text-[10px] text-indigo-600 dark:text-indigo-400">Recorded warehouse missions</p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Units Dispatched</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+                {allocations.reduce((acc, a) => acc + (a.quantityAllocated || a.quantity || 0), 0).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-slate-500">Supplies released to victims</p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Delivered Convoys</p>
+              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                {allocations.filter(a => a.status === 'Delivered').length}
+              </p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400">Confirmed on-site handovers</p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">In Transit / Dispatched</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                {allocations.filter(a => a.status === 'InTransit' || a.status === 'Dispatched').length}
+              </p>
+              <p className="text-[10px] text-blue-600 dark:text-blue-400">En route to relief points</p>
+            </div>
+          </div>
+
+          {/* Search & Status Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by resource, recipient, destination or request..."
+                value={allocationSearchTerm}
+                onChange={e => setAllocationSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="text-xs text-slate-500 shrink-0">Status:</span>
+              <select
+                value={allocationStatusFilter}
+                onChange={e => setAllocationStatusFilter(e.target.value)}
+                className="text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Delivered">Delivered</option>
+                <option value="InTransit">In Transit</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Allocated">Allocated</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Allocations Table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="px-5 py-4">Dispatch ID & Date</th>
+                  <th className="px-5 py-4">Dispatched Resource</th>
+                  <th className="px-5 py-4">Quantity</th>
+                  <th className="px-5 py-4">Recipient & Citizen Request</th>
+                  <th className="px-5 py-4">Destination Location</th>
+                  <th className="px-5 py-4">Status & Action</th>
+                  <th className="px-5 py-4 text-right">Officer & Logistics Notes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredAllocations.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-5 py-12 text-center text-slate-400 dark:text-slate-500">
+                      <Truck className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="font-semibold text-sm">No dispatches match the selected filter</p>
+                      <p className="text-xs mt-1">Try clearing search terms or status filters.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAllocations.map(alloc => (
+                    <tr key={alloc.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white block">
+                          {alloc.id}
+                        </span>
+                        <span className="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          {new Date(alloc.dispatchedAt || alloc.allocatedAt).toLocaleString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <p className="font-bold text-slate-900 dark:text-white">{alloc.resourceName || 'Relief Supplies'}</p>
+                        {alloc.category && (
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/50">
+                            {alloc.category}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span className="font-extrabold text-base text-slate-900 dark:text-white">
+                          {(alloc.quantityAllocated || alloc.quantity || 0).toLocaleString()}
+                        </span>
+                        <span className="text-xs font-medium text-slate-500 ml-1">
+                          {alloc.unit || 'Units'}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1">
+                            <User className="w-3 h-3 text-slate-400" />
+                            {alloc.recipientName || 'Displaced Citizen'}
+                          </p>
+                          <p className="text-[11px] text-slate-500 line-clamp-1" title={alloc.requestTitle}>
+                            Req: {alloc.requestTitle || alloc.assistanceRequestId}
+                          </p>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4 text-xs text-slate-700 dark:text-slate-300">
+                        <div className="flex items-start gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                          <span className="line-clamp-2" title={alloc.destinationLocation}>
+                            {alloc.destinationLocation || 'Field Relief Area'}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="space-y-1.5">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            alloc.status === 'Delivered'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : alloc.status === 'InTransit'
+                                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                                : alloc.status === 'Dispatched'
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
+                          }`}>
+                            {alloc.status === 'Delivered' && <CheckCircle2 className="w-3 h-3" />}
+                            {alloc.status === 'InTransit' && <Truck className="w-3 h-3" />}
+                            {alloc.status === 'Dispatched' && <Clock className="w-3 h-3" />}
+                            {alloc.status}
+                          </span>
+
+                          {isCoordinatorOrAdmin && alloc.status !== 'Delivered' && (
+                            <button
+                              onClick={() => handleUpdateAllocationStatus(alloc.id, 'Delivered')}
+                              className="block text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:underline"
+                            >
+                              ✓ Confirm Delivery
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4 text-right">
+                        <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                          {alloc.allocatedByEmail || 'logistics@sahaya.org'}
+                        </p>
+                        {alloc.notes && (
+                          <p className="text-[10px] text-slate-400 italic mt-0.5 max-w-xs ml-auto line-clamp-2" title={alloc.notes}>
+                            "{alloc.notes}"
+                          </p>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
