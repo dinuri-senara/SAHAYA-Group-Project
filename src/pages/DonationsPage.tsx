@@ -169,7 +169,7 @@ export const DonationsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+            <span className="p-2 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <HeartHandshake className="w-6 h-6" />
             </span>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -184,7 +184,7 @@ export const DonationsPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => openMonetaryModal()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-sm transition-all shadow-teal-600/20"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all shadow-blue-600/20"
           >
             <DollarSign className="w-4 h-4" />
             Pledge Monetary Aid
@@ -212,7 +212,7 @@ export const DonationsPage: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Funds Mobilized</p>
-          <p className="text-2xl font-bold text-teal-600 dark:text-teal-400 mt-1">${totalRaised.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">${totalRaised.toLocaleString()}</p>
           <p className="text-[11px] text-slate-500 mt-1">Across all verified relief appeals</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -228,14 +228,14 @@ export const DonationsPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Donations</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{donations.length}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Monetary & material contributions</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Monetary & material contributions</p>
         </div>
       </div>
 
       {/* Trust Notice */}
-      <div className="p-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 flex items-center gap-3">
-        <ShieldCheck className="w-5 h-5 text-teal-600 shrink-0" />
-        <p className="text-xs text-teal-800 dark:text-teal-300">
+      <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 dark:bg-slate-900/30 border border-blue-200 dark:border-blue-800/60 dark:border-blue-800 dark:border-blue-800/60/60 flex items-center gap-3">
+        <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+        <p className="text-xs text-blue-900 dark:text-blue-200 dark:text-blue-300 dark:text-blue-200">
           <strong>Transparency Guarantee:</strong> SAHAYA records and audits all monetary and supply pledges directly in SQL Server. Credit card numbers are never stored in the database.
         </p>
       </div>
@@ -266,7 +266,7 @@ export const DonationsPage: React.FC = () => {
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Urgent Relief Campaigns</h2>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-8 h-8 border-3 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm text-slate-500">Loading humanitarian campaigns...</p>
           </div>
         ) : (
@@ -277,7 +277,7 @@ export const DonationsPage: React.FC = () => {
               return (
                 <div
                   key={camp.id}
-                  className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-teal-500/50 transition-all duration-200"
+                  className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500 dark:border-blue-400/50 transition-all duration-200"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2">
@@ -299,7 +299,7 @@ export const DonationsPage: React.FC = () => {
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -319,7 +319,7 @@ export const DonationsPage: React.FC = () => {
                   <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-2">
                     <button
                       onClick={() => openMonetaryModal(camp)}
-                      className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition-all flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs transition-all flex items-center justify-center gap-1.5"
                     >
                       <DollarSign className="w-3.5 h-3.5" />
                       Pledge Funds
@@ -362,7 +362,7 @@ export const DonationsPage: React.FC = () => {
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                       d.donationType === 'Monetary'
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                        : 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20'
+                        : 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500 dark:border-blue-400/20'
                     }`}>
                       {d.donationType}
                     </span>
@@ -409,7 +409,7 @@ export const DonationsPage: React.FC = () => {
                       onClick={() => setMonetaryData({ ...monetaryData, amount: amt })}
                       className={`py-1.5 rounded-lg text-xs font-bold border transition-all ${
                         monetaryData.amount === amt
-                          ? 'bg-teal-600 text-white border-teal-600'
+                          ? 'bg-blue-600 dark:bg-blue-600 text-white border-blue-600 dark:border-blue-500'
                           : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
                       }`}
                     >
@@ -459,7 +459,7 @@ export const DonationsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingDonation}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isSubmittingDonation ? 'Logging...' : 'Confirm Pledge'}
                 </button>
@@ -540,7 +540,7 @@ export const DonationsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingDonation}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isSubmittingDonation ? 'Recording...' : 'Record In-Kind Aid'}
                 </button>
@@ -615,7 +615,7 @@ export const DonationsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isCreatingCampaign}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isCreatingCampaign ? 'Launching...' : 'Publish Campaign'}
                 </button>

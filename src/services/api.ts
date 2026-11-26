@@ -26,7 +26,8 @@ import {
   UserRoleCounts,
   SystemHealthMetrics,
   VolunteerCheckIn,
-  PartnerRequest
+  PartnerRequest,
+  ShelterSupplyRequest
 } from '../types';
 
 // Mock DB for pure client-side standalone execution
@@ -236,6 +237,10 @@ const mockShelters: Shelter[] = [
     status: 'Active',
     facilities: ['Clean Water', 'Medical Tent', 'Sanitation', 'Hot Meals'],
     accessibilityInfo: 'Ground floor wheelchair ramp available',
+    waterStockLiters: 2400,
+    foodRationBoxes: 800,
+    medicalKitPacks: 25,
+    lastStockAuditAt: '2026-11-25T18:00:00Z',
     createdAt: '2026-11-18T00:00:00Z',
   },
   {
@@ -253,6 +258,10 @@ const mockShelters: Shelter[] = [
     status: 'Full',
     facilities: ['Dry Shelter', 'First Aid', 'Solar Power'],
     accessibilityInfo: 'Tactile paving and caregiver assistance available',
+    waterStockLiters: 900,
+    foodRationBoxes: 450,
+    medicalKitPacks: 10,
+    lastStockAuditAt: '2026-11-25T17:30:00Z',
     createdAt: '2026-11-18T02:00:00Z',
   },
   {
@@ -270,6 +279,10 @@ const mockShelters: Shelter[] = [
     status: 'Active',
     facilities: ['Clean Drinking Water', 'Medical Officer', 'Emergency Kitchen', 'Sanitary Packs'],
     accessibilityInfo: 'Special elder-care ward on ground level',
+    waterStockLiters: 3500,
+    foodRationBoxes: 1200,
+    medicalKitPacks: 40,
+    lastStockAuditAt: '2026-11-25T16:00:00Z',
     createdAt: '2026-11-18T05:00:00Z',
   },
   {
@@ -287,6 +300,10 @@ const mockShelters: Shelter[] = [
     status: 'Active',
     facilities: ['Clean Water', 'Pediatric First Aid', 'Dry Bedding', 'Generator'],
     accessibilityInfo: 'Ramp access throughout auditorium',
+    waterStockLiters: 2800,
+    foodRationBoxes: 950,
+    medicalKitPacks: 30,
+    lastStockAuditAt: '2026-11-25T15:00:00Z',
     createdAt: '2026-11-18T06:00:00Z',
   },
   {
@@ -304,6 +321,10 @@ const mockShelters: Shelter[] = [
     status: 'Active',
     facilities: ['Purified Water Tank', 'Community Kitchen', 'Sanitation', 'Charging Station'],
     accessibilityInfo: 'Flat terrain suitable for wheelchairs',
+    waterStockLiters: 5500,
+    foodRationBoxes: 2200,
+    medicalKitPacks: 65,
+    lastStockAuditAt: '2026-11-25T18:30:00Z',
     createdAt: '2026-11-18T07:30:00Z',
   },
 ];
@@ -452,6 +473,117 @@ const mockResources: Resource[] = [
   },
 ];
 
+const mockAllocations: ResourceAllocation[] = [
+  {
+    id: 'alloc-101',
+    resourceId: 'res-1',
+    resourceName: 'Clean Water Purification Packs (5L)',
+    category: 'DrinkingWater',
+    unit: 'Packs',
+    assistanceRequestId: 'req-1',
+    requestTitle: 'Clean Drinking Water & Rooftop Evacuation',
+    recipientName: 'Kavinda Fernando',
+    destinationLocation: 'Sedawatta, Wellampitiya',
+    quantityAllocated: 50,
+    quantity: 50,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'Delivered',
+    allocatedAt: '2026-11-20T08:30:00Z',
+    dispatchedAt: '2026-11-20T09:15:00Z',
+    notes: 'Delivered via Navy rescue boat convoy. Handed over to Sedawatta temple relief center.'
+  },
+  {
+    id: 'alloc-102',
+    resourceId: 'res-2',
+    resourceName: 'Emergency High-Energy Biscuit Rations',
+    category: 'Food',
+    unit: 'Boxes',
+    assistanceRequestId: 'req-1',
+    requestTitle: 'Clean Drinking Water & Rooftop Evacuation',
+    recipientName: 'Kavinda Fernando',
+    destinationLocation: 'Sedawatta, Wellampitiya',
+    quantityAllocated: 100,
+    quantity: 100,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'Delivered',
+    allocatedAt: '2026-11-20T09:00:00Z',
+    dispatchedAt: '2026-11-20T09:45:00Z',
+    notes: 'High-energy biscuit distribution for 14 stranded families.'
+  },
+  {
+    id: 'alloc-103',
+    resourceId: 'res-3',
+    resourceName: 'Inflatable Life Rafts & Life Jackets',
+    category: 'LogisticsEquipment',
+    unit: 'Sets',
+    assistanceRequestId: 'req-2',
+    requestTitle: 'Emergency Shelter Placement - Family Displaced',
+    recipientName: 'Nimali Wickramasinghe',
+    destinationLocation: 'Biyagama Rd, Kelaniya',
+    quantityAllocated: 4,
+    quantity: 4,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'Delivered',
+    allocatedAt: '2026-11-21T06:00:00Z',
+    dispatchedAt: '2026-11-21T06:30:00Z',
+    notes: 'Field rescue dispatch to safely evacuate elderly flood victims.'
+  },
+  {
+    id: 'alloc-104',
+    resourceId: 'res-4',
+    resourceName: 'Emergency Trauma Medical Kits & Antiseptics',
+    category: 'MedicalSupplies',
+    unit: 'Kits',
+    assistanceRequestId: 'req-4',
+    requestTitle: 'Emergency Insulin & Medical Aid for Elderly Mother',
+    recipientName: 'Sunil Perera',
+    destinationLocation: 'Kaduwela Junction, Colombo District',
+    quantityAllocated: 15,
+    quantity: 15,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'InTransit',
+    allocatedAt: '2026-11-22T10:15:00Z',
+    dispatchedAt: '2026-11-22T10:45:00Z',
+    notes: 'Paramedic vehicle #WP-CAD-4029 en route to Kaduwela relief post.'
+  },
+  {
+    id: 'alloc-105',
+    resourceId: 'res-1',
+    resourceName: 'Clean Water Purification Packs (5L)',
+    category: 'DrinkingWater',
+    unit: 'Packs',
+    assistanceRequestId: 'req-5',
+    requestTitle: 'Baby Food and Clean Drinking Water Needed',
+    recipientName: 'Fathima Rizna',
+    destinationLocation: 'Malwana, Gampaha District',
+    quantityAllocated: 30,
+    quantity: 30,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'Dispatched',
+    allocatedAt: '2026-11-23T14:20:00Z',
+    dispatchedAt: '2026-11-23T14:50:00Z',
+    notes: 'Dispatched from Depot A via Army light transport truck.'
+  },
+  {
+    id: 'alloc-106',
+    resourceId: 'res-6',
+    resourceName: 'Family Hygiene & Sanitation Emergency Packs',
+    category: 'Sanitation',
+    unit: 'Packs',
+    assistanceRequestId: 'req-2',
+    requestTitle: 'Emergency Shelter Placement - Family Displaced',
+    recipientName: 'Nimali Wickramasinghe',
+    destinationLocation: 'Kelaniya Maha Vidyalaya Safe Camp',
+    quantityAllocated: 25,
+    quantity: 25,
+    allocatedByEmail: 'logistics@sahaya.org',
+    status: 'Delivered',
+    allocatedAt: '2026-11-24T08:00:00Z',
+    dispatchedAt: '2026-11-24T08:30:00Z',
+    notes: 'Distributed directly at safe camp intake counter.'
+  }
+];
+
 const mockPartnerRequests: PartnerRequest[] = [
   {
     id: 'pr-101',
@@ -497,6 +629,39 @@ const mockPartnerRequests: PartnerRequest[] = [
     status: 'Pending',
     requestedAt: '2026-11-21T12:00:00Z',
     etaHours: 14
+  }
+];
+
+const mockShelterSupplyRequests: ShelterSupplyRequest[] = [
+  {
+    id: 'ssr-1',
+    shelterId: 'sh-1',
+    shelterName: 'Kelaniya Maha Vidyalaya Safe Camp',
+    category: 'DrinkingWater',
+    itemName: 'Clean Water Purification Packs (5L)',
+    quantityRequested: 150,
+    unit: 'Packs',
+    urgency: 'Critical',
+    justification: 'Camp water main contaminated by Kelani surge. 420 displaced persons on site.',
+    sourceDepot: 'Depot A - Kelaniya, Gampaha District',
+    status: 'Dispatched',
+    requestedAt: '2026-11-24T09:00:00Z',
+    requestedBy: 'Shelter Lead Officer (Kelaniya)'
+  },
+  {
+    id: 'ssr-2',
+    shelterId: 'sh-2',
+    shelterName: 'Ratnapura Town Hall Relief Centre',
+    category: 'Food',
+    itemName: 'Emergency High-Energy Biscuit Rations',
+    quantityRequested: 400,
+    unit: 'Boxes',
+    urgency: 'High',
+    justification: 'Shelter reached 85% capacity with newly evacuated landslide families.',
+    sourceDepot: 'Ratnapura Central Relief Depot, Sabaragamuwa Province',
+    status: 'Approved',
+    requestedAt: '2026-11-24T14:30:00Z',
+    requestedBy: 'Shelter Officer (Ratnapura)'
   }
 ];
 
@@ -613,6 +778,41 @@ const initialDefaultUsers: UserSummary[] = [
     role: 'ShelterAdmin',
     isActive: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
+  },
+];
+
+let mockNotificationsList: NotificationItem[] = [
+  {
+    id: 'notif-1',
+    title: 'Emergency Flood Alert - Kelani River Levee',
+    message: 'Water levels exceeded Minor Flood threshold (7.2ft). Evacuation protocols active in Kolonnawa zone.',
+    type: 'EmergencyAlert',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'notif-2',
+    title: 'Safe Shelter Capacity Alert - Ratnapura',
+    message: 'Ratnapura Central Vidyalaya shelter reached 85% capacity. Diverting incoming evacuees to Ferguson High School.',
+    type: 'Warning',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+  },
+  {
+    id: 'notif-3',
+    title: 'New Aid Request Assigned',
+    message: 'Sedawatta Temple critical aid request assigned to Kelaniya rapid response squad.',
+    type: 'Info',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: 'notif-4',
+    title: 'Relief Supplies Dispatched',
+    message: '1,500 clean drinking water cans and dry rations dispatched from Matara Regional Depot.',
+    type: 'Success',
+    isRead: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
   },
 ];
 
@@ -1010,6 +1210,10 @@ export const api = {
       totalCapacity: cap,
       capacity: cap,
       status: 'Active',
+      waterStockLiters: data.waterStockLiters || Math.max(cap * 4, 400),
+      foodRationBoxes: data.foodRationBoxes || Math.max(cap * 2, 200),
+      medicalKitPacks: data.medicalKitPacks || 15,
+      lastStockAuditAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
     list.unshift(s);
@@ -1025,6 +1229,32 @@ export const api = {
       saveStored('sahaya_shelters', list);
     }
     return s || list[0];
+  },
+
+  async transferShelterStock(
+    fromShelterId: string,
+    toShelterId: string,
+    waterLiters: number,
+    foodBoxes: number,
+    _notes?: string
+  ): Promise<{ from: Shelter; to: Shelter }> {
+    const list = loadStored('sahaya_shelters', mockShelters);
+    const source = list.find((s) => s.id === fromShelterId);
+    const target = list.find((s) => s.id === toShelterId);
+    if (source && target) {
+      if (waterLiters > 0) {
+        source.waterStockLiters = Math.max(0, (source.waterStockLiters || 0) - waterLiters);
+        target.waterStockLiters = (target.waterStockLiters || 0) + waterLiters;
+      }
+      if (foodBoxes > 0) {
+        source.foodRationBoxes = Math.max(0, (source.foodRationBoxes || 0) - foodBoxes);
+        target.foodRationBoxes = (target.foodRationBoxes || 0) + foodBoxes;
+      }
+      source.lastStockAuditAt = new Date().toISOString();
+      target.lastStockAuditAt = new Date().toISOString();
+      saveStored('sahaya_shelters', list);
+    }
+    return { from: source || list[0], to: target || list[1] };
   },
 
   async assignShelter(data: any): Promise<ShelterAssignment> {
@@ -1131,15 +1361,23 @@ export const api = {
     if (res) {
       res.availableQuantity = Math.max(0, res.availableQuantity - qty);
       res.allocatedQuantity = (res.allocatedQuantity || 0) + qty;
+      res.dispatchedQuantity = (res.dispatchedQuantity || 0) + qty;
       res.isLowStock = res.availableQuantity <= res.lowStockThreshold;
       saveStored('sahaya_resources', resList);
     }
+
+    let reqTitle = '';
+    let citizen = '';
+    let destination = '';
 
     // Link and update citizen's assistance request status to Dispatched/InProgress
     if (data.assistanceRequestId) {
       const reqs = loadStored('sahaya_requests', mockRequests);
       const req = reqs.find((r) => r.id === data.assistanceRequestId);
       if (req) {
+        reqTitle = req.title || req.description?.slice(0, 50) || 'Citizen Relief Request';
+        citizen = req.citizenName || 'Affected Citizen';
+        destination = req.address || req.location || 'Relief Center';
         const prev = req.status;
         req.status = 'InProgress' as RequestStatus;
         if (!req.statusHistory) req.statusHistory = [];
@@ -1148,7 +1386,7 @@ export const api = {
           assistanceRequestId: req.id,
           fromStatus: prev,
           toStatus: 'InProgress',
-          changedByEmail: 'logistics@sahaya.org',
+          changedByEmail: data.allocatedByEmail || 'logistics@sahaya.org',
           changedAt: new Date().toISOString(),
           notes: `Dispatched ${qty} ${res ? res.unit : 'units'} of ${res ? res.name : 'supplies'} from depot.`
         });
@@ -1156,15 +1394,48 @@ export const api = {
       }
     }
 
-    return {
+    const newAllocation: ResourceAllocation = {
       id: `alloc-${Date.now()}`,
       resourceId: data.resourceId,
+      resourceName: res ? res.name : data.resourceName || 'Relief Supplies',
+      category: res ? res.category : data.category || 'Other',
+      unit: res ? res.unit : data.unit || 'Units',
       assistanceRequestId: data.assistanceRequestId,
+      requestTitle: reqTitle || data.requestTitle || 'Disaster Assistance Request',
+      recipientName: citizen || data.recipientName || 'Relief Recipient',
+      destinationLocation: destination || data.destinationLocation || (res ? res.storageLocation : 'Field Distribution Area'),
       quantityAllocated: qty,
+      quantity: qty,
       allocatedAt: new Date().toISOString(),
-      allocatedByEmail: 'logistics@sahaya.org',
+      dispatchedAt: new Date().toISOString(),
+      allocatedByEmail: data.allocatedByEmail || 'logistics@sahaya.org',
       status: 'Dispatched',
+      notes: data.notes || `Dispatched directly to citizen assistance request ${data.assistanceRequestId}`
     };
+
+    const allocList = loadStored('sahaya_allocations', mockAllocations);
+    allocList.unshift(newAllocation);
+    saveStored('sahaya_allocations', allocList);
+
+    return newAllocation;
+  },
+
+  async getAllocations(): Promise<ResourceAllocation[]> {
+    return loadStored('sahaya_allocations', mockAllocations);
+  },
+
+  async updateAllocationStatus(id: string, status: string, notes?: string): Promise<ResourceAllocation> {
+    const list = loadStored('sahaya_allocations', mockAllocations);
+    const item = list.find((a) => a.id === id);
+    if (item) {
+      item.status = status;
+      if (status === 'Delivered' && !item.dispatchedAt) {
+        item.dispatchedAt = new Date().toISOString();
+      }
+      if (notes) item.notes = `${item.notes ? item.notes + ' | ' : ''}${notes}`;
+      saveStored('sahaya_allocations', list);
+    }
+    return item || list[0];
   },
 
   // Partner Assistance Requests (External Inter-Agency Requisitions)
@@ -1180,6 +1451,37 @@ export const api = {
       requestedAt: new Date().toISOString(),
     };
     mockPartnerRequests.unshift(newReq);
+    return newReq;
+  },
+
+  // Replenish Resource Inventory (Stock Inflow / Shipment Receipt)
+  async replenishResource(resourceId: string, quantity: number, _notes?: string, _batchNumber?: string): Promise<Resource> {
+    const res = mockResources.find((r) => r.id === resourceId);
+    if (!res) throw new Error('Resource item not found in relief depot');
+    const qty = Number(quantity);
+    res.totalQuantity = (res.totalQuantity || 0) + qty;
+    res.availableQuantity = (res.availableQuantity || 0) + qty;
+    res.isLowStock = res.availableQuantity <= res.lowStockThreshold;
+    return { ...res };
+  },
+
+  // Shelter Relief Supply Requisitions (Coursework Spec Page 4 - Section 1.1 F)
+  async getShelterSupplyRequests(shelterId?: string): Promise<ShelterSupplyRequest[]> {
+    if (shelterId) {
+      return mockShelterSupplyRequests.filter((r) => r.shelterId === shelterId);
+    }
+    return mockShelterSupplyRequests;
+  },
+
+  async createShelterSupplyRequest(data: Omit<ShelterSupplyRequest, 'id' | 'status' | 'requestedAt' | 'requestedBy'> & { requestedBy?: string }): Promise<ShelterSupplyRequest> {
+    const newReq: ShelterSupplyRequest = {
+      requestedBy: 'Shelter Lead Administrator',
+      ...data,
+      id: `ssr-${Date.now()}`,
+      status: 'Pending',
+      requestedAt: new Date().toISOString(),
+    };
+    mockShelterSupplyRequests.unshift(newReq);
     return newReq;
   },
 
@@ -1304,20 +1606,23 @@ export const api = {
 
   // Notifications
   async getNotifications(): Promise<NotificationItem[]> {
-    const list: NotificationItem[] = [
-      {
-        id: 'notif-1',
-        title: 'Emergency Flood Alert - Kelani River Levee',
-        message: 'Water levels exceeded Minor Flood threshold (7.2ft). Evacuation protocols active.',
-        type: 'Warning',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    try {
+      const res = await fetch('/api/v1/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
+    } catch {
+      // Fallback to local mock notifications
+    }
+
+    const list: NotificationItem[] = [...mockNotificationsList];
 
     // Check for pending official accounts to notify Admin
     const pending = getStoredUsers().filter((u) => u.isActive === false);
-    if (pending.length > 0) {
+    if (pending.length > 0 && !list.some((n) => n.id === 'notif-pending-accounts')) {
       list.unshift({
         id: 'notif-pending-accounts',
         title: `${pending.length} Staff Account Approval Pending`,
@@ -1331,9 +1636,48 @@ export const api = {
     return list;
   },
 
-  async markNotificationRead(_id: string): Promise<void> { },
-  async markAllNotificationsRead(): Promise<void> { },
-  async broadcastAlert(_data: any): Promise<void> { },
+  async markNotificationRead(id: string): Promise<void> {
+    try {
+      await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
+    } catch {
+      // Fallback
+    }
+    const item = mockNotificationsList.find((n) => n.id === id);
+    if (item) {
+      item.isRead = true;
+    }
+  },
+
+  async markAllNotificationsRead(): Promise<void> {
+    try {
+      await fetch('/api/v1/notifications/read-all', { method: 'POST' });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList.forEach((n) => {
+      n.isRead = true;
+    });
+  },
+
+  async broadcastAlert(data: any): Promise<void> {
+    try {
+      await fetch('/api/v1/notifications/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList.unshift({
+      id: `notif-${Date.now()}`,
+      title: data.title || 'Emergency Broadcast Alert',
+      message: data.message || '',
+      type: data.type || 'EmergencyAlert',
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+  },
 
   // Reports & Governance (Admin Overview & Telemetry)
   async getSystemOverview(): Promise<SystemOverviewReport> {

@@ -17,9 +17,25 @@ import {
   Map as MapIcon,
   List,
   ExternalLink,
-  Edit3
+  PackagePlus,
+  Truck,
+  Send,
+  Clock,
+  X,
+  Edit3,
+  Activity,
+  Droplets,
+  ArrowRightLeft,
+  Sparkles,
+  TrendingDown,
+  Gauge,
+  Flame,
+  RefreshCw,
+  Navigation,
+  SlidersHorizontal,
+  Loader2
 } from 'lucide-react';
-import { Shelter, AssistanceRequest } from '../types';
+import { Shelter, AssistanceRequest, ShelterSupplyRequest, ResourceCategory } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { MapComponent } from '../components/MapComponent';
@@ -32,6 +48,18 @@ export const SheltersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Tabs: 'shelters' | 'supply-requisitions' | 'burn-rate-tracker'
+  const [activeShelterTab, setActiveShelterTab] = useState<'shelters' | 'supply-requisitions' | 'burn-rate-tracker'>('shelters');
+
+  // Inter-Camp Satiety & Surplus Transfer State
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferSourceId, setTransferSourceId] = useState<string>('sh-5');
+  const [transferTargetId, setTransferTargetId] = useState<string>('sh-1');
+  const [transferWaterLiters, setTransferWaterLiters] = useState<number>(2000);
+  const [transferFoodBoxes, setTransferFoodBoxes] = useState<number>(500);
+  const [transferNotes, setTransferNotes] = useState<string>('Inter-camp redistribution to balance flood survival buffer');
+  const [isTransferring, setIsTransferring] = useState(false);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +83,22 @@ export const SheltersPage: React.FC = () => {
   });
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Supply Requisitions State (Coursework Spec Page 4 - Section 1.1 F)
+  const [supplyRequests, setSupplyRequests] = useState<ShelterSupplyRequest[]>([]);
+  const [loadingSupplies, setLoadingSupplies] = useState(false);
+  const [showSupplyModal, setShowSupplyModal] = useState(false);
+  const [selectedSupplyShelter, setSelectedSupplyShelter] = useState<Shelter | null>(null);
+  const [isSubmittingSupply, setIsSubmittingSupply] = useState(false);
+  const [supplyForm, setSupplyForm] = useState({
+    category: 'DrinkingWater' as ResourceCategory,
+    itemName: 'Clean Bottled Drinking Water (5L)',
+    quantityRequested: 150,
+    unit: 'Bottles',
+    urgency: 'Critical' as 'Low' | 'Medium' | 'High' | 'Critical',
+    justification: '',
+    sourceDepot: 'Central Logistics Depot - Colombo'
+  });
+
   // Requests available for assignment
   const [pendingRequests, setPendingRequests] = useState<AssistanceRequest[]>([]);
   const [selectedRequestId, setSelectedRequestId] = useState<string>('');
@@ -74,9 +118,18 @@ export const SheltersPage: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'ShelterAdmin';
-  // Strict Security Guard: Only authentic Shelter Administrators or System Admins can register shelters or assign persons
-  const canManageShelters = user?.role === 'ShelterAdmin' || user?.role === 'Admin';
+  // Smart Location Hub states for shelter registration (2026 UX Standard)
+  const [isLocating, setIsLocating] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [locationSearchQuery, setLocationSearchQuery] = useState('');
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [locationSearchResults, setLocationSearchResults] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showManualCoords, setShowManualCoords] = useState(false);
+  const [detectedAddress, setDetectedAddress] = useState<string | null>(null);
+
+  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin' || user?.role === 'ShelterAdmin' || user?.role === 'LogisticsManager';
+  // Shelter Administrators, Logistics Managers, Coordinators, and Admins can manage shelters and requisition relief supplies
+  const canManageShelters = user?.role === 'ShelterAdmin' || user?.role === 'Admin' || user?.role === 'LogisticsManager' || user?.role === 'Coordinator';
 
   const [shelterRequestsQueue, setShelterRequestsQueue] = useState<AssistanceRequest[]>([]);
 
@@ -102,9 +155,137 @@ export const SheltersPage: React.FC = () => {
     }
   };
 
+  const loadSupplyRequests = async () => {
+    try {
+      setLoadingSupplies(true);
+      const data = await api.getShelterSupplyRequests();
+      setSupplyRequests(data);
+    } catch (err: any) {
+      console.error('Failed to load shelter supply requests:', err);
+    } finally {
+      setLoadingSupplies(false);
+    }
+  };
+
   useEffect(() => {
     loadShelters();
+    loadSupplyRequests();
   }, []);
+
+  // Helper: SPHERE Humanitarian Standards Satiety & Burn-Rate Calculation (Coursework Spec Page 4: "Track utilisation")
+  const calculateShelterSatiety = (s: Shelter) => {
+    const pop = Math.max(s.currentOccupancy, 10);
+    const dailyWater = pop * 3; // 3 Liters clean water per person per day
+    const dailyFood = pop * 2;  // 2 Meal packs per person per day
+    const waterStock = s.waterStockLiters ?? (s.currentOccupancy * 6 || 1000);
+    const foodStock = s.foodRationBoxes ?? (s.currentOccupancy * 3 || 500);
+
+    const waterDays = Number((waterStock / dailyWater).toFixed(1));
+    const foodDays = Number((foodStock / dailyFood).toFixed(1));
+    const waterHours = Math.round(waterDays * 24);
+
+    let status: 'Critical' | 'Low' | 'Stable' | 'Surplus' = 'Stable';
+    if (waterDays < 2) {
+      status = 'Critical';
+    } else if (waterDays < 4) {
+      status = 'Low';
+    } else if (waterDays >= 7) {
+      status = 'Surplus';
+    }
+
+    return {
+      pop,
+      dailyWater,
+      dailyFood,
+      waterStock,
+      foodStock,
+      waterDays,
+      foodDays,
+      waterHours,
+      status,
+    };
+  };
+
+  const handleTransferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!transferSourceId || !transferTargetId || transferSourceId === transferTargetId) {
+      setError('Please select different source and destination camps for redistribution.');
+      return;
+    }
+    setIsTransferring(true);
+    setError(null);
+    try {
+      const res = await api.transferShelterStock(
+        transferSourceId,
+        transferTargetId,
+        Number(transferWaterLiters),
+        Number(transferFoodBoxes),
+        transferNotes
+      );
+      setShelters(prev => prev.map(s => {
+        if (s.id === res.from.id) return res.from;
+        if (s.id === res.to.id) return res.to;
+        return s;
+      }));
+      setSuccessMsg(`Successfully redistributed ${Number(transferWaterLiters).toLocaleString()}L clean water & ${transferFoodBoxes} meal boxes from "${res.from.name}" to "${res.to.name}"! Survival runways balanced.`);
+      setShowTransferModal(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to execute shelter stock transfer.');
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  const openQuickTransfer = (sourceId: string, targetId: string, waterAmt: number = 2000, foodAmt: number = 500) => {
+    setTransferSourceId(sourceId);
+    setTransferTargetId(targetId);
+    setTransferWaterLiters(waterAmt);
+    setTransferFoodBoxes(foodAmt);
+    setTransferNotes('AI-recommended emergency convoy to balance camp survival equity');
+    setShowTransferModal(true);
+  };
+
+  const openSupplyModal = (shelter: Shelter) => {
+    setSelectedSupplyShelter(shelter);
+    setSupplyForm({
+      category: 'DrinkingWater',
+      itemName: 'Clean Bottled Drinking Water (5L)',
+      quantityRequested: 150,
+      unit: 'Bottles',
+      urgency: shelter.availableCapacity <= 10 ? 'Critical' : 'High',
+      justification: `Shelter "${shelter.name}" is sheltering ${shelter.currentOccupancy} evacuees (${shelter.availableCapacity} beds remaining). Immediate relief supplies required.`,
+      sourceDepot: 'Central Logistics Depot - Colombo'
+    });
+    setShowSupplyModal(true);
+  };
+
+  const handleCreateSupplyRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSupplyShelter) return;
+    setIsSubmittingSupply(true);
+    setError(null);
+    try {
+      await api.createShelterSupplyRequest({
+        shelterId: selectedSupplyShelter.id,
+        shelterName: selectedSupplyShelter.name,
+        category: supplyForm.category,
+        itemName: supplyForm.itemName,
+        quantityRequested: Number(supplyForm.quantityRequested),
+        unit: supplyForm.unit,
+        urgency: supplyForm.urgency,
+        justification: supplyForm.justification,
+        sourceDepot: supplyForm.sourceDepot,
+        requestedBy: user?.fullName || user?.email || 'Shelter Administrator'
+      });
+      setSuccessMsg(`Relief supply requisition submitted for "${selectedSupplyShelter.name}"! Central Logistics Depot notified.`);
+      setShowSupplyModal(false);
+      loadSupplyRequests();
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit supply requisition.');
+    } finally {
+      setIsSubmittingSupply(false);
+    }
+  };
 
   const openEditModal = (shelter: Shelter) => {
     setSelectedShelter(shelter);
@@ -128,7 +309,7 @@ export const SheltersPage: React.FC = () => {
       const cap = Math.max(1, Number(editForm.totalCapacity));
       const occ = Math.min(cap, Math.max(0, Number(editForm.currentOccupancy)));
       const avail = Math.max(0, cap - occ);
-      const facilitiesList = editForm.facilities.split(',').map(f => f.trim()).filter(Boolean);
+      const facilitiesList = editForm.facilities.split(',').map((f: string) => f.trim()).filter(Boolean);
       const computedStatus = editForm.status === 'Closed' ? 'Closed' : avail === 0 ? 'Full' : 'Active';
 
       await api.updateShelter(selectedShelter.id, {
@@ -155,25 +336,101 @@ export const SheltersPage: React.FC = () => {
     setSelectedShelter(shelter);
     setShowAssignModal(true);
     try {
-      const allRequests = await api.getRequests();
-      // Filter requests that are approved, under review, submitted or pending and not yet resolved
-      const eligible = allRequests
-        .filter(
-          r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted' || r.status === 'Pending'
-        )
-        .sort((a, b) => {
-          const aIsShelter = String(a.category).toLowerCase().includes('shelter') ? 0 : 1;
-          const bIsShelter = String(b.category).toLowerCase().includes('shelter') ? 0 : 1;
-          return aIsShelter - bIsShelter;
-        });
+      const requests = await api.getRequests({ category: 'EmergencyShelter' });
+      // Filter requests that are approved or under review and not yet resolved
+      const eligible = requests.filter(r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted');
       setPendingRequests(eligible);
       if (eligible.length > 0) {
         setSelectedRequestId(eligible[0].id);
-        setAssignCount(eligible[0].affectedCount || eligible[0].peopleCount || 1);
+        setAssignCount(eligible[0].affectedCount || 1);
       }
     } catch {
       // Fallback
     }
+  };
+
+  const handleDetectCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = Number(position.coords.latitude.toFixed(5));
+        const lng = Number(position.coords.longitude.toFixed(5));
+        setNewShelter(prev => ({ ...prev, latitude: lat, longitude: lng }));
+        setGpsAccuracy(Math.round(position.coords.accuracy));
+        setIsLocating(false);
+        reverseGeocode(lat, lng);
+      },
+      (error) => {
+        console.warn("Geolocation error:", error);
+        setIsLocating(false);
+        alert("Unable to detect GPS location. You can click anywhere on the map or search by landmark.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.display_name) {
+          setDetectedAddress(data.display_name);
+          setNewShelter(prev => {
+            if (!prev.address || prev.address.trim().length === 0) {
+              return { ...prev, address: data.display_name };
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (err) {
+      console.debug("Reverse geocoding error:", err);
+    }
+  };
+
+  const handleSearchLocation = async () => {
+    if (!locationSearchQuery.trim()) return;
+    setIsSearchingLocation(true);
+    try {
+      const query = locationSearchQuery.trim();
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=lk&limit=4`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setLocationSearchResults(data || []);
+        if (!data || data.length === 0) {
+          alert("No matching locations found in Sri Lanka. Try a different school, temple, or city name.");
+        }
+      }
+    } catch (err) {
+      console.warn("Search location error:", err);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
+  const handleSelectLocationResult = (result: { display_name: string; lat: string; lon: string }) => {
+    const lat = Number(parseFloat(result.lat).toFixed(5));
+    const lon = Number(parseFloat(result.lon).toFixed(5));
+    setNewShelter(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lon,
+      address: prev.address && prev.address.trim().length > 0 ? prev.address : result.display_name
+    }));
+    setDetectedAddress(result.display_name);
+    setLocationSearchResults([]);
+    setLocationSearchQuery('');
+    setGpsAccuracy(null);
   };
 
   const handleCreateShelter = async (e: React.FormEvent) => {
@@ -189,6 +446,11 @@ export const SheltersPage: React.FC = () => {
       });
       setSuccessMsg(`Shelter "${newShelter.name}" registered successfully!`);
       setShowCreateModal(false);
+      setLocationSearchQuery('');
+      setLocationSearchResults([]);
+      setGpsAccuracy(null);
+      setDetectedAddress(null);
+      setShowManualCoords(false);
       loadShelters();
     } catch (err: any) {
       setError(err.message || 'Failed to create shelter.');
@@ -364,194 +626,671 @@ export const SheltersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by shelter name, address, or facility..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-500">Status:</span>
-          {(['All', 'Active', 'Full'] as const).map(status => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${statusFilter === status
-                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+      {/* Navigation Tabs */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2">
+        <button
+          onClick={() => setActiveShelterTab('shelters')}
+          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${activeShelterTab === 'shelters'
+            ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+        >
+          <Home className="w-4 h-4" />
+          Safe Shelters & Camps ({shelters.length})
+        </button>
+        <button
+          onClick={() => setActiveShelterTab('supply-requisitions')}
+          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${activeShelterTab === 'supply-requisitions'
+            ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+        >
+          <Truck className="w-4 h-4" />
+          Camp Supply Requisitions ({supplyRequests.length})
+        </button>
+        <button
+          onClick={() => setActiveShelterTab('burn-rate-tracker')}
+          className={`flex items-center gap-2 py-3 px-4 font-semibold text-sm border-b-2 transition-all ${activeShelterTab === 'burn-rate-tracker'
+            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+        >
+          <Activity className="w-4 h-4" />
+          Camp Satiety & Burn-Rate Tracker
+        </button>
       </div>
 
-      {/* District / Province Filter */}
-      <DistrictFilter
-        selectedProvince={selectedProvince}
-        selectedDistrict={selectedDistrict}
-        onProvinceChange={setSelectedProvince}
-        onDistrictChange={setSelectedDistrict}
-        resultCount={filteredShelters.length}
-        totalCount={shelters.length}
-        label="Shelter Regional Zone / දිස්ත්‍රික්කය අනුව ආරක්ෂිත කඳවුරු"
-      />
+      {/* ================= TAB 1: SHELTERS DIRECTORY & MAP ================= */}
+      {activeShelterTab === 'shelters' && (
+        <div className="space-y-6">
+          {/* Filter and Search Bar */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by shelter name, address, or facility..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
 
-      {/* Main Content Area */}
-      {loading ? (
-        <div className="p-12 text-center">
-          <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Loading emergency shelters...</p>
-        </div>
-      ) : viewMode === 'map' ? (
-        <div className="h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
-          <MapComponent
-            shelters={filteredShelters}
-            center={[6.9271, 79.8612]}
-            zoom={10}
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-medium text-slate-500">Status:</span>
+              {(['All', 'Active', 'Full'] as const).map(status => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${statusFilter === status
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* District / Province Filter */}
+          <DistrictFilter
+            selectedProvince={selectedProvince}
+            selectedDistrict={selectedDistrict}
+            onProvinceChange={setSelectedProvince}
+            onDistrictChange={setSelectedDistrict}
+            resultCount={filteredShelters.length}
+            totalCount={shelters.length}
+            label="Shelter Regional Zone / දිස්ත්‍රික්කය අනුව ආරක්ෂිත කඳවුරු"
           />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredShelters.map((shelter) => {
-            const occupancyPct = Math.round((shelter.currentOccupancy / shelter.totalCapacity) * 100);
-            const isFull = shelter.availableCapacity <= 0 || shelter.status === 'Full';
 
-            return (
-              <div
-                key={shelter.id}
-                className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-teal-500/50 transition-all duration-200"
-              >
-                <div>
-                  {/* Top card bar */}
-                  <div className="flex items-start justify-between gap-2">
+          {/* Main Content Area */}
+          {loading ? (
+            <div className="p-12 text-center">
+              <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-slate-500">Loading emergency shelters...</p>
+            </div>
+          ) : viewMode === 'map' ? (
+            <div className="h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+              <MapComponent
+                shelters={filteredShelters}
+                center={[6.9271, 79.8612]}
+                zoom={10}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredShelters.map((shelter) => {
+                const occupancyPct = Math.round((shelter.currentOccupancy / shelter.totalCapacity) * 100);
+                const isFull = shelter.availableCapacity <= 0 || shelter.status === 'Full';
+
+                return (
+                  <div
+                    key={shelter.id}
+                    className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-teal-500/50 transition-all duration-200"
+                  >
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-1">
-                        {shelter.name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                        <span className="line-clamp-1">{shelter.address}</span>
+                      {/* Top card bar */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-1">
+                            {shelter.name}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                            <span className="line-clamp-1">{shelter.address}</span>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 ${isFull
+                            ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                            : occupancyPct > 80
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            }`}
+                        >
+                          {isFull ? 'Full' : `${shelter.availableCapacity} spots left`}
+                        </span>
+                      </div>
+
+                      {/* Occupancy bar */}
+                      <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                        <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
+                          <span className="text-slate-600 dark:text-slate-400">Capacity Load</span>
+                          <span className="text-slate-900 dark:text-white">
+                            {shelter.currentOccupancy} / {shelter.totalCapacity} ({occupancyPct}%)
+                          </span>
+                        </div>
+                        <div className="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${isFull
+                              ? 'bg-rose-500'
+                              : occupancyPct > 80
+                                ? 'bg-amber-500'
+                                : 'bg-emerald-500'
+                              }`}
+                            style={{ width: `${Math.min(occupancyPct, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Mini Camp Satiety & Water Buffer (SPHERE Humanitarian Standard) */}
+                      {(() => {
+                        const sat = calculateShelterSatiety(shelter);
+                        return (
+                          <div className={`mt-3 p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                            sat.status === 'Critical'
+                              ? 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+                              : sat.status === 'Surplus'
+                              ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700 dark:text-cyan-300'
+                              : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'
+                          }`}>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Droplets className={`w-3.5 h-3.5 shrink-0 ${
+                                sat.status === 'Critical' ? 'text-rose-500' : sat.status === 'Surplus' ? 'text-cyan-500' : 'text-blue-500'
+                              }`} />
+                              <div className="truncate">
+                                <span className="font-bold">{sat.waterStock.toLocaleString()}L Water</span>
+                                <span className="text-[10px] text-slate-400 ml-1">({sat.dailyWater}L/day)</span>
+                              </div>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                              sat.status === 'Critical'
+                                ? 'bg-rose-500 text-white animate-pulse'
+                                : sat.status === 'Surplus'
+                                ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border border-cyan-500/30'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                            }`}>
+                              {sat.status === 'Critical'
+                                ? `⚠️ Depletion in ${sat.waterHours}h (${sat.waterDays}d)`
+                                : sat.status === 'Surplus'
+                                ? `✨ Surplus: ${sat.waterDays}d Buffer`
+                                : `${sat.waterDays}d Buffer`}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Facilities badges */}
+                      <div className="mt-4 space-y-2">
+                        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Available Facilities
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {shelter.facilities.map((fac, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                            >
+                              {fac}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Accessibility info */}
+                      {shelter.accessibilityInfo && (
+                        <div className="mt-3 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-teal-500" />
+                          <span>{shelter.accessibilityInfo}</span>
+                        </div>
+                      )}
+
+                      {/* Contact info */}
+                      <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{shelter.contactPhone}</span>
                       </div>
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 ${isFull
-                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                        : occupancyPct > 80
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                        }`}
-                    >
-                      {isFull ? 'Full' : `${shelter.availableCapacity} spots left`}
-                    </span>
-                  </div>
 
-                  {/* Occupancy bar */}
-                  <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
-                      <span className="text-slate-600 dark:text-slate-400">Capacity Load</span>
-                      <span className="text-slate-900 dark:text-white">
-                        {shelter.currentOccupancy} / {shelter.totalCapacity} ({occupancyPct}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${isFull
-                          ? 'bg-rose-500'
-                          : occupancyPct > 80
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
-                          }`}
-                        style={{ width: `${Math.min(occupancyPct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Facilities badges */}
-                  <div className="mt-4 space-y-2">
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Available Facilities
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {shelter.facilities.map((fac, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                    {/* Shelter Administrator / Admin / Logistics action buttons OR Citizen request placement button */}
+                    {canManageShelters ? (
+                      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
+                        <button
+                          onClick={() => openSupplyModal(shelter)}
+                          title="Requisition relief supplies from logistics depots"
+                          className="py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-all shadow-xs"
                         >
-                          {fac}
-                        </span>
-                      ))}
-                    </div>
+                          <PackagePlus className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Request Aid</span>
+                        </button>
+                        <button
+                          disabled={isFull}
+                          onClick={() => openAssignModal(shelter)}
+                          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${isFull
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                            : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs shadow-teal-600/20'
+                            }`}
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          <span>{isFull ? 'Camp Full' : 'Assign'}</span>
+                        </button>
+                        <button
+                          onClick={() => openEditModal(shelter)}
+                          title="Manage Capacity, Facilities & Status"
+                          className="py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Manage</span>
+                        </button>
+                      </div>
+                    ) : user?.role === 'Citizen' && !isFull && (
+                      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <Link
+                          to={`/citizen/create-request?category=4&shelterName=${encodeURIComponent(shelter.name)}`}
+                          className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all"
+                        >
+                          <Home className="w-3.5 h-3.5" />
+                          Request Shelter Placement
+                        </Link>
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
-                  {/* Accessibility info */}
-                  {shelter.accessibilityInfo && (
-                    <div className="mt-3 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-teal-500" />
-                      <span>{shelter.accessibilityInfo}</span>
-                    </div>
-                  )}
+      {/* ================= TAB 2: SHELTER RELIEF SUPPLY REQUISITIONS ================= */}
+      {/* Coursework Requirement Page 4 & 11: "Request additional resources when capacity or supplies are insufficient." */}
+      {activeShelterTab === 'supply-requisitions' && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+                <Truck className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  Shelter Safe Haven Relief Supply Requisitions
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Coursework Mandate (Page 4 - 1.1 F): Safe haven camp administrators request emergency rations, clean water, medical kits, and blankets directly from central logistics depots when camp capacity or supplies are strained.
+                </p>
+              </div>
+            </div>
 
-                  {/* Contact info */}
-                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{shelter.contactPhone}</span>
-                  </div>
+            {canManageShelters && shelters.length > 0 && (
+              <button
+                onClick={() => openSupplyModal(shelters[0])}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs shrink-0 self-start sm:self-auto"
+              >
+                <PackagePlus className="w-4 h-4" />
+                New Requisition
+              </button>
+            )}
+          </div>
+
+          {loadingSupplies ? (
+            <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-slate-500">Loading shelter relief supply requisitions...</p>
+            </div>
+          ) : supplyRequests.length === 0 ? (
+            <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <Truck className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h3 className="font-bold text-slate-900 dark:text-white">No Active Shelter Supply Requisitions</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                All safe haven emergency shelters currently report sufficient inventories.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                      <th className="px-5 py-3.5">Shelter Safe Haven</th>
+                      <th className="px-5 py-3.5">Requested Relief Supply</th>
+                      <th className="px-5 py-3.5">Quantity</th>
+                      <th className="px-5 py-3.5">Source Logistics Depot</th>
+                      <th className="px-5 py-3.5">Urgency</th>
+                      <th className="px-5 py-3.5">Status</th>
+                      <th className="px-5 py-3.5">Requested By & Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {supplyRequests.map((req) => (
+                      <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-5 py-4">
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">{req.shelterName}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">ID: {req.shelterId}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="font-semibold text-slate-900 dark:text-white">{req.itemName}</p>
+                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            {req.category}
+                          </span>
+                          <p className="text-[11px] text-slate-500 mt-1 italic max-w-xs line-clamp-1" title={req.justification}>
+                            "{req.justification}"
+                          </p>
+                        </td>
+                        <td className="px-5 py-4 font-mono font-bold text-slate-900 dark:text-white">
+                          {req.quantityRequested.toLocaleString()} <span className="text-[11px] font-sans font-normal text-slate-500">{req.unit}</span>
+                        </td>
+                        <td className="px-5 py-4 text-slate-700 dark:text-slate-300 text-xs">
+                          {req.sourceDepot}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${req.urgency === 'Critical'
+                              ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 animate-pulse'
+                              : req.urgency === 'High'
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                                : 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
+                              }`}
+                          >
+                            <AlertTriangle className="w-3 h-3" />
+                            {req.urgency}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${req.status === 'Delivered'
+                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                              : req.status === 'Dispatched'
+                                ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
+                                : req.status === 'Approved'
+                                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20'
+                                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                              }`}
+                          >
+                            {req.status === 'Delivered' ? (
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            ) : req.status === 'Dispatched' ? (
+                              <Truck className="w-3 h-3 text-blue-600" />
+                            ) : (
+                              <Clock className="w-3 h-3 text-amber-600" />
+                            )}
+                            {req.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-slate-500 text-xs">
+                          <p className="font-medium text-slate-700 dark:text-slate-300">{req.requestedBy}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">{new Date(req.requestedAt).toLocaleString()}</p>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= TAB 3: CAMP SATIETY & BURN-RATE TRACKER ================= */}
+      {/* Coursework Requirement Page 4 - Section 1.1 F: "Track occupancy, utilisation, and coordinate transfers when conditions change" */}
+      {activeShelterTab === 'burn-rate-tracker' && (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-900/30 via-slate-900/40 to-teal-900/30 border border-indigo-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <span className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                <Activity className="w-6 h-6" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Camp Satiety & Stock Depletion Tracker (කඳවුරු තොග අවසන් වීමේ දින ගණකය)
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    SPHERE Standard
+                  </span>
                 </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                  Calculates real-time daily burn rates (3L clean water + 2 meal packs per person/day) to identify safe camps facing starvation and detects surplus stockpiles for inter-camp redistribution.
+                </p>
+              </div>
+            </div>
 
-                {/* Shelter Administrator / Admin action buttons OR Citizen request placement button */}
-                {canManageShelters ? (
-                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                    <button
-                      disabled={isFull}
-                      onClick={() => openAssignModal(shelter)}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${isFull
-                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                        : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs shadow-teal-600/20'
-                        }`}
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      {isFull ? 'Capacity Reached' : 'Assign Citizen Request'}
-                    </button>
-                    <button
-                      onClick={() => openEditModal(shelter)}
-                      title="Manage Capacity, Facilities & Status"
-                      className="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Manage</span>
-                    </button>
-                  </div>
-                ) : user?.role === 'Citizen' && !isFull && (
-                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <Link
-                      to={`/citizen/create-request?category=4&shelterName=${encodeURIComponent(shelter.name)}`}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all"
-                    >
-                      <Home className="w-3.5 h-3.5" />
-                      Request Shelter Placement
-                    </Link>
-                  </div>
-                )}
+            {canManageShelters && (
+              <button
+                onClick={() => setShowTransferModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 shrink-0 transition cursor-pointer"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+                Redistribute Surplus Stocks
+              </button>
+            )}
+          </div>
+
+          {/* Satiety Summary KPI Stats */}
+          {(() => {
+            const satieties = shelters.map(s => calculateShelterSatiety(s));
+            const criticalCamps = satieties.filter(sat => sat.status === 'Critical').length;
+            const surplusCamps = satieties.filter(sat => sat.status === 'Surplus').length;
+            const totalDailyWater = satieties.reduce((acc, sat) => acc + sat.dailyWater, 0);
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Sheltered Evacuees</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{totalOcc.toLocaleString()}</p>
+                  <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Active camp beneficiaries</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Daily Water Burn Rate</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalDailyWater.toLocaleString()} L/day</p>
+                  <p className="text-[11px] text-slate-500 mt-1">SPHERE: 3 Liters / person / day</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Critical Depletion (&lt;48h)</p>
+                  <p className={`text-2xl font-bold mt-1 ${criticalCamps > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600'}`}>
+                    {criticalCamps} Camps
+                  </p>
+                  <p className="text-[11px] text-rose-500 mt-1">Stock depleted in under 2 days</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Redistributable Surplus</p>
+                  <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">{surplusCamps} Camps</p>
+                  <p className="text-[11px] text-slate-500 mt-1">Stock buffer &gt; 7 days available</p>
+                </div>
               </div>
             );
-          })}
+          })()}
+
+          {/* AI Imbalance Insight & One-Click Redistribution Recommendation */}
+          {(() => {
+            const surplusCamp = shelters.find(s => calculateShelterSatiety(s).status === 'Surplus');
+            const criticalCamp = shelters.find(s => calculateShelterSatiety(s).status === 'Critical');
+
+            if (surplusCamp && criticalCamp) {
+              const surpSat = calculateShelterSatiety(surplusCamp);
+              const critSat = calculateShelterSatiety(criticalCamp);
+
+              return (
+                <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <span className="p-2 rounded-xl bg-amber-500/20 text-amber-500 shrink-0 mt-0.5">
+                      <Sparkles className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>AI Relief Satiety Optimizer: Critical Imbalance Detected</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-300">
+                          Transfer Advised
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                        Surplus detected in <strong>{surplusCamp.name}</strong> ({surpSat.waterDays} Days buffer — {surpSat.waterStock.toLocaleString()}L for {surplusCamp.currentOccupancy} evacuees). Recommend transferring <strong>2,000L water</strong> to <strong>{criticalCamp.name}</strong> ({criticalCamp.currentOccupancy} evacuees — Depleting in {critSat.waterDays} Days / {critSat.waterHours}h) to balance survival equity!
+                      </p>
+                    </div>
+                  </div>
+
+                  {canManageShelters && (
+                    <button
+                      onClick={() => openQuickTransfer(surplusCamp.id, criticalCamp.id, 2000, 500)}
+                      className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-600/20 shrink-0 transition flex items-center gap-1.5 cursor-pointer self-start md:self-auto"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      <span>⚡ Transfer 2,000L Surplus Now</span>
+                    </button>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })()}
+
+          {/* Satiety & Burn-Rate Matrix Table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="px-5 py-4">Camp Name & Region</th>
+                  <th className="px-5 py-4">Sheltered Beneficiaries</th>
+                  <th className="px-5 py-4">Daily Burn Rate</th>
+                  <th className="px-5 py-4">On-Site Reserves</th>
+                  <th className="px-5 py-4">Water Survival Runway</th>
+                  <th className="px-5 py-4">Satiety Status</th>
+                  <th className="px-5 py-4 text-right">Emergency Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {shelters.map((shelter) => {
+                  const sat = calculateShelterSatiety(shelter);
+                  return (
+                    <tr key={shelter.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-5 py-4">
+                        <p className="font-bold text-slate-900 dark:text-white">{shelter.name}</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                          <span className="line-clamp-1">{shelter.address}</span>
+                        </p>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span className="font-bold text-slate-900 dark:text-white text-base">
+                          {shelter.currentOccupancy}
+                        </span>
+                        <span className="text-xs text-slate-500 ml-1">evacuees</span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="space-y-0.5 text-xs">
+                          <p className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                            <Droplets className="w-3 h-3 text-blue-500" />
+                            {sat.dailyWater.toLocaleString()} L / day
+                          </p>
+                          <p className="text-slate-500">
+                            {sat.dailyFood.toLocaleString()} meals / day
+                          </p>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="space-y-0.5 text-xs">
+                          <p className="font-bold text-slate-900 dark:text-white">
+                            {sat.waterStock.toLocaleString()} L Water
+                          </p>
+                          <p className="text-slate-500">
+                            {sat.foodStock.toLocaleString()} Food Boxes
+                          </p>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="w-40 space-y-1">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className={sat.status === 'Critical' ? 'text-rose-600 dark:text-rose-400' : sat.status === 'Surplus' ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-800 dark:text-slate-200'}>
+                              {sat.waterDays} Days
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              {sat.waterHours} hrs left
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                sat.status === 'Critical'
+                                  ? 'bg-rose-500'
+                                  : sat.status === 'Low'
+                                  ? 'bg-amber-500'
+                                  : sat.status === 'Surplus'
+                                  ? 'bg-cyan-500'
+                                  : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${Math.min((sat.waterDays / 10) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                          sat.status === 'Critical'
+                            ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 animate-pulse'
+                            : sat.status === 'Low'
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                            : sat.status === 'Surplus'
+                            ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                        }`}>
+                          {sat.status === 'Critical' && <AlertTriangle className="w-3 h-3 text-rose-500" />}
+                          {sat.status === 'Surplus' && <Sparkles className="w-3 h-3 text-cyan-500" />}
+                          {sat.status === 'Critical'
+                            ? 'Critical Depletion (<48h)'
+                            : sat.status === 'Low'
+                            ? 'Low Buffer (<4d)'
+                            : sat.status === 'Surplus'
+                            ? `Surplus Stock (${sat.waterDays}d)`
+                            : 'Stable Buffer'}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4 text-right">
+                        {canManageShelters && (
+                          <div className="flex items-center justify-end gap-1.5">
+                            {sat.status === 'Surplus' ? (
+                              <button
+                                onClick={() => {
+                                  const targetDeficit = shelters.find(s => calculateShelterSatiety(s).status === 'Critical') || shelters[0];
+                                  openQuickTransfer(shelter.id, targetDeficit.id, 2000, 500);
+                                }}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white transition flex items-center gap-1 shadow-xs cursor-pointer"
+                              >
+                                <ArrowRightLeft className="w-3 h-3" />
+                                <span>Transfer Surplus</span>
+                              </button>
+                            ) : sat.status === 'Critical' ? (
+                              <button
+                                onClick={() => openSupplyModal(shelter)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1 shadow-xs cursor-pointer"
+                              >
+                                <PackagePlus className="w-3 h-3" />
+                                <span>Requisition Aid</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setTransferSourceId(shelter.id);
+                                  setShowTransferModal(true);
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                              >
+                                Adjust Stock
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Modal: Register Shelter */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Register Safe Shelter</h2>
             <p className="text-xs text-slate-500 mb-4">Add a new verified emergency shelter safe zone to the national crisis registry.</p>
 
@@ -563,7 +1302,7 @@ export const SheltersPage: React.FC = () => {
                   type="text"
                   value={newShelter.name}
                   onChange={e => setNewShelter({ ...newShelter, name: e.target.value })}
-                  placeholder="e.g. St. Thomas Community Hall"
+                  placeholder="e.g. St. Thomas Community Hall / Rahula College Safe Haven"
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                 />
               </div>
@@ -578,6 +1317,149 @@ export const SheltersPage: React.FC = () => {
                   placeholder="Full physical street address"
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                 />
+                {detectedAddress && detectedAddress !== newShelter.address && (
+                  <div className="mt-1.5 flex items-center justify-between text-[11px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg px-2.5 py-1 text-emerald-800 dark:text-emerald-300">
+                    <span className="truncate mr-2">📍 Detected: {detectedAddress}</span>
+                    <button
+                      type="button"
+                      onClick={() => setNewShelter({ ...newShelter, address: detectedAddress })}
+                      className="underline font-bold shrink-0 hover:text-emerald-950 dark:hover:text-white"
+                    >
+                      Use as Address
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Smart Location Hub (2026 UX Standard) */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <MapPin className="w-4 h-4 text-emerald-500" />
+                    <span>Shelter Geolocation & Map Pin (ස්ථානය තේරීම)</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                    {newShelter.latitude.toFixed(4)}° N, {newShelter.longitude.toFixed(4)}° E
+                  </span>
+                </div>
+
+                {/* Search Landmark & Instant GPS buttons */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search school, temple, landmark in SL..."
+                      value={locationSearchQuery}
+                      onChange={e => setLocationSearchQuery(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearchLocation(); } }}
+                      className="w-full pl-8 pr-16 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSearchLocation}
+                      disabled={isSearchingLocation || !locationSearchQuery.trim()}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-[10px] font-semibold text-white rounded-lg transition-colors cursor-pointer"
+                    >
+                      {isSearchingLocation ? 'Finding...' : 'Find'}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleDetectCurrentLocation}
+                    disabled={isLocating}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-xs font-semibold text-white shadow-xs transition-colors shrink-0 cursor-pointer"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Locating GPS...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>Auto-Detect GPS</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Search results dropdown if any */}
+                {locationSearchResults.length > 0 && (
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg p-1.5 space-y-1 max-h-40 overflow-y-auto">
+                    <div className="text-[10px] uppercase font-bold text-slate-400 px-2 py-0.5">Matching Sri Lankan Locations:</div>
+                    {locationSearchResults.map((res, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectLocationResult(res)}
+                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs text-slate-800 dark:text-slate-200 flex items-start gap-2 transition-colors cursor-pointer"
+                      >
+                        <Building className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="truncate">{res.display_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interactive Micro Map */}
+                <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <MapComponent
+                    center={[newShelter.latitude, newShelter.longitude]}
+                    zoom={14}
+                    selectedLocation={[newShelter.latitude, newShelter.longitude]}
+                    onLocationSelect={(lat, lon) => {
+                      setNewShelter(prev => ({ ...prev, latitude: lat, longitude: lon }));
+                      reverseGeocode(lat, lon);
+                    }}
+                    height="190px"
+                  />
+                  <div className="absolute top-2 left-2 z-10 bg-slate-900/85 backdrop-blur-xs text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs pointer-events-none flex items-center gap-1">
+                    <span>💡 Click anywhere on map to pin shelter</span>
+                  </div>
+                </div>
+
+                {/* Reverse Geocode Info / GPS Status */}
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span>
+                    {gpsAccuracy ? `✓ GPS Locked (±${gpsAccuracy}m)` : 'Map Pin synchronized with coordinates'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualCoords(!showManualCoords)}
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <SlidersHorizontal className="w-3 h-3" />
+                    <span>{showManualCoords ? 'Hide manual coordinates' : 'Fine-tune coordinates'}</span>
+                  </button>
+                </div>
+
+                {/* Optional Manual Lat/Lng inputs for advanced users */}
+                {showManualCoords && (
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700/60">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Latitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={newShelter.latitude}
+                        onChange={e => setNewShelter({ ...newShelter, latitude: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Longitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={newShelter.longitude}
+                        onChange={e => setNewShelter({ ...newShelter, longitude: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -599,29 +1481,6 @@ export const SheltersPage: React.FC = () => {
                     type="text"
                     value={newShelter.contactPhone}
                     onChange={e => setNewShelter({ ...newShelter, contactPhone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Latitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newShelter.latitude}
-                    onChange={e => setNewShelter({ ...newShelter, latitude: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Longitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newShelter.longitude}
-                    onChange={e => setNewShelter({ ...newShelter, longitude: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                   />
                 </div>
@@ -740,6 +1599,209 @@ export const SheltersPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Modal: Shelter Supply Requisition */}
+      {showSupplyModal && selectedSupplyShelter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <PackagePlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white">
+                    Requisition Shelter Relief Supplies
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Request additional stock from Logistics Depots when supplies are insufficient
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSupplyModal(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Target Shelter Safe Haven</p>
+                <p className="font-bold text-sm text-slate-900 dark:text-white">{selectedSupplyShelter.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedSupplyShelter.address}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Occupancy Load</p>
+                <p className="font-bold text-sm text-slate-900 dark:text-white">
+                  {selectedSupplyShelter.currentOccupancy} / {selectedSupplyShelter.totalCapacity}
+                </p>
+                <p className="text-[11px] text-amber-600 font-medium">
+                  {selectedSupplyShelter.availableCapacity} beds remaining
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateSupplyRequest} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Change Target Shelter (Optional)
+                </label>
+                <select
+                  value={selectedSupplyShelter.id}
+                  onChange={e => {
+                    const found = shelters.find(s => s.id === e.target.value);
+                    if (found) setSelectedSupplyShelter(found);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                >
+                  {shelters.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.availableCapacity} spots free)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Supply Category *
+                  </label>
+                  <select
+                    value={supplyForm.category}
+                    onChange={e => {
+                      const cat = e.target.value as ResourceCategory;
+                      let defaultItem = 'Clean Bottled Drinking Water (5L)';
+                      let defaultUnit = 'Bottles';
+                      if (cat === 'Food') { defaultItem = 'Ready-to-Eat Dry Meal Packs (Family)'; defaultUnit = 'Packs'; }
+                      else if (cat === 'MedicalSupplies') { defaultItem = 'First Aid & Trauma Dressing Kits'; defaultUnit = 'Kits'; }
+                      else if (cat === 'ShelterSupplies') { defaultItem = 'Thermal Fleece Blankets & Mattresses'; defaultUnit = 'Units'; }
+                      else if (cat === 'Sanitation') { defaultItem = 'Sanitation & Hygiene Care Kits'; defaultUnit = 'Kits'; }
+                      else if (cat === 'LogisticsEquipment') { defaultItem = 'Emergency LED Lanterns & Generator Fuel'; defaultUnit = 'Units'; }
+                      setSupplyForm({ ...supplyForm, category: cat, itemName: defaultItem, unit: defaultUnit });
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  >
+                    <option value="DrinkingWater">Drinking Water</option>
+                    <option value="Food">Food Rations</option>
+                    <option value="MedicalSupplies">Medical Supplies</option>
+                    <option value="ShelterSupplies">Shelter Supplies</option>
+                    <option value="Sanitation">Sanitation & Hygiene</option>
+                    <option value="LogisticsEquipment">Logistics Equipment</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Urgency Priority *
+                  </label>
+                  <select
+                    value={supplyForm.urgency}
+                    onChange={e => setSupplyForm({ ...supplyForm, urgency: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-bold"
+                  >
+                    <option value="Critical">Critical (Immediate Depletion)</option>
+                    <option value="High">High (Needed within 12h)</option>
+                    <option value="Medium">Medium (Needed within 24h)</option>
+                    <option value="Low">Low (Buffer Stock)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Item Description *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={supplyForm.itemName}
+                  onChange={e => setSupplyForm({ ...supplyForm, itemName: e.target.value })}
+                  placeholder="e.g. Bottled Water 5L, Dry Rations, Blankets"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Quantity Needed *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={supplyForm.quantityRequested}
+                    onChange={e => setSupplyForm({ ...supplyForm, quantityRequested: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Unit of Measure *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={supplyForm.unit}
+                    onChange={e => setSupplyForm({ ...supplyForm, unit: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Dispatching Logistics Depot *
+                </label>
+                <select
+                  value={supplyForm.sourceDepot}
+                  onChange={e => setSupplyForm({ ...supplyForm, sourceDepot: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                >
+                  <option value="Central Logistics Depot - Colombo">Central Logistics Depot - Colombo</option>
+                  <option value="Regional Relief Depot - Kandy">Regional Relief Depot - Kandy</option>
+                  <option value="Southern Disaster Relief Hub - Galle">Southern Disaster Relief Hub - Galle</option>
+                  <option value="Northern Disaster Depot - Jaffna">Northern Disaster Depot - Jaffna</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Crisis Justification / Capacity Context *
+                </label>
+                <textarea
+                  required
+                  rows={2}
+                  value={supplyForm.justification}
+                  onChange={e => setSupplyForm({ ...supplyForm, justification: e.target.value })}
+                  placeholder="Explain why current shelter supplies or capacity are insufficient..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowSupplyModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingSupply}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {isSubmittingSupply ? 'Submitting Requisition...' : 'Submit Requisition'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Manage / Update Shelter */}
       {showEditModal && selectedShelter && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
@@ -759,18 +1821,6 @@ export const SheltersPage: React.FC = () => {
                     min="1"
                     value={editForm.totalCapacity}
                     onChange={e => setEditForm({ ...editForm, totalCapacity: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Occupancy *</label>
-                  <input
-                    required
-                    type="number"
-                    min="0"
-                    max={editForm.totalCapacity}
-                    value={editForm.currentOccupancy}
-                    onChange={e => setEditForm({ ...editForm, currentOccupancy: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
                   />
                 </div>
@@ -835,6 +1885,142 @@ export const SheltersPage: React.FC = () => {
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
                 >
                   {isUpdating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Inter-Camp Stock Transfer */}
+      {showTransferModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </span>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Inter-Camp Relief Stock Redistribution
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Transfer surplus emergency water & rations to prevent camp starvation
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTransferSubmit} className="space-y-4 pt-4">
+              {/* Source Shelter (Surplus) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Source Camp (Dispatching Surplus Stock) *
+                </label>
+                <select
+                  value={transferSourceId}
+                  onChange={(e) => setTransferSourceId(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-white"
+                >
+                  {shelters.map((s) => {
+                    const sat = calculateShelterSatiety(s);
+                    return (
+                      <option key={s.id} value={s.id}>
+                        {s.name} — {sat.waterStock.toLocaleString()}L Water ({sat.waterDays} Days buffer {sat.status === 'Surplus' ? '✨ Surplus' : ''})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Destination Shelter (Deficit) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Destination Camp (Receiving Relief Supplies) *
+                </label>
+                <select
+                  value={transferTargetId}
+                  onChange={(e) => setTransferTargetId(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-white"
+                >
+                  {shelters.map((s) => {
+                    const sat = calculateShelterSatiety(s);
+                    return (
+                      <option key={s.id} value={s.id}>
+                        {s.name} — {s.currentOccupancy} evacuees ({sat.waterDays} Days buffer {sat.status === 'Critical' ? '⚠️ Critical' : ''})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Transfer Quantities */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Clean Water (Liters) *
+                  </label>
+                  <input
+                    type="number"
+                    min="100"
+                    step="100"
+                    required
+                    value={transferWaterLiters}
+                    onChange={(e) => setTransferWaterLiters(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Food Rations (Meal Boxes) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="50"
+                    required
+                    value={transferFoodBoxes}
+                    onChange={(e) => setTransferFoodBoxes(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Convoy Logistics Notes */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Convoy & Logistics Notes
+                </label>
+                <textarea
+                  rows={2}
+                  value={transferNotes}
+                  onChange={(e) => setTransferNotes(e.target.value)}
+                  placeholder="e.g. Dispatched via DMC Emergency Bowser WP-GB-2041 with police escort"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowTransferModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isTransferring}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 disabled:opacity-50 cursor-pointer"
+                >
+                  {isTransferring ? 'Redistributing...' : 'Confirm Inter-Camp Transfer'}
                 </button>
               </div>
             </form>

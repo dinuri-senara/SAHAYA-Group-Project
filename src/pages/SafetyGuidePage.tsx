@@ -76,13 +76,13 @@ export const SafetyGuidePage: React.FC = () => {
       />
 
       {/* Hero Educational Alert & Quick Hotline Strip */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-slate-900 text-white p-6 sm:p-8 shadow-xl border border-teal-800/40">
-        <div className="absolute right-0 top-0 -mt-10 -mr-10 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-slate-900 text-white p-6 sm:p-8 shadow-xl border border-blue-800 dark:border-blue-800/60/40">
+        <div className="absolute right-0 top-0 -mt-10 -mr-10 w-64 h-64 bg-blue-600 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold border border-teal-500/30">
-              <ShieldAlert className="w-4 h-4 text-teal-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600 dark:bg-blue-500/20 text-blue-300 dark:text-blue-200 text-xs font-bold border border-blue-500/30 dark:border-blue-500/40">
+              <ShieldAlert className="w-4 h-4 text-blue-400 dark:text-blue-300" />
               <span>{language === 'en' ? 'Community Safety & Life Protection' : 'ප්‍රජා ආරක්ෂාව සහ ජීවිත සුරැකීම'}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
@@ -100,7 +100,7 @@ export const SafetyGuidePage: React.FC = () => {
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
             <Link
               to="/request/new"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-500 dark:bg-blue-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>{t.submitRequestBtn[language]}</span>
@@ -126,7 +126,7 @@ export const SafetyGuidePage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t.searchPlaceholder[language]}
-            className="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+            className="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
           />
           {searchQuery && (
             <button
@@ -147,7 +147,7 @@ export const SafetyGuidePage: React.FC = () => {
               onClick={() => setSelectedFilter(filter.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedFilter === filter.id
-                  ? 'bg-teal-600 text-white shadow-xs font-extrabold'
+                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs font-extrabold'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
               }`}
             >
@@ -163,7 +163,7 @@ export const SafetyGuidePage: React.FC = () => {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="text-teal-600 hover:text-teal-700 font-semibold cursor-pointer"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 font-semibold cursor-pointer"
             >
               {t.resetSearch[language]}
             </button>
@@ -184,7 +184,7 @@ export const SafetyGuidePage: React.FC = () => {
               setSearchQuery('');
               setSelectedFilter('all');
             }}
-            className="mt-5 px-5 py-2.5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-500 transition cursor-pointer"
+            className="mt-5 px-5 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 text-white font-bold text-xs hover:bg-blue-600 dark:bg-blue-500 transition cursor-pointer"
           >
             {t.resetSearch[language]}
           </button>
@@ -194,7 +194,7 @@ export const SafetyGuidePage: React.FC = () => {
           {filteredGuides.map((guide) => (
             <div
               key={guide.id}
-              className="bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:border-teal-300 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:border-blue-300 dark:border-blue-700/60 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
             >
               {/* Image Container with Fallback */}
               <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
@@ -221,7 +221,7 @@ export const SafetyGuidePage: React.FC = () => {
                         ? 'bg-rose-600 text-white'
                         : guide.urgencyLevel === 'High'
                         ? 'bg-amber-500 text-slate-950'
-                        : 'bg-teal-600 text-white'
+                        : 'bg-blue-600 dark:bg-blue-600 text-white'
                     }`}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -253,7 +253,7 @@ export const SafetyGuidePage: React.FC = () => {
                   <Link
                     to={`/citizen/safety-guide/${guide.id}`}
                     id={`view-guide-${guide.id}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white font-bold text-xs transition-all group-hover:shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-600 dark:bg-blue-600 text-blue-700 dark:text-blue-300 hover:text-white font-bold text-xs transition-all group-hover:shadow-xs cursor-pointer"
                   >
                     <span>{t.viewGuideBtn[language]}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -270,7 +270,7 @@ export const SafetyGuidePage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <h3 className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
-              <PhoneCall className="w-5 h-5 text-teal-600" />
+              <PhoneCall className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <span>{t.emergencyHotlinesSection[language]}</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -356,7 +356,7 @@ export const SafetyGuidePage: React.FC = () => {
 
         {/* Public Safety & Educational Disclaimer */}
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 flex items-start gap-3 text-xs leading-relaxed">
-          <Info className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-slate-900">{t.educationalDisclaimerTitle[language]}</p>
             <p className="mt-0.5 text-slate-600">{t.educationalDisclaimerDesc[language]}</p>

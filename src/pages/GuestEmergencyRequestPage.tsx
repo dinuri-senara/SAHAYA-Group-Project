@@ -367,7 +367,7 @@ export const GuestEmergencyRequestPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-teal-600 selection:text-white">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-blue-600 dark:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
       <header className="sticky top-0 z-[1000] bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -757,7 +757,7 @@ export const GuestEmergencyRequestPage: React.FC = () => {
                         type="button"
                         onClick={handleUseCurrentGPS}
                         disabled={locatingUser}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-bold cursor-pointer transition"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 hover:bg-teal-100 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-bold cursor-pointer transition"
                       >
                         <Compass className={`w-3.5 h-3.5 ${locatingUser ? 'animate-spin' : ''}`} />
                         <span>{locatingUser ? 'Locating...' : '📍 Use My GPS'}</span>
@@ -771,8 +771,8 @@ export const GuestEmergencyRequestPage: React.FC = () => {
                             Area / Town <span className="text-rose-600">*</span>
                           </label>
                           {resolvingArea && (
-                            <span className="text-[10px] text-teal-700 font-bold animate-pulse flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+                            <span className="text-[10px] text-blue-700 dark:text-blue-300 font-bold animate-pulse flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-500 animate-ping" />
                               Detecting Town...
                             </span>
                           )}
@@ -816,7 +816,7 @@ export const GuestEmergencyRequestPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center text-[11px] text-slate-500 font-mono">
                       <span>Coordinates: {latitude.toFixed(4)}, {longitude.toFixed(4)}</span>
-                      <span className="text-teal-700 font-sans font-semibold">Click on map to move rescue pin</span>
+                      <span className="text-blue-700 dark:text-blue-300 font-sans font-semibold">Click on map to move rescue pin</span>
                     </div>
 
                     {/* Step 2 Actions */}

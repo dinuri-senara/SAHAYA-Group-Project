@@ -429,7 +429,7 @@ export const GuestRequestTrackingPage: React.FC = () => {
                     className={`px-3 py-1 rounded-xl text-xs font-bold border ${activeRecord.status === 'Delivered'
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                       : activeRecord.status === 'Dispatched'
-                        ? 'bg-teal-50 text-teal-800 border-teal-300'
+                        ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700/60'
                         : 'bg-amber-50 text-amber-800 border-amber-300'
                       }`}
                   >
@@ -462,7 +462,7 @@ export const GuestRequestTrackingPage: React.FC = () => {
             {/* Visual Status Progress Stepper */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
-                <Compass className="w-4 h-4 text-teal-600" />
+                <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Live Response Stepper
               </h3>
 
@@ -480,7 +480,7 @@ export const GuestRequestTrackingPage: React.FC = () => {
                     <div
                       key={s.step}
                       className={`p-3.5 rounded-2xl border transition ${isCurrent
-                        ? 'bg-teal-50/80 border-teal-500 ring-2 ring-teal-500/20 shadow-xs'
+                        ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
                         : isDone
                           ? 'bg-slate-50 border-slate-200'
                           : 'bg-slate-50/40 border-slate-100 opacity-60'
@@ -488,11 +488,11 @@ export const GuestRequestTrackingPage: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         {isDone ? (
-                          <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         ) : (
                           <Clock className="w-4 h-4 text-slate-400 shrink-0" />
                         )}
-                        <span className={`text-xs font-bold ${isCurrent ? 'text-teal-900' : isDone ? 'text-slate-900' : 'text-slate-400'}`}>
+                        <span className={`text-xs font-bold ${isCurrent ? 'text-blue-950 dark:text-blue-100' : isDone ? 'text-slate-900' : 'text-slate-400'}`}>
                           {s.title}
                         </span>
                       </div>
@@ -508,7 +508,7 @@ export const GuestRequestTrackingPage: React.FC = () => {
                   className={`h-full rounded-full transition-all duration-700 ${currentStep === 4
                     ? 'w-full bg-emerald-500'
                     : currentStep === 3
-                      ? 'w-3/4 bg-teal-500'
+                      ? 'w-3/4 bg-blue-600 dark:bg-blue-500'
                       : currentStep === 2
                         ? 'w-1/2 bg-amber-500'
                         : 'w-1/4 bg-blue-500'
@@ -524,7 +524,7 @@ export const GuestRequestTrackingPage: React.FC = () => {
                 <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                   {activeRecord.timeline.map((event, idx) => (
                     <div key={idx} className="relative pl-8 text-xs space-y-1">
-                      <span className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-teal-600 border-2 border-white ring-2 ring-teal-600/30" />
+                      <span className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-blue-600 dark:bg-blue-600 border-2 border-white ring-2 ring-teal-600/30" />
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 text-sm">{event.title}</span>
                         <span className="text-[11px] font-mono text-slate-500">{event.time}</span>
@@ -563,9 +563,9 @@ export const GuestRequestTrackingPage: React.FC = () => {
               </a>
               <a
                 href="tel:1990"
-                className="flex-1 min-w-[200px] py-3.5 px-4 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
+                className="flex-1 min-w-[200px] py-3.5 px-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 hover:bg-teal-100 text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-800/60 text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
               >
-                <HeartPulse className="w-4 h-4 text-teal-600" />
+                <HeartPulse className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span>Call Suwa Seriya Medical (1990)</span>
               </a>
               <Link
@@ -579,8 +579,8 @@ export const GuestRequestTrackingPage: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-16 space-y-4 bg-white border border-slate-200 rounded-3xl p-8 shadow-xs">
-            <div className="w-16 h-16 rounded-full bg-teal-50 text-teal-600 border border-teal-200 mx-auto flex items-center justify-center">
-              <Compass className="w-8 h-8 text-teal-600" />
+            <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 mx-auto flex items-center justify-center">
+              <Compass className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-lg font-black text-slate-900">Enter Your Emergency Reference Code</h3>
             <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">

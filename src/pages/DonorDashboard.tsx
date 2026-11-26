@@ -156,7 +156,7 @@ export const DonorDashboard: React.FC = () => {
                 setSelectedCampaignId(campaigns[0]?.id || '');
                 setShowMonetaryModal(true);
               }}
-              className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
             >
               <DollarSign className="w-4 h-4" />
               Record Monetary Aid Pledge
@@ -166,7 +166,7 @@ export const DonorDashboard: React.FC = () => {
                 setSelectedCampaignId(campaigns[0]?.id || '');
                 setShowInKindModal(true);
               }}
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-teal-300 text-xs font-bold border border-slate-700 transition flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-blue-300 dark:text-blue-200 text-xs font-bold border border-slate-700 transition flex items-center gap-2 cursor-pointer"
             >
               <Package className="w-4 h-4" />
               Pledge In-Kind Supplies
@@ -222,7 +222,7 @@ export const DonorDashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-teal-600" />
+            <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Active Emergency Relief Campaigns ({campaigns.length})
           </h2>
           <span className="text-xs text-slate-500 font-medium">Real-time disaster mobilization</span>
@@ -232,11 +232,11 @@ export const DonorDashboard: React.FC = () => {
           {campaigns.map(camp => (
             <div
               key={camp.id}
-              className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between hover:border-teal-500/40 transition"
+              className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between hover:border-blue-500 dark:border-blue-400/40 transition"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                     Active Campaign
                   </span>
                   <span className="text-xs text-slate-400 font-semibold">
@@ -259,11 +259,11 @@ export const DonorDashboard: React.FC = () => {
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, camp.progressPercentage)}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-right text-teal-600 font-extrabold">
+                  <p className="text-[11px] text-right text-blue-600 dark:text-blue-400 font-extrabold">
                     {camp.progressPercentage}% Mobilized
                   </p>
                 </div>
@@ -275,7 +275,7 @@ export const DonorDashboard: React.FC = () => {
                     setSelectedCampaignId(camp.id);
                     setShowMonetaryModal(true);
                   }}
-                  className="flex-1 py-2 text-xs font-bold rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 transition cursor-pointer"
+                  className="flex-1 py-2 text-xs font-bold rounded-xl bg-blue-50 dark:bg-blue-950/30 hover:bg-teal-100 text-blue-900 dark:text-blue-200 transition cursor-pointer"
                 >
                   Pledge Support
                 </button>
@@ -289,7 +289,7 @@ export const DonorDashboard: React.FC = () => {
       <div className="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-teal-400" />
+            <Truck className="w-5 h-5 text-blue-400 dark:text-blue-300" />
             <h2 className="text-base font-bold text-white">Recent Impact Updates & Verified Outcomes</h2>
           </div>
           <span className="text-xs text-slate-400 font-mono">Audited by Platform Coordinators</span>
@@ -297,19 +297,19 @@ export const DonorDashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-            <p className="text-teal-400 font-bold mb-1">Galle District Flood Relief</p>
+            <p className="text-blue-400 dark:text-blue-300 font-bold mb-1">Galle District Flood Relief</p>
             <p className="text-slate-300">
               1,200 dry ration packs and 2,400 liters of potable water dispatched to displaced communities across 4 designated shelters.
             </p>
           </div>
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-            <p className="text-teal-400 font-bold mb-1">Medical First Aid Kits</p>
+            <p className="text-blue-400 dark:text-blue-300 font-bold mb-1">Medical First Aid Kits</p>
             <p className="text-slate-300">
               350 trauma and antiseptic kits mobilized for emergency responder field stations in Kalutara South.
             </p>
           </div>
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-            <p className="text-teal-400 font-bold mb-1">Temporary Shelter Tarpaulins</p>
+            <p className="text-blue-400 dark:text-blue-300 font-bold mb-1">Temporary Shelter Tarpaulins</p>
             <p className="text-slate-300">
               450 heavy-duty weather covers delivered to rural hamlets along the Nilwala river basin.
             </p>
@@ -320,7 +320,7 @@ export const DonorDashboard: React.FC = () => {
       {/* Donation History Table */}
       <div className="space-y-4">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-teal-600" />
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           My Contribution History ({myDonations.length})
         </h2>
 
@@ -423,7 +423,7 @@ export const DonorDashboard: React.FC = () => {
                       onClick={() => setMonetaryAmount(amt)}
                       className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                         monetaryAmount === amt
-                          ? 'bg-teal-600 text-white shadow-xs'
+                          ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                     >
@@ -474,7 +474,7 @@ export const DonorDashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-bold text-xs transition cursor-pointer shadow-md"
               >
                 {submitting ? 'Recording...' : 'Confirm Pledge Record'}
               </button>
@@ -571,7 +571,7 @@ export const DonorDashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-bold text-xs transition cursor-pointer shadow-md"
               >
                 {submitting ? 'Registering...' : 'Confirm In-Kind Pledge'}
               </button>

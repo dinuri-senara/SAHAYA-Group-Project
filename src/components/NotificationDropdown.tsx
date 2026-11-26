@@ -47,10 +47,10 @@ export const NotificationDropdown: React.FC = () => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'EmergencyAlert': return <Siren className="w-4 h-4 text-red-600" />;
-      case 'Warning': return <AlertTriangle className="w-4 h-4 text-amber-600" />;
-      case 'Success': return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
-      default: return <Info className="w-4 h-4 text-teal-600" />;
+      case 'EmergencyAlert': return <Siren className="w-4 h-4 text-rose-500" />;
+      case 'Warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+      case 'Success': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+      default: return <Info className="w-4 h-4 text-blue-500" />;
     }
   };
 
@@ -58,25 +58,25 @@ export const NotificationDropdown: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
         aria-label="Notifications"
+        className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-xs border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md transition-all duration-200 hover:scale-105 cursor-pointer"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-4.5 h-4.5 text-slate-700 dark:text-slate-300" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-slate-900">
+          <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-slate-900 shadow-xs animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800">
-          <div className="flex items-center justify-between px-4 py-3 bg-slate-900 text-white">
+        <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-900 text-white border-b border-slate-800">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-teal-400" />
-              <span className="text-sm font-bold">Notifications</span>
+              <span className="text-sm font-bold">Live Crisis Alerts</span>
               {unreadCount > 0 && (
-                <span className="text-xs bg-teal-500/30 text-teal-300 px-2 py-0.5 rounded-full font-semibold">
+                <span className="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-full font-bold">
                   {unreadCount} new
                 </span>
               )}
@@ -84,7 +84,7 @@ export const NotificationDropdown: React.FC = () => {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs text-teal-300 hover:text-teal-200 flex items-center gap-1 font-medium cursor-pointer"
+                className="text-xs text-teal-300 hover:text-teal-200 flex items-center gap-1 font-semibold cursor-pointer transition"
               >
                 <CheckCheck className="w-3.5 h-3.5" />
                 Mark all read
@@ -92,10 +92,10 @@ export const NotificationDropdown: React.FC = () => {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+          <div className="max-h-84 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-sm">
-                No notifications right now
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No active notifications right now.
               </div>
             ) : (
               notifications.map(n => (
@@ -103,27 +103,29 @@ export const NotificationDropdown: React.FC = () => {
                   key={n.id}
                   onClick={() => handleMarkAsRead(n.id)}
                   className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${
-                    n.isRead ? 'bg-white hover:bg-slate-50' : 'bg-teal-50/50 hover:bg-teal-50'
+                    n.isRead 
+                      ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 opacity-75' 
+                      : 'bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50/70 dark:hover:bg-blue-950/40'
                   }`}
                 >
-                  <div className="mt-0.5 p-1.5 rounded-lg bg-slate-100 shrink-0">
+                  <div className="mt-0.5 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/60 dark:border-slate-700">
                     {getIcon(n.type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-xs font-bold truncate ${n.isRead ? 'text-slate-700' : 'text-slate-900'}`}>
+                      <p className={`text-xs font-bold truncate ${n.isRead ? 'text-slate-700 dark:text-slate-300' : 'text-slate-900 dark:text-white'}`}>
                         {n.title}
                       </p>
                       <span className="text-[10px] text-slate-400 whitespace-nowrap">
                         {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                       {n.message}
                     </p>
                   </div>
                   {!n.isRead && (
-                    <span className="w-2 h-2 rounded-full bg-teal-600 mt-1 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0 ring-2 ring-rose-200 dark:ring-rose-950" />
                   )}
                 </div>
               ))

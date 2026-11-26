@@ -5,29 +5,143 @@
 @layer base {
   :root {
     color-scheme: light;
-    --sidebar-bg: #0e1e38;
-    --sidebar-hover: #172d54;
-    --primary-blue: #2563eb;
+    --bg-page: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    
+    /* Default Blue Theme */
+    --theme-primary: #2563eb;
+    --theme-primary-hover: #1d4ed8;
+    --theme-primary-light: #eff6ff;
+    --theme-primary-border: #bfdbfe;
+    --theme-primary-ring: rgba(37, 99, 235, 0.2);
+    --theme-primary-text: #1e40af;
+    --theme-gradient-from: #2563eb;
+    --theme-gradient-to: #1d4ed8;
+    --theme-glow: rgba(37, 99, 235, 0.25);
   }
 
+  /* Green Theme */
+  :root.theme-green,
+  html.theme-green {
+    --theme-primary: #059669;
+    --theme-primary-hover: #047857;
+    --theme-primary-light: #ecfdf5;
+    --theme-primary-border: #a7f3d0;
+    --theme-primary-ring: rgba(5, 150, 105, 0.2);
+    --theme-primary-text: #065f46;
+    --theme-gradient-from: #059669;
+    --theme-gradient-to: #047857;
+    --theme-glow: rgba(5, 150, 105, 0.25);
+  }
+
+  /* Light Purple Theme */
+  :root.theme-purple,
+  html.theme-purple {
+    --theme-primary: #8b5cf6;
+    --theme-primary-hover: #7c3aed;
+    --theme-primary-light: #f5f3ff;
+    --theme-primary-border: #ddd6fe;
+    --theme-primary-ring: rgba(139, 92, 246, 0.2);
+    --theme-primary-text: #5b21b6;
+    --theme-gradient-from: #8b5cf6;
+    --theme-gradient-to: #7c3aed;
+    --theme-glow: rgba(139, 92, 246, 0.25);
+  }
+
+  /* Yellow Theme */
+  :root.theme-yellow,
+  html.theme-yellow {
+    --theme-primary: #d97706;
+    --theme-primary-hover: #b45309;
+    --theme-primary-light: #fffbeb;
+    --theme-primary-border: #fde68a;
+    --theme-primary-ring: rgba(217, 119, 6, 0.2);
+    --theme-primary-text: #92400e;
+    --theme-gradient-from: #d97706;
+    --theme-gradient-to: #b45309;
+    --theme-glow: rgba(217, 119, 6, 0.25);
+  }
+
+  /* Dark Mode Base */
   :root.dark,
   html.dark {
     color-scheme: dark;
+    --bg-page: #060b14;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --glass-bg: rgba(13, 22, 40, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.08);
+
+    /* Blue Dark */
+    --theme-primary: #3b82f6;
+    --theme-primary-hover: #2563eb;
+    --theme-primary-light: rgba(30, 58, 138, 0.35);
+    --theme-primary-border: rgba(59, 130, 246, 0.4);
+    --theme-primary-ring: rgba(59, 130, 246, 0.25);
+    --theme-primary-text: #bfdbfe;
+    --theme-gradient-from: #2563eb;
+    --theme-gradient-to: #1d4ed8;
+    --theme-glow: rgba(59, 130, 246, 0.35);
+  }
+
+  /* Green Dark */
+  :root.dark.theme-green,
+  html.dark.theme-green {
+    --theme-primary: #10b981;
+    --theme-primary-hover: #059669;
+    --theme-primary-light: rgba(6, 78, 59, 0.35);
+    --theme-primary-border: rgba(16, 185, 129, 0.4);
+    --theme-primary-ring: rgba(16, 185, 129, 0.25);
+    --theme-primary-text: #a7f3d0;
+    --theme-gradient-from: #059669;
+    --theme-gradient-to: #047857;
+    --theme-glow: rgba(16, 185, 129, 0.35);
+  }
+
+  /* Purple Dark */
+  :root.dark.theme-purple,
+  html.dark.theme-purple {
+    --theme-primary: #a78bfa;
+    --theme-primary-hover: #8b5cf6;
+    --theme-primary-light: rgba(91, 33, 182, 0.35);
+    --theme-primary-border: rgba(167, 139, 250, 0.4);
+    --theme-primary-ring: rgba(167, 139, 250, 0.25);
+    --theme-primary-text: #ddd6fe;
+    --theme-gradient-from: #7c3aed;
+    --theme-gradient-to: #6d28d9;
+    --theme-glow: rgba(167, 139, 250, 0.35);
+  }
+
+  /* Yellow Dark */
+  :root.dark.theme-yellow,
+  html.dark.theme-yellow {
+    --theme-primary: #f59e0b;
+    --theme-primary-hover: #d97706;
+    --theme-primary-light: rgba(120, 53, 15, 0.35);
+    --theme-primary-border: rgba(245, 158, 11, 0.4);
+    --theme-primary-ring: rgba(245, 158, 11, 0.25);
+    --theme-primary-text: #fde68a;
+    --theme-gradient-from: #d97706;
+    --theme-gradient-to: #b45309;
+    --theme-glow: rgba(245, 158, 11, 0.35);
   }
 
   body {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 }
 
 /* Comprehensive Dark Mode Overrides for Slate / White themes */
 html.dark,
 html.dark body {
-  background-color: #090d16 !important;
+  background-color: #060b14 !important;
   color: #f8fafc !important;
 }
 
@@ -38,24 +152,68 @@ html.dark .bg-\[\#f1f5f9\],
 html.dark .bg-slate-50,
 html.dark .bg-slate-50\/70,
 html.dark .bg-slate-50\/90 {
-  background-color: #0b111e !important;
+  background-color: #091222 !important;
 }
 
 html.dark .bg-white,
 html.dark .bg-white\/95,
 html.dark .bg-white\/85,
 html.dark .bg-white\/90 {
-  background-color: #0f172a !important;
+  background-color: rgba(15, 25, 46, 0.75) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.08) !important;
   color: #f8fafc !important;
 }
 
 html.dark .bg-slate-100 {
-  background-color: #1a2436 !important;
+  background-color: rgba(18, 29, 51, 0.65) !important;
   color: #f1f5f9 !important;
 }
 
 html.dark .bg-slate-200 {
-  background-color: #233149 !important;
+  background-color: rgba(22, 36, 64, 0.75) !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/90 {
+  background-color: rgba(15, 25, 46, 0.65) !important;
+}
+
+/* Eliminate dull mud/ash by mapping colored light backgrounds to subtle rich luminous tints in dark mode */
+html.dark .bg-purple-50\/50,
+html.dark .bg-purple-50\/60,
+html.dark .bg-purple-50\/70 {
+  background-color: rgba(139, 92, 246, 0.12) !important;
+  border-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+html.dark .bg-emerald-50\/40,
+html.dark .bg-emerald-50\/50,
+html.dark .bg-emerald-50\/60,
+html.dark .bg-emerald-50\/70 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+html.dark .bg-amber-50\/40,
+html.dark .bg-amber-50\/50,
+html.dark .bg-amber-50\/60,
+html.dark .bg-amber-50\/70 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+html.dark .bg-rose-50\/40,
+html.dark .bg-rose-50\/50,
+html.dark .bg-rose-50\/60,
+html.dark .bg-red-50\/40 {
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  border-color: rgba(244, 63, 94, 0.25) !important;
 }
 
 /* Text overrides */
@@ -81,10 +239,10 @@ html.dark .border-slate-200\/70,
 html.dark .border-slate-200\/80,
 html.dark .border-slate-200\/90,
 html.dark .border-slate-300 {
-  border-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Light tint alerts/cards in dark mode */
+/* Consistent Semantic Color Themes */
 html.dark .bg-blue-50,
 html.dark .bg-blue-50\/70,
 html.dark .bg-blue-50\/80 {
@@ -146,9 +304,9 @@ html.dark .text-emerald-800 {
 html.dark input,
 html.dark select,
 html.dark textarea {
-  background-color: #0d1526 !important;
+  background-color: rgba(13, 21, 38, 0.7) !important;
   color: #f8fafc !important;
-  border-color: #27354a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 html.dark input::placeholder,
@@ -158,39 +316,108 @@ html.dark textarea::placeholder {
 
 /* Tables in dark mode */
 html.dark th {
-  background-color: #131d31 !important;
+  background-color: rgba(19, 29, 49, 0.8) !important;
   color: #94a3b8 !important;
-  border-color: #1e293b !important;
-}
-html.dark td {
-  border-color: #1e293b !important;
-}
-html.dark tr:hover td {
-  background-color: #152238 !important;
-}
-
-/* Header & Card glass panels in dark mode */
-html.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.88) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
+html.dark td {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+html.dark tr:hover td {
+  background-color: rgba(30, 48, 80, 0.4) !important;
+}
 
-html.dark .shadow-xs,
-html.dark .shadow-sm,
-html.dark .shadow-md,
-html.dark .shadow-lg,
-html.dark .shadow-xl,
-html.dark .shadow-2xl {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+/* Ultra Frosted Ambient AI Command Mesh Background */
+.bg-modern-clean {
+  background-color: #eef3f9;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.10) 0px, transparent 40%),
+    radial-gradient(at 10% 70%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+    radial-gradient(at 85% 95%, rgba(245, 158, 11, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.6) 0px, transparent 70%);
+  background-attachment: fixed;
+}
+
+html.dark .bg-modern-clean,
+.dark .bg-modern-clean {
+  background-color: #060b14 !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.18) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.14) 0px, transparent 45%),
+    radial-gradient(at 10% 75%, rgba(139, 92, 246, 0.14) 0px, transparent 55%),
+    radial-gradient(at 85% 90%, rgba(14, 165, 233, 0.12) 0px, transparent 45%),
+    radial-gradient(at 50% 40%, rgba(15, 23, 42, 0.8) 0px, transparent 65%) !important;
+  background-attachment: fixed;
+}
+
+/* Glass Sidebar Spring-Physics Transition & True Frosted Glass Surface */
+.glass-sidebar-spring {
+  transition: width 0.45s cubic-bezier(0.32, 1.16, 0.42, 1.13);
+  backdrop-filter: blur(28px) saturate(1.9);
+  -webkit-backdrop-filter: blur(28px) saturate(1.9);
+}
+
+.glass-main-spring {
+  transition: padding-left 0.45s cubic-bezier(0.32, 1.16, 0.42, 1.13);
+}
+
+/* Smooth Circular Clip-Path Wipe Animation on Theme Switch */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+.theme-circular-transition::view-transition-new(root) {
+  animation: circular-wipe-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.theme-circular-transition::view-transition-old(root) {
+  animation: circular-fade-out 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes circular-wipe-in {
+  from {
+    clip-path: circle(0px at var(--wipe-x, 50%) var(--wipe-y, 50%));
+    filter: brightness(1.08);
+  }
+  to {
+    clip-path: circle(160vmax at var(--wipe-x, 50%) var(--wipe-y, 50%));
+    filter: brightness(1);
+  }
+}
+
+@keyframes circular-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.95;
+  }
 }
 
 /* Glassmorphism custom classes */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.65);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+}
+
+html.dark .glass-panel {
+  background: rgba(15, 25, 46, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5) !important;
 }
 
 .glass-card-hover {
@@ -227,3 +454,140 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* ==========================================================================
+   DYNAMIC COLOR THEME UTILITY SYSTEM
+   Enables complete UI responsiveness to Blue, Green, Purple, and Yellow themes
+   ========================================================================== */
+
+/* 1. Buttons & Primary Interactive Elements */
+.theme-btn-primary,
+button.bg-blue-600,
+a.bg-blue-600,
+button.bg-teal-600,
+a.bg-teal-600,
+button.bg-purple-600,
+a.bg-purple-600 {
+  background-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px var(--theme-glow);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-btn-primary:hover,
+button.bg-blue-600:hover,
+a.bg-blue-600:hover,
+button.bg-blue-700:hover,
+a.bg-blue-700:hover,
+button.bg-teal-600:hover,
+a.bg-teal-600:hover,
+button.bg-teal-700:hover,
+a.bg-teal-700:hover,
+button.bg-purple-600:hover,
+a.bg-purple-600:hover,
+button.bg-purple-700:hover,
+a.bg-purple-700:hover {
+  background-color: var(--theme-primary-hover) !important;
+  color: #ffffff !important;
+}
+
+/* 2. Text Accents & Active Labels */
+.theme-text-primary,
+.text-blue-600,
+.text-teal-600,
+.text-purple-600 {
+  color: var(--theme-primary) !important;
+}
+
+.text-blue-700,
+.text-teal-700,
+.text-purple-700 {
+  color: var(--theme-primary-hover) !important;
+}
+
+/* Dark mode text readability */
+html.dark .theme-text-primary,
+html.dark .text-blue-600,
+html.dark .text-blue-500,
+html.dark .text-blue-400,
+html.dark .text-teal-600,
+html.dark .text-teal-500,
+html.dark .text-teal-400,
+html.dark .text-purple-600,
+html.dark .text-purple-500,
+html.dark .text-purple-400 {
+  color: var(--theme-primary) !important;
+}
+
+/* 3. Soft Tinted Badges & Container Backgrounds */
+.theme-bg-soft,
+.bg-blue-50,
+.bg-teal-50,
+.bg-purple-50,
+.bg-blue-500\/10,
+.bg-teal-500\/10,
+.bg-purple-500\/10 {
+  background-color: var(--theme-primary-light) !important;
+}
+
+html.dark .theme-bg-soft,
+html.dark .bg-blue-50,
+html.dark .bg-teal-50,
+html.dark .bg-purple-50,
+html.dark .bg-blue-500\/10,
+html.dark .bg-teal-500\/10,
+html.dark .bg-purple-500\/10,
+html.dark .bg-blue-950\/30,
+html.dark .bg-blue-950\/40 {
+  background-color: var(--theme-primary-light) !important;
+}
+
+/* 4. Borders & Active Rings */
+.theme-border-primary,
+.border-blue-500,
+.border-teal-500,
+.border-purple-500,
+.border-blue-600 {
+  border-color: var(--theme-primary) !important;
+}
+
+.border-blue-200,
+.border-teal-200,
+.border-purple-200,
+.border-blue-300 {
+  border-color: var(--theme-primary-border) !important;
+}
+
+/* Focus and Active Rings */
+.focus\:ring-blue-500:focus,
+.focus\:ring-teal-500:focus,
+.focus\:ring-purple-500:focus,
+.ring-blue-500\/20,
+.ring-blue-500\/30 {
+  --tw-ring-color: var(--theme-primary-ring) !important;
+  border-color: var(--theme-primary) !important;
+}
+
+/* 5. Gradients */
+.from-blue-600,
+.from-teal-600,
+.from-purple-600 {
+  --tw-gradient-from: var(--theme-gradient-from) !important;
+  --tw-gradient-to: rgb(255 255 255 / 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.to-indigo-600,
+.to-teal-700,
+.to-blue-700,
+.to-purple-700 {
+  --tw-gradient-to: var(--theme-gradient-to) !important;
+}
+
+/* 6. Active Sidebar Navigation Link & Pills */
+.theme-nav-active {
+  background: var(--theme-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px var(--theme-glow);
+}
+

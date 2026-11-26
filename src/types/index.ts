@@ -162,10 +162,12 @@ export interface CoordinatorDashboardData {
   activeCrisisEvents?: CrisisEvent[];
 }
 
+export type ResourceCategory = 'Food' | 'DrinkingWater' | 'MedicalSupplies' | 'ShelterSupplies' | 'Sanitation' | 'Clothing' | 'LogisticsEquipment';
+
 export interface Resource {
   id: string;
   name: string;
-  category: 'Food' | 'DrinkingWater' | 'MedicalSupplies' | 'ShelterSupplies' | 'Sanitation' | 'Clothing' | 'LogisticsEquipment';
+  category: ResourceCategory;
   unit: string;
   totalQuantity: number;
   quantity?: number;
@@ -185,12 +187,16 @@ export interface ResourceAllocation {
   id: string;
   resourceId: string;
   resourceName?: string;
+  category?: ResourceCategory;
+  unit?: string;
   assistanceRequestId: string;
   requestTitle?: string;
+  recipientName?: string;
+  destinationLocation?: string;
   quantity?: number;
   quantityAllocated?: number;
   allocatedByEmail?: string;
-  status: string;
+  status: 'Allocated' | 'Dispatched' | 'Delivered' | 'InTransit' | string;
   allocatedAt: string;
   dispatchedAt?: string;
   notes?: string;
@@ -212,6 +218,10 @@ export interface Shelter {
   contactPerson?: string;
   status: 'Active' | 'Full' | 'Inactive';
   createdAt: string;
+  waterStockLiters?: number;
+  foodRationBoxes?: number;
+  medicalKitPacks?: number;
+  lastStockAuditAt?: string;
 }
 
 export interface ShelterAssignment {
@@ -427,6 +437,22 @@ export interface PartnerRequest {
   status: 'Pending' | 'Approved' | 'InTransit' | 'Delivered';
   requestedAt: string;
   etaHours: number;
+}
+
+export interface ShelterSupplyRequest {
+  id: string;
+  shelterId: string;
+  shelterName: string;
+  category: ResourceCategory;
+  itemName: string;
+  quantityRequested: number;
+  unit: string;
+  urgency: 'Low' | 'Medium' | 'High' | 'Critical';
+  justification: string;
+  sourceDepot?: string;
+  status: 'Pending' | 'Approved' | 'Dispatched' | 'Delivered';
+  requestedAt: string;
+  requestedBy: string;
 }
 
 // ---------------------------------------------------------------------------
