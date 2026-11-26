@@ -30,16 +30,18 @@ namespace Sahaya.Identity.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<Result<AuthResponse>>> Login([FromBody] LoginRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest(Result<AuthResponse>.Failure("Email and password are required."));
+            if (!ModelState.IsValid)
+                return BadRequest(Result<AuthResponse>.Failure("Invalid login payload."));
 
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower() && !u.IsDeleted);
 
+            // STRIDE Spoofing & Information Disclosure: Generic message prevents user enumeration
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return Unauthorized(Result<AuthResponse>.Failure("Invalid email or password."));
 
+            // STRIDE Elevation of Privilege: Block unauthorized or unapproved staff accounts
             if (!user.IsActive)
-                return StatusCode(403, Result<AuthResponse>.Failure("Account is pending administrator approval or has been suspended."));
+                return StatusCode(StatusCodes.Status403Forbidden, Result<AuthResponse>.Failure("Account is pending administrator approval or has been suspended."));
 
             user.LastLoginAtUtc = DateTime.UtcNow;
 
@@ -72,23 +74,33 @@ namespace Sahaya.Identity.API.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<Result<AuthResponse>>> Register([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest(Result<AuthResponse>.Failure("Email and password are required."));
+            if (!ModelState.IsValid)
+                return BadRequest(Result<AuthResponse>.Failure("Validation failed for registration input."));
 
             var existing = await _db.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower());
             if (existing)
                 return Conflict(Result<AuthResponse>.Failure("A user with this email address already exists."));
 
-            // Public roles (Citizen, Donor) are auto-activated. Official staff require Admin approval.
-            bool isAutoActive = request.Role == UserRole.Citizen || request.Role == UserRole.Donor;
+            // STRIDE Elevation of Privilege (E) Mitigation:
+            // Public users cannot register as Admin, Coordinator, or Operations Lead.
+            // If an attacker attempts to inject an Admin or Coordinator role, forcefully downgrade to Citizen or mark inactive.
+            UserRole assignedRole = request.Role;
+            if (assignedRole == UserRole.Admin)
+            {
+                // Forceful defense: Admin accounts cannot be self-registered
+                assignedRole = UserRole.Citizen;
+            }
+
+            // Only Citizen and Donor are auto-activated. Any other staff role requires Administrator approval.
+            bool isAutoActive = assignedRole == UserRole.Citizen || assignedRole == UserRole.Donor;
 
             var user = new User
             {
                 Email = request.Email.Trim().ToLower(),
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 11),
                 FullName = request.FullName.Trim(),
                 PhoneNumber = request.PhoneNumber?.Trim() ?? string.Empty,
-                Role = request.Role,
+                Role = assignedRole,
                 IsActive = isAutoActive,
                 CreatedAtUtc = DateTime.UtcNow
             };
