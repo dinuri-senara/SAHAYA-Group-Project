@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, Shield, ChevronDown, Check, LogOut, User as UserIcon, Settings, Palette } from 'lucide-react';
+import { Menu, Shield, ChevronDown, Check, LogOut, User as UserIcon, Settings, Palette } from 'lucide-react';
 import { UserRole } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { NotificationDropdown } from './NotificationDropdown';
 import { ProfileModal } from './ProfileModal';
 import { useNavigate } from 'react-router-dom';
 
@@ -92,19 +93,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Universal Bilingual Language Switcher */}
           <LanguageSwitcher variant="compact" />
 
-          {/* Notification Bell Icon */}
-          <button
-            type="button"
-            className="relative w-9 h-9 rounded-full bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-xs border border-slate-200/80 dark:border-white/10 backdrop-blur-md transition cursor-pointer hover:scale-105"
-            aria-label="Alerts and notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs animate-pulse">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          {/* Interactive Crisis Notification Dropdown */}
+          <NotificationDropdown />
 
           {/* User Profile Pill Dropdown Trigger */}
           <button
