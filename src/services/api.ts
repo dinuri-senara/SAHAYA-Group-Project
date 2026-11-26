@@ -781,7 +781,7 @@ const initialDefaultUsers: UserSummary[] = [
   },
 ];
 
-let mockNotificationsList: NotificationItem[] = [
+const initialDefaultNotifications: NotificationItem[] = [
   {
     id: 'notif-1',
     title: 'Emergency Flood Alert - Kelani River Levee',
@@ -815,6 +815,27 @@ let mockNotificationsList: NotificationItem[] = [
     createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
   },
 ];
+
+const getStoredNotifications = (): NotificationItem[] => {
+  try {
+    const stored = localStorage.getItem('sahaya_notifications_v1');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch { }
+  return [...initialDefaultNotifications];
+};
+
+const saveStoredNotifications = (notifications: NotificationItem[]) => {
+  try {
+    localStorage.setItem('sahaya_notifications_v1', JSON.stringify(notifications));
+  } catch { }
+};
+
+let mockNotificationsList: NotificationItem[] = getStoredNotifications();
 
 const getStoredUsers = (): UserSummary[] => {
   try {
@@ -1618,6 +1639,7 @@ export const api = {
       // Fallback to local mock notifications
     }
 
+    mockNotificationsList = getStoredNotifications();
     const list: NotificationItem[] = [...mockNotificationsList];
 
     // Check for pending official accounts to notify Admin
@@ -1645,6 +1667,7 @@ export const api = {
     const item = mockNotificationsList.find((n) => n.id === id);
     if (item) {
       item.isRead = true;
+      saveStoredNotifications(mockNotificationsList);
     }
   },
 
@@ -1657,6 +1680,33 @@ export const api = {
     mockNotificationsList.forEach((n) => {
       n.isRead = true;
     });
+    saveStoredNotifications(mockNotificationsList);
+  },
+
+  async clearNotification(id: string): Promise<void> {
+    try {
+      await fetch(`/api/v1/notifications/${id}`, { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList = mockNotificationsList.filter((n) => n.id !== id);
+    saveStoredNotifications(mockNotificationsList);
+  },
+
+  async clearAllNotifications(): Promise<void> {
+    try {
+      await fetch('/api/v1/notifications', { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
+    mockNotificationsList = [];
+    saveStoredNotifications([]);
+  },
+
+  async restoreDefaultNotifications(): Promise<NotificationItem[]> {
+    mockNotificationsList = [...initialDefaultNotifications];
+    saveStoredNotifications(mockNotificationsList);
+    return [...mockNotificationsList];
   },
 
   async broadcastAlert(data: any): Promise<void> {
@@ -1677,6 +1727,7 @@ export const api = {
       isRead: false,
       createdAt: new Date().toISOString(),
     });
+    saveStoredNotifications(mockNotificationsList);
   },
 
   // Reports & Governance (Admin Overview & Telemetry)
