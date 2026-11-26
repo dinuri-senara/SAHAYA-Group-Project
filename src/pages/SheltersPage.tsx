@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Home,
   MapPin,
@@ -15,7 +16,8 @@ import {
   Layers,
   Map as MapIcon,
   List,
-  ExternalLink
+  ExternalLink,
+  Edit3
 } from 'lucide-react';
 import { Shelter, AssistanceRequest } from '../types';
 import { api } from '../services/api';
@@ -41,7 +43,17 @@ export const SheltersPage: React.FC = () => {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
+  const [editForm, setEditForm] = useState({
+    totalCapacity: 100,
+    currentOccupancy: 0,
+    status: 'Active' as 'Active' | 'Full' | 'Closed',
+    facilities: '',
+    accessibilityInfo: '',
+    contactPhone: ''
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Requests available for assignment
   const [pendingRequests, setPendingRequests] = useState<AssistanceRequest[]>([]);
@@ -66,12 +78,23 @@ export const SheltersPage: React.FC = () => {
   // Strict Security Guard: Only authentic Shelter Administrators or System Admins can register shelters or assign persons
   const canManageShelters = user?.role === 'ShelterAdmin' || user?.role === 'Admin';
 
+  const [shelterRequestsQueue, setShelterRequestsQueue] = useState<AssistanceRequest[]>([]);
+
   const loadShelters = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getShelters();
+      const [data, allReqs] = await Promise.all([
+        api.getShelters(),
+        api.getRequests().catch(() => [])
+      ]);
       setShelters(data);
+      const waiting = allReqs.filter(
+        r =>
+          (r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted' || r.status === 'Pending') &&
+          String(r.category).toLowerCase().includes('shelter')
+      );
+      setShelterRequestsQueue(waiting);
     } catch (err: any) {
       setError(err.message || 'Failed to load shelters.');
     } finally {
@@ -83,17 +106,70 @@ export const SheltersPage: React.FC = () => {
     loadShelters();
   }, []);
 
+  const openEditModal = (shelter: Shelter) => {
+    setSelectedShelter(shelter);
+    setEditForm({
+      totalCapacity: shelter.totalCapacity || shelter.capacity || 50,
+      currentOccupancy: shelter.currentOccupancy || 0,
+      status: (shelter.status as 'Active' | 'Full' | 'Closed') || 'Active',
+      facilities: (shelter.facilities || []).join(', '),
+      accessibilityInfo: shelter.accessibilityInfo || '',
+      contactPhone: shelter.contactPhone || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateShelter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedShelter) return;
+    setIsUpdating(true);
+    setError(null);
+    try {
+      const cap = Math.max(1, Number(editForm.totalCapacity));
+      const occ = Math.min(cap, Math.max(0, Number(editForm.currentOccupancy)));
+      const avail = Math.max(0, cap - occ);
+      const facilitiesList = editForm.facilities.split(',').map(f => f.trim()).filter(Boolean);
+      const computedStatus = editForm.status === 'Closed' ? 'Closed' : avail === 0 ? 'Full' : 'Active';
+
+      await api.updateShelter(selectedShelter.id, {
+        totalCapacity: cap,
+        capacity: cap,
+        currentOccupancy: occ,
+        availableCapacity: avail,
+        status: computedStatus,
+        facilities: facilitiesList,
+        accessibilityInfo: editForm.accessibilityInfo,
+        contactPhone: editForm.contactPhone
+      });
+      setSuccessMsg(`Shelter "${selectedShelter.name}" updated successfully!`);
+      setShowEditModal(false);
+      loadShelters();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update shelter.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const openAssignModal = async (shelter: Shelter) => {
     setSelectedShelter(shelter);
     setShowAssignModal(true);
     try {
-      const requests = await api.getRequests({ category: 'EmergencyShelter' });
-      // Filter requests that are approved or under review and not yet resolved
-      const eligible = requests.filter(r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted');
+      const allRequests = await api.getRequests();
+      // Filter requests that are approved, under review, submitted or pending and not yet resolved
+      const eligible = allRequests
+        .filter(
+          r => r.status === 'Approved' || r.status === 'UnderReview' || r.status === 'Submitted' || r.status === 'Pending'
+        )
+        .sort((a, b) => {
+          const aIsShelter = String(a.category).toLowerCase().includes('shelter') ? 0 : 1;
+          const bIsShelter = String(b.category).toLowerCase().includes('shelter') ? 0 : 1;
+          return aIsShelter - bIsShelter;
+        });
       setPendingRequests(eligible);
       if (eligible.length > 0) {
         setSelectedRequestId(eligible[0].id);
-        setAssignCount(eligible[0].affectedCount || 1);
+        setAssignCount(eligible[0].affectedCount || eligible[0].peopleCount || 1);
       }
     } catch {
       // Fallback
@@ -213,6 +289,35 @@ export const SheltersPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Pending Shelter Placement Requests Alert for Shelter Admin */}
+      {canManageShelters && shelterRequestsQueue.length > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-bold text-amber-950 dark:text-amber-200">
+                {shelterRequestsQueue.length} Citizen Shelter Request{shelterRequestsQueue.length > 1 ? 's' : ''} Waiting for Allocation
+              </h3>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                {shelterRequestsQueue.slice(0, 2).map(r => `${r.citizenName} (${r.affectedCount || r.peopleCount || 1} people - ${r.location || r.address || 'Reported'})`).join(' • ')}
+                {shelterRequestsQueue.length > 2 ? ` • +${shelterRequestsQueue.length - 2} more` : ''}
+              </p>
+            </div>
+          </div>
+          {shelters.some(s => s.availableCapacity > 0) && (
+            <button
+              onClick={() => {
+                const firstOpen = shelters.find(s => s.availableCapacity > 0);
+                if (firstOpen) openAssignModal(firstOpen);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition cursor-pointer"
+            >
+              Assign to Open Shelter
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -403,13 +508,13 @@ export const SheltersPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Shelter Administrator / Admin action button only */}
-                {canManageShelters && (
-                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                {/* Shelter Administrator / Admin action buttons OR Citizen request placement button */}
+                {canManageShelters ? (
+                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                     <button
                       disabled={isFull}
                       onClick={() => openAssignModal(shelter)}
-                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${isFull
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${isFull
                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                         : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs shadow-teal-600/20'
                         }`}
@@ -417,6 +522,24 @@ export const SheltersPage: React.FC = () => {
                       <Users className="w-3.5 h-3.5" />
                       {isFull ? 'Capacity Reached' : 'Assign Citizen Request'}
                     </button>
+                    <button
+                      onClick={() => openEditModal(shelter)}
+                      title="Manage Capacity, Facilities & Status"
+                      className="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Manage</span>
+                    </button>
+                  </div>
+                ) : user?.role === 'Citizen' && !isFull && (
+                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <Link
+                      to={`/citizen/create-request?category=4&shelterName=${encodeURIComponent(shelter.name)}`}
+                      className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all"
+                    >
+                      <Home className="w-3.5 h-3.5" />
+                      Request Shelter Placement
+                    </Link>
                   </div>
                 )}
               </div>
@@ -611,6 +734,107 @@ export const SheltersPage: React.FC = () => {
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs disabled:opacity-50"
                 >
                   {isAssigning ? 'Admitting...' : 'Confirm Assignment'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal: Manage / Update Shelter */}
+      {showEditModal && selectedShelter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Manage Shelter & Facilities</h2>
+            <p className="text-xs text-slate-500 mb-4">
+              Update capacity, walk-in occupancy, facilities, and operational status for <strong className="text-slate-900 dark:text-white">{selectedShelter.name}</strong>.
+            </p>
+
+            <form onSubmit={handleUpdateShelter} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Capacity *</label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={editForm.totalCapacity}
+                    onChange={e => setEditForm({ ...editForm, totalCapacity: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Occupancy *</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    max={editForm.totalCapacity}
+                    value={editForm.currentOccupancy}
+                    onChange={e => setEditForm({ ...editForm, currentOccupancy: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Operational Status</label>
+                  <select
+                    value={editForm.status}
+                    onChange={e => setEditForm({ ...editForm, status: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  >
+                    <option value="Active">Active (Open)</option>
+                    <option value="Full">Full (At Capacity)</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+                  <input
+                    type="text"
+                    value={editForm.contactPhone}
+                    onChange={e => setEditForm({ ...editForm, contactPhone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Facilities (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editForm.facilities}
+                  onChange={e => setEditForm({ ...editForm, facilities: e.target.value })}
+                  placeholder="Clean Water, Medical Tent, Sanitation, Hot Meals"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Accessibility Information</label>
+                <input
+                  type="text"
+                  value={editForm.accessibilityInfo}
+                  onChange={e => setEditForm({ ...editForm, accessibilityInfo: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                >
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

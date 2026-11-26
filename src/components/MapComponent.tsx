@@ -84,7 +84,7 @@ export const MapComponent: React.FC<MapProps> = ({
   height = '450px',
 }) => {
   return (
-    <div style={{ height }} className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-xs relative">
+    <div style={{ height }} className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-xs relative z-0 isolate">
       <MapContainer
         center={center}
         zoom={zoom}

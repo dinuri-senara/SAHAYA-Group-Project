@@ -429,4 +429,61 @@ export interface PartnerRequest {
   etaHours: number;
 }
 
+// ---------------------------------------------------------------------------
+// Citizen Household & Vulnerability Profile Interfaces (Member 2)
+// ---------------------------------------------------------------------------
+export type HouseholdProfileType = 'Individual' | 'Family';
+
+export type SriLankanDistrict =
+  | 'Ampara' | 'Anuradhapura' | 'Badulla' | 'Batticaloa' | 'Colombo'
+  | 'Galle' | 'Gampaha' | 'Hambantota' | 'Jaffna' | 'Kalutara'
+  | 'Kandy' | 'Kegalle' | 'Kilinochchi' | 'Kurunegala' | 'Mannar'
+  | 'Matale' | 'Matara' | 'Monaragala' | 'Mullaitivu' | 'Nuwara Eliya'
+  | 'Polonnaruwa' | 'Puttalam' | 'Ratnapura' | 'Trincomalee' | 'Vavuniya';
+
+export interface HouseholdComposition {
+  infants: number;      // under 1 year
+  children: number;     // 1-17 years
+  adults: number;       // 18-59 years
+  elderly: number;      // 60 years and above
+  totalMembers: number; // auto-calculated sum
+}
+
+export type VulnerabilityCategory =
+  | 'pregnantWomen'
+  | 'personsWithDisabilities'
+  | 'chronicMedicalConditions'
+  | 'regularMedicationRequired'
+  | 'mobilityAssistanceRequired'
+  | 'otherSpecialNeeds';
+
+export interface EmergencyContact {
+  name: string;
+  relationship: 'Parent' | 'Spouse' | 'Sibling' | 'Relative' | 'Friend' | 'Neighbour' | 'Other' | '';
+  phoneNumber: string;
+}
+
+export type HouseholdProfileStatus = 'NotCreated' | 'Incomplete' | 'Completed';
+
+export interface HouseholdProfile {
+  id?: string;
+  userId: string;
+  fullName: string;
+  mobileNumber: string;
+  profileType: HouseholdProfileType;
+  residentialAddress: string;
+  district: SriLankanDistrict | '';
+  city: string;
+  composition: HouseholdComposition;
+  noSpecialNeeds: boolean;
+  preferNotToDisclose: boolean;
+  vulnerabilities: Record<VulnerabilityCategory, { selected: boolean; affectedCount: number }>;
+  additionalNotes?: string;
+  emergencyContact?: EmergencyContact;
+  status: HouseholdProfileStatus;
+  updatedAt?: string;
+  createdAt?: string;
+}
+
+
 

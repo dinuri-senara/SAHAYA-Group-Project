@@ -38,7 +38,10 @@ export const RequestDetailPage: React.FC = () => {
   const [overrideReason, setOverrideReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin =
+    user?.role === 'Coordinator' ||
+    user?.role === 'Admin' ||
+    user?.role === 'CaseManager';
 
   const loadRequest = async () => {
     if (!id) return;

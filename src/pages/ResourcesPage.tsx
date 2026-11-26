@@ -81,7 +81,11 @@ export const ResourcesPage: React.FC = () => {
   });
   const [isSubmittingPartnerReq, setIsSubmittingPartnerReq] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin =
+    user?.role === 'Coordinator' ||
+    user?.role === 'Admin' ||
+    user?.role === 'LogisticsManager' ||
+    user?.role === 'CaseManager';
 
   const loadData = async () => {
     try {
