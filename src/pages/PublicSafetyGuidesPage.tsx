@@ -183,7 +183,7 @@ export const PublicSafetyGuidesPage: React.FC = () => {
             >
               <div>
                 {/* Image Banner */}
-                <div className="h-44 bg-slate-900 relative overflow-hidden">
+                <div className="aspect-4/3 bg-slate-900 relative overflow-hidden">
                   <img
                     src={guide.image}
                     alt={guide.imageAlt[language]}
