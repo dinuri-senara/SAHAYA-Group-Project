@@ -138,7 +138,7 @@ export const RiverAlertTicker: React.FC = () => {
       {/* Ticker Bar */}
       <aside
         aria-label="National Hydrological Telemetry & River Flood Alerts"
-        className="w-full bg-[#0a1628] border-b border-[#1b2e4b] text-slate-200 text-xs shadow-xs z-20 select-none transition-all"
+        className="w-full bg-[#0a1628]/95 dark:bg-[#060d19]/95 border-b border-[#1b2e4b] dark:border-white/10 text-slate-200 text-xs shadow-xs z-20 select-none transition-all backdrop-blur-md"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >

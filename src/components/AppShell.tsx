@@ -38,6 +38,18 @@ export const AppShell: React.FC<AppShellProps> = ({
     });
   };
 
+  // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar collapse
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleCollapse();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleOpenAi = () => {
     if (onOpenAiDrawer) {
       onOpenAiDrawer();
@@ -47,7 +59,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-900 flex relative overflow-x-hidden">
+    <div className="min-h-screen bg-modern-clean text-slate-900 dark:text-slate-100 flex relative overflow-x-hidden transition-colors duration-500">
       {/* Sidebar navigation */}
       <Sidebar
         role={activeRole}
@@ -58,10 +70,10 @@ export const AppShell: React.FC<AppShellProps> = ({
         onOpenAiDrawer={handleOpenAi}
       />
 
-      {/* Main Content Area: dynamically offsets based on collapse state */}
+      {/* Main Content Area: dynamically offsets based on collapse state with matching spring transition */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-68'
+        className={`flex-1 flex flex-col min-h-screen glass-main-spring ${
+          isCollapsed ? 'lg:pl-[84px]' : 'lg:pl-[280px]'
         }`}
       >
         <OfflineBanner />
