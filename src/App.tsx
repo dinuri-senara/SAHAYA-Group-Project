@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { AppShell } from './components/AppShell';
 import { ScrollToTop } from './components/ScrollToTop';
 
@@ -60,11 +61,12 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LanguageProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
               {/* Public Authentication Pages */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -289,7 +291,8 @@ export function App() {
           </BrowserRouter>
         </LanguageProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
   );
 }
 
