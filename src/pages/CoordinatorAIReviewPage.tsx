@@ -301,11 +301,11 @@ export const CoordinatorAIReviewPage: React.FC = () => {
                     </div>
 
                     {/* Reasoning explanation */}
-                    <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100">
-                      <p className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-1.5">
+                    <div className="p-4 rounded-2xl theme-bg-soft border theme-border-primary">
+                      <p className="text-xs font-bold theme-text-primary uppercase tracking-wider mb-1.5">
                         Explainability & Rationale Breakdown
                       </p>
-                      <p className="text-xs text-slate-700 leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                         {rec.explanation}
                       </p>
                     </div>

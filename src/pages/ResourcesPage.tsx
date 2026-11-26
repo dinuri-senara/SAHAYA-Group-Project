@@ -312,7 +312,7 @@ export const ResourcesPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+            <span className="p-2 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <Boxes className="w-6 h-6" />
             </span>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -335,7 +335,7 @@ export const ResourcesPage: React.FC = () => {
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-sm transition-all shadow-teal-600/20"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all shadow-blue-600/20"
             >
               <Plus className="w-4 h-4" />
               Register Stock Item
@@ -349,7 +349,7 @@ export const ResourcesPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Cataloged SKUs</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{resources.length}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Active relief inventory items</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Active relief inventory items</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Units in Depots</p>
@@ -376,7 +376,7 @@ export const ResourcesPage: React.FC = () => {
           onClick={() => setActiveTab('inventory')}
           className={`flex items-center gap-2 pb-3 px-4 text-sm font-bold border-b-2 transition-all ${
             activeTab === 'inventory'
-              ? 'border-teal-600 text-teal-600 dark:text-teal-400'
+              ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
           }`}
         >
@@ -429,7 +429,7 @@ export const ResourcesPage: React.FC = () => {
                 placeholder="Search resources or storage depot..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -477,7 +477,7 @@ export const ResourcesPage: React.FC = () => {
           {/* Resources Table */}
           {loading ? (
             <div className="p-12 text-center">
-              <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="w-8 h-8 border-3 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <p className="text-sm text-slate-500">Loading resources catalog...</p>
             </div>
           ) : filteredResources.length === 0 ? (
@@ -513,7 +513,7 @@ export const ResourcesPage: React.FC = () => {
                             <div className={`p-2.5 rounded-xl shrink-0 ${
                               isOutOfStock
                                 ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600'
-                                : 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400'
+                                : 'bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400'
                             }`}>
                               <Package className="w-5 h-5" />
                             </div>
@@ -525,9 +525,9 @@ export const ResourcesPage: React.FC = () => {
 
                               {/* Coursework Requirement: Alternative Recommendation on Shortage */}
                               {(isOutOfStock || res.isLowStock) && altRecommendation && (
-                                <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-xs text-teal-900 dark:text-teal-200 flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 font-bold text-teal-800 dark:text-teal-300">
-                                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                                <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 dark:bg-slate-900/40 border border-blue-200 dark:border-blue-800/60 dark:border-blue-800 dark:border-blue-800/60/60 text-xs text-blue-950 dark:text-blue-100 dark:text-blue-200 dark:text-blue-100 flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-200 dark:text-blue-300 dark:text-blue-200">
+                                    <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                                     <span>AI Alternative Available:</span>
                                   </div>
                                   <p className="text-[11px] text-slate-600 dark:text-slate-300">
@@ -576,7 +576,7 @@ export const ResourcesPage: React.FC = () => {
                                     ? 'bg-rose-600'
                                     : res.isLowStock
                                     ? 'bg-amber-500'
-                                    : 'bg-teal-500'
+                                    : 'bg-blue-600 dark:bg-blue-500'
                                 }`}
                                 style={{ width: `${Math.min(availabilityPct, 100)}%` }}
                               />
@@ -619,7 +619,7 @@ export const ResourcesPage: React.FC = () => {
                                       <button
                                         onClick={() => openAllocateModal(altRecommendation)}
                                         title={`Switch to alternative: ${altRecommendation.name}`}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white transition-all shadow-xs"
                                       >
                                         <RotateCcw className="w-3 h-3" />
                                         Allocate Alternative
@@ -647,7 +647,7 @@ export const ResourcesPage: React.FC = () => {
                                     )}
                                     <button
                                       onClick={() => openAllocateModal(res)}
-                                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs"
+                                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white transition-all shadow-xs"
                                     >
                                       Allocate
                                     </button>
@@ -766,7 +766,7 @@ export const ResourcesPage: React.FC = () => {
                             : req.status === 'Approved'
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : req.status === 'Delivered'
-                            ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20'
+                            ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500 dark:border-blue-400/20'
                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                         }`}>
                           {req.status === 'InTransit' && <Truck className="w-3 h-3" />}
@@ -900,7 +900,7 @@ export const ResourcesPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isCreating ? 'Saving...' : 'Add to Depot'}
                 </button>
@@ -1019,7 +1019,7 @@ export const ResourcesPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isAllocating || pendingRequests.length === 0 || selectedResource.availableQuantity === 0}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs disabled:opacity-50"
                 >
                   {isAllocating ? 'Allocating...' : 'Confirm Allocation'}
                 </button>

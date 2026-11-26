@@ -141,13 +141,13 @@ export const IncidentsPage: React.FC = () => {
       case 'earthquake':
         return <Activity className="w-5 h-5 text-orange-500" />;
       case 'tsunami':
-        return <Waves className="w-5 h-5 text-teal-500" />;
+        return <Waves className="w-5 h-5 text-blue-500 dark:text-blue-400" />;
       case 'drought':
         return <Flame className="w-5 h-5 text-yellow-600" />;
       case 'industrial':
         return <AlertTriangle className="w-5 h-5 text-purple-500" />;
       default:
-        return <AlertOctagon className="w-5 h-5 text-teal-500" />;
+        return <AlertOctagon className="w-5 h-5 text-blue-500 dark:text-blue-400" />;
     }
   };
 
@@ -320,7 +320,7 @@ export const IncidentsPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Crisis Theaters</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{incidents.length}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Logged disaster records</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Logged disaster records</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Active Disaster Operations</p>
@@ -334,8 +334,8 @@ export const IncidentsPage: React.FC = () => {
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Associated Citizen Requests</p>
-          <p className="text-2xl font-bold text-teal-600 dark:text-teal-400 mt-1">{totalImpactedRequests}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Aid appeals registered</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalImpactedRequests}</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Aid appeals registered</p>
         </div>
       </div>
 
@@ -568,7 +568,7 @@ export const IncidentsPage: React.FC = () => {
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-teal-600 dark:text-teal-400 flex items-center gap-1">
+                  <span className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
                     <Layers className="w-3.5 h-3.5" />
                     {inc.totalRequests ?? 0} assistance requests linked
                   </span>
@@ -592,10 +592,10 @@ export const IncidentsPage: React.FC = () => {
                   </Link>
                   <Link
                     to="/volunteers"
-                    className="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
+                    className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 hover:bg-teal-100 dark:bg-slate-900/40 dark:hover:bg-teal-900/40 text-blue-700 dark:text-blue-300 dark:text-blue-300 dark:text-blue-200 border border-blue-200 dark:border-blue-800/60 dark:border-blue-800 dark:border-blue-800/60/60 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
                   >
                     <span>Deploy Squad</span>
-                    <ArrowRight className="w-3 h-3 text-teal-500" />
+                    <ArrowRight className="w-3 h-3 text-blue-500 dark:text-blue-400" />
                   </Link>
                 </div>
               </div>

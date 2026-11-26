@@ -246,7 +246,7 @@ export const CreateRequestPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="p-2 rounded-xl bg-teal-50 text-teal-600">
+              <span className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
                 <LifeBuoy className="w-5 h-5" />
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900">
@@ -274,7 +274,7 @@ export const CreateRequestPage: React.FC = () => {
               onClick={() => setStep(1)}
               className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
                 step === 1
-                  ? 'border-teal-600 bg-teal-50/60 ring-2 ring-teal-500/20'
+                  ? 'border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 ring-2 ring-blue-500/20'
                   : step > 1
                   ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800'
                   : 'border-slate-200 text-slate-400'
@@ -284,7 +284,7 @@ export const CreateRequestPage: React.FC = () => {
                 {step > 1 ? (
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
                 ) : (
-                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 1 ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 1 ? 'bg-blue-600 dark:bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
                     1
                   </span>
                 )}
@@ -301,7 +301,7 @@ export const CreateRequestPage: React.FC = () => {
               }}
               className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
                 step === 2
-                  ? 'border-teal-600 bg-teal-50/60 ring-2 ring-teal-500/20'
+                  ? 'border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 ring-2 ring-blue-500/20'
                   : step > 2
                   ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800'
                   : 'border-slate-200 text-slate-400'
@@ -311,7 +311,7 @@ export const CreateRequestPage: React.FC = () => {
                 {step > 2 ? (
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
                 ) : (
-                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 2 ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 2 ? 'bg-blue-600 dark:bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
                     2
                   </span>
                 )}
@@ -328,12 +328,12 @@ export const CreateRequestPage: React.FC = () => {
               }}
               className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
                 step === 3
-                  ? 'border-teal-600 bg-teal-50/60 ring-2 ring-teal-500/20'
+                  ? 'border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 ring-2 ring-blue-500/20'
                   : 'border-slate-200 text-slate-400'
               }`}
             >
               <div className="flex items-center gap-1.5 text-xs font-extrabold">
-                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-blue-600 dark:bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
                   3
                 </span>
                 <span>3. Review & Submit</span>
@@ -355,9 +355,9 @@ export const CreateRequestPage: React.FC = () => {
       {step === 1 && (
         <div className="space-y-6">
           {/* Quick-fill template aids */}
-          <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200/80">
-            <p className="text-xs font-bold text-teal-900 mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+          <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60">
+            <p className="text-xs font-bold text-blue-950 dark:text-blue-100 mb-2 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               Need to write quickly? Click a common situation to pre-fill details:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -369,7 +369,7 @@ export const CreateRequestPage: React.FC = () => {
                   5, // Rescue
                   4  // Critical
                 )}
-                className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 hover:border-teal-400 text-xs font-semibold text-teal-800 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 dark:border-blue-800/60 hover:border-blue-400 dark:border-blue-500 text-xs font-semibold text-blue-900 dark:text-blue-200 transition cursor-pointer"
               >
                 🌊 Flood Rescue
               </button>
@@ -381,7 +381,7 @@ export const CreateRequestPage: React.FC = () => {
                   2, // Water
                   3  // High
                 )}
-                className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 hover:border-teal-400 text-xs font-semibold text-teal-800 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 dark:border-blue-800/60 hover:border-blue-400 dark:border-blue-500 text-xs font-semibold text-blue-900 dark:text-blue-200 transition cursor-pointer"
               >
                 💧 Clean Water & Food
               </button>
@@ -393,7 +393,7 @@ export const CreateRequestPage: React.FC = () => {
                   3, // Medical
                   3  // High
                 )}
-                className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 hover:border-teal-400 text-xs font-semibold text-teal-800 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 dark:border-blue-800/60 hover:border-blue-400 dark:border-blue-500 text-xs font-semibold text-blue-900 dark:text-blue-200 transition cursor-pointer"
               >
                 🏥 Medical & Medicine
               </button>
@@ -404,7 +404,7 @@ export const CreateRequestPage: React.FC = () => {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div>
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4 text-teal-600" />
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Select Primary Type of Assistance *
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -423,18 +423,18 @@ export const CreateRequestPage: React.FC = () => {
                     onClick={() => setCategory(c.id)}
                     className={`p-3.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? 'border-teal-600 bg-teal-50/70 ring-2 ring-teal-500/20 shadow-xs'
+                        ? 'border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 ring-2 ring-blue-500/20 shadow-xs'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`p-2 rounded-lg ${isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`p-2 rounded-lg ${isSelected ? 'bg-blue-600 dark:bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
                         <Icon className="w-4 h-4" />
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-teal-600" />}
+                      {isSelected && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                     </div>
                     <div className="mt-2.5">
-                      <p className={`text-xs font-bold ${isSelected ? 'text-teal-900' : 'text-slate-900'}`}>
+                      <p className={`text-xs font-bold ${isSelected ? 'text-blue-950 dark:text-blue-100' : 'text-slate-900'}`}>
                         {c.name}
                       </p>
                       <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1 leading-tight">
@@ -454,7 +454,7 @@ export const CreateRequestPage: React.FC = () => {
               <select
                 value={crisisEventId}
                 onChange={e => setCrisisEventId(e.target.value)}
-                className="w-full text-xs p-3 rounded-xl border border-slate-300 bg-slate-50 focus:border-teal-500 focus:outline-none"
+                className="w-full text-xs p-3 rounded-xl border border-slate-300 bg-slate-50 focus:border-blue-500 dark:border-blue-400 focus:outline-none"
               >
                 <option value="">General Disaster Aid (No Incident Linked)</option>
                 {events.map(ev => (
@@ -469,20 +469,20 @@ export const CreateRequestPage: React.FC = () => {
           {/* Situation Narrative & Urgency */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-teal-600" />
+              <AlertTriangle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Explain Your Situation & Urgency
             </h2>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Request Summary Title * <span className="text-teal-600 font-normal">(Keep it short & specific)</span>
+                Request Summary Title * <span className="text-blue-600 dark:text-blue-400 font-normal">(Keep it short & specific)</span>
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. 5 people stranded on upper floor, floodwaters rising, urgent clean water needed"
-                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none"
+                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none"
                 required
               />
             </div>
@@ -496,7 +496,7 @@ export const CreateRequestPage: React.FC = () => {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe current road conditions, water height, how many hours you have been stranded, and exact urgent supplies required..."
                 rows={4}
-                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none leading-relaxed"
+                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none leading-relaxed"
                 required
               />
             </div>
@@ -514,7 +514,7 @@ export const CreateRequestPage: React.FC = () => {
                     onClick={() => setUrgency(u.id)}
                     className={`p-3 rounded-xl text-left border transition cursor-pointer ${
                       urgency === u.id
-                        ? 'border-teal-600 bg-teal-50/70 ring-2 ring-teal-500/20'
+                        ? 'border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -531,7 +531,7 @@ export const CreateRequestPage: React.FC = () => {
             <div className="pt-4 border-t border-slate-100 space-y-3">
               <div>
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-teal-600" />
+                  <Camera className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   Supporting Evidence & Disaster Photos
                   <span className="text-[10px] font-normal text-slate-400 normal-case">(Optional - Up to 3 photos)</span>
                 </h3>
@@ -548,7 +548,7 @@ export const CreateRequestPage: React.FC = () => {
               )}
 
               {/* Dropzone */}
-              <div className="relative border-2 border-dashed border-slate-200 hover:border-teal-500 rounded-2xl p-5 text-center transition bg-slate-50/60 hover:bg-teal-50/20">
+              <div className="relative border-2 border-dashed border-slate-200 hover:border-blue-500 dark:border-blue-400 rounded-2xl p-5 text-center transition bg-slate-50/60 hover:bg-blue-50 dark:bg-blue-950/30/20">
                 <input
                   type="file"
                   accept="image/png, image/jpeg, image/jpg, image/webp"
@@ -559,7 +559,7 @@ export const CreateRequestPage: React.FC = () => {
                   id="damage-photo-upload"
                 />
                 <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
-                  <div className="p-3 rounded-2xl bg-teal-50 text-teal-600 border border-teal-200/60">
+                  <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60/60">
                     <UploadCloud className="w-6 h-6" />
                   </div>
                   <div>
@@ -623,7 +623,7 @@ export const CreateRequestPage: React.FC = () => {
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-3 rounded-xl text-xs sm:text-sm font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-600/20 transition cursor-pointer flex items-center gap-2"
+              className="px-6 py-3 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition cursor-pointer flex items-center gap-2"
             >
               Continue to Step 2: Location & People
               <ArrowRight className="w-4 h-4" />
@@ -638,7 +638,7 @@ export const CreateRequestPage: React.FC = () => {
           {/* People & Contact Details */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Users className="w-4 h-4 text-teal-600" />
+              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               People & Contact Information
             </h2>
 
@@ -652,7 +652,7 @@ export const CreateRequestPage: React.FC = () => {
                   min="1"
                   value={affectedCount}
                   onChange={e => setAffectedCount(Number(e.target.value))}
-                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none font-bold"
+                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none font-bold"
                   required
                 />
                 <p className="text-[11px] text-slate-400 mt-1">Helps coordinators allocate the right volume of rations or boat seats.</p>
@@ -667,7 +667,7 @@ export const CreateRequestPage: React.FC = () => {
                   value={contactPhone}
                   onChange={e => setContactPhone(e.target.value)}
                   placeholder="+94 77 123 4567"
-                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none"
+                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">Direct line for the field volunteer or relief driver to call you.</p>
               </div>
@@ -682,7 +682,7 @@ export const CreateRequestPage: React.FC = () => {
                 value={specialNeeds}
                 onChange={e => setSpecialNeeds(e.target.value)}
                 placeholder="e.g. 1 newborn needing infant formula, 1 elderly diabetic with insulin requirements"
-                className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none"
+                className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none"
               />
               <p className="text-[11px] text-slate-400 mt-1">Infants, elderly family, pregnant mothers, disabilities, or chronic illnesses.</p>
             </div>
@@ -692,10 +692,10 @@ export const CreateRequestPage: React.FC = () => {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-teal-600" />
+                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Location & Geospatial Map Pin
               </h2>
-              <span className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+              <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800/60">
                 Click map to reposition rescue pin
               </span>
             </div>
@@ -709,7 +709,7 @@ export const CreateRequestPage: React.FC = () => {
                 value={address}
                 onChange={e => setAddress(e.target.value)}
                 placeholder="e.g. No. 42 Riverside Cross Road, Galle (near Saman Temple)"
-                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-teal-500 focus:outline-none"
+                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:border-blue-500 dark:border-blue-400 focus:outline-none"
                 required
               />
             </div>
@@ -725,7 +725,7 @@ export const CreateRequestPage: React.FC = () => {
               <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1 bg-slate-50 p-2 rounded-xl border border-slate-200">
                 <span>Latitude: <strong>{latitude.toFixed(4)}</strong></span>
                 <span>Longitude: <strong>{longitude.toFixed(4)}</strong></span>
-                <span className="text-teal-700 font-semibold font-sans">Pin saved</span>
+                <span className="text-blue-700 dark:text-blue-300 font-semibold font-sans">Pin saved</span>
               </div>
             </div>
           </div>
@@ -742,7 +742,7 @@ export const CreateRequestPage: React.FC = () => {
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-3 rounded-xl text-xs sm:text-sm font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-600/20 transition cursor-pointer flex items-center gap-2"
+              className="px-6 py-3 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition cursor-pointer flex items-center gap-2"
             >
               Review Details & Confirm
               <ArrowRight className="w-4 h-4" />
@@ -758,7 +758,7 @@ export const CreateRequestPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
                 <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-teal-600" />
+                  <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Step 3: Review Before Submitting
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -768,7 +768,7 @@ export const CreateRequestPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="text-xs font-bold text-teal-600 hover:underline"
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
               >
                 Edit Information
               </button>
@@ -849,12 +849,12 @@ export const CreateRequestPage: React.FC = () => {
             )}
 
             {/* Explanation of What Happens Next */}
-            <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 space-y-1.5">
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-950 dark:text-blue-100 space-y-1.5">
               <p className="font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 What happens after you click Submit:
               </p>
-              <ul className="list-disc list-inside space-y-1 text-teal-800 text-[11px] pl-1">
+              <ul className="list-disc list-inside space-y-1 text-blue-900 dark:text-blue-200 text-[11px] pl-1">
                 <li>Your request will immediately enter the regional operations command queue.</li>
                 <li>AI Triage will assess resource bundles and check for duplicate petitions to prevent delays.</li>
                 <li>An authorized emergency coordinator will review and allocate supplies or dispatch a volunteer.</li>
@@ -876,7 +876,7 @@ export const CreateRequestPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/20 transition cursor-pointer flex items-center gap-2"
+              className="px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition cursor-pointer flex items-center gap-2"
             >
               {loading ? 'Submitting & Running AI Triage...' : 'Confirm & Submit Emergency Request'}
               <ArrowRight className="w-4 h-4" />

@@ -242,7 +242,7 @@ export const SheltersPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+            <span className="p-2 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <Home className="w-6 h-6" />
             </span>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -281,7 +281,7 @@ export const SheltersPage: React.FC = () => {
           {canManageShelters && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-sm transition-all shadow-teal-600/20"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all shadow-blue-600/20"
             >
               <Plus className="w-4 h-4" />
               Register Shelter
@@ -324,7 +324,7 @@ export const SheltersPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Shelters</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{shelters.length}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Verified safe structures</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Verified safe structures</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Capacity</p>
@@ -373,7 +373,7 @@ export const SheltersPage: React.FC = () => {
             placeholder="Search by shelter name, address, or facility..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -409,7 +409,7 @@ export const SheltersPage: React.FC = () => {
       {/* Main Content Area */}
       {loading ? (
         <div className="p-12 text-center">
-          <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-3 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-slate-500">Loading emergency shelters...</p>
         </div>
       ) : viewMode === 'map' ? (
@@ -429,7 +429,7 @@ export const SheltersPage: React.FC = () => {
             return (
               <div
                 key={shelter.id}
-                className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-teal-500/50 transition-all duration-200"
+                className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500 dark:border-blue-400/50 transition-all duration-200"
               >
                 <div>
                   {/* Top card bar */}
@@ -496,7 +496,7 @@ export const SheltersPage: React.FC = () => {
                   {/* Accessibility info */}
                   {shelter.accessibilityInfo && (
                     <div className="mt-3 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-teal-500" />
+                      <Shield className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                       <span>{shelter.accessibilityInfo}</span>
                     </div>
                   )}
@@ -516,7 +516,7 @@ export const SheltersPage: React.FC = () => {
                       onClick={() => openAssignModal(shelter)}
                       className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${isFull
                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                        : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs shadow-teal-600/20'
+                        : 'bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs shadow-blue-600/20'
                         }`}
                     >
                       <Users className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ export const SheltersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isCreating ? 'Registering...' : 'Save Shelter'}
                 </button>
@@ -731,7 +731,7 @@ export const SheltersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isAssigning || pendingRequests.length === 0}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs disabled:opacity-50"
                 >
                   {isAssigning ? 'Admitting...' : 'Confirm Assignment'}
                 </button>
@@ -832,7 +832,7 @@ export const SheltersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>

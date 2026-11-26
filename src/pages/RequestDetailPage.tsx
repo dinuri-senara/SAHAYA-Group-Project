@@ -225,8 +225,8 @@ export const RequestDetailPage: React.FC = () => {
       <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-bold text-teal-600">
-              <span className="px-2 py-0.5 rounded bg-teal-50 border border-teal-200">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
+              <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60">
                 {request.category}
               </span>
               {request.crisisEventTitle && (
@@ -260,12 +260,12 @@ export const RequestDetailPage: React.FC = () => {
         </div>
 
         {/* Human-Readable Status Explanation Callout */}
-        <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-teal-900 text-xs space-y-1 shadow-2xs">
+        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-blue-950 dark:text-blue-100 text-xs space-y-1 shadow-2xs">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <span className="font-bold text-xs sm:text-sm">Current Progress: {getStatusHumanLabel(request.status)}</span>
           </div>
-          <p className="text-teal-800 leading-relaxed text-xs pl-6">
+          <p className="text-blue-900 dark:text-blue-200 leading-relaxed text-xs pl-6">
             {getStatusExplanation(request.status)}
           </p>
         </div>
@@ -295,7 +295,7 @@ export const RequestDetailPage: React.FC = () => {
           <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-950 to-slate-900 text-white border border-slate-800 shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                <div className="p-2 rounded-xl bg-blue-600 dark:bg-blue-500/20 text-blue-400 dark:text-blue-300 border border-blue-500/30 dark:border-blue-500/40">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
@@ -307,7 +307,7 @@ export const RequestDetailPage: React.FC = () => {
               {rec && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">Confidence:</span>
-                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-600 dark:bg-blue-500/20 text-blue-300 dark:text-blue-200 border border-blue-500/30 dark:border-blue-500/40">
                     {Math.round(rec.confidenceScore * 100)}%
                   </span>
                 </div>
@@ -319,7 +319,7 @@ export const RequestDetailPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Predicted Category</span>
-                    <p className="text-sm font-bold text-teal-300 mt-0.5">{rec.predictedCategory}</p>
+                    <p className="text-sm font-bold text-blue-300 dark:text-blue-200 mt-0.5">{rec.predictedCategory}</p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Suggested Priority</span>
@@ -341,7 +341,7 @@ export const RequestDetailPage: React.FC = () => {
                     <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-1.5">Recommended Relief Supplies</h4>
                     <div className="flex flex-wrap gap-2">
                       {rec.suggestedResources?.map((item, idx) => (
-                        <span key={idx} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-950/60 text-teal-300 border border-teal-800">
+                        <span key={idx} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-900/60 text-blue-300 dark:text-blue-200 border border-blue-800 dark:border-blue-800/60">
                           {item}
                         </span>
                       ))}
@@ -352,7 +352,7 @@ export const RequestDetailPage: React.FC = () => {
                 {/* Review status banner */}
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-teal-400" />
+                    <ShieldCheck className="w-4 h-4 text-blue-400 dark:text-blue-300" />
                     Review Status: <strong className="text-white">{rec.reviewStatus}</strong>
                   </span>
                   {rec.reviewingOfficerName && (
@@ -375,7 +375,7 @@ export const RequestDetailPage: React.FC = () => {
           <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-teal-600" />
+                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Reported Incident Location
               </h3>
               <span className="text-xs text-slate-500 font-mono">
@@ -396,7 +396,7 @@ export const RequestDetailPage: React.FC = () => {
           {(request as any).evidenceImages && (request as any).evidenceImages.length > 0 && (
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Camera className="w-4 h-4 text-teal-600" />
+                <Camera className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Attached Evidence Photos ({(request as any).evidenceImages.length})
               </h3>
               <p className="text-xs text-slate-500">Field photos submitted by citizen for damage & flood verification.</p>
@@ -421,7 +421,7 @@ export const RequestDetailPage: React.FC = () => {
           {isCoordinatorOrAdmin && (
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-teal-600" />
+                <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Coordinator Review Actions
               </h3>
 
@@ -431,7 +431,7 @@ export const RequestDetailPage: React.FC = () => {
                     <button
                       disabled={actionLoading}
                       onClick={() => handleReviewDecision(3)} // 3 = Approved
-                      className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                      className="py-2.5 px-3 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Check className="w-4 h-4" />
                       Approve Request
@@ -453,9 +453,9 @@ export const RequestDetailPage: React.FC = () => {
                       <button
                         disabled={actionLoading}
                         onClick={handleAcceptAIRecommendation}
-                        className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-blue-300 dark:text-blue-200 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                        <Sparkles className="w-3.5 h-3.5 text-blue-400 dark:text-blue-300" />
                         Accept AI Recommendation
                       </button>
                       <button
@@ -485,7 +485,7 @@ export const RequestDetailPage: React.FC = () => {
                   className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-between transition"
                 >
                   <span className="flex items-center gap-2">
-                    <Boxes className="w-4 h-4 text-teal-600" /> Allocate Inventory Stock
+                    <Boxes className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Allocate Inventory Stock
                   </span>
                   <span>&rarr;</span>
                 </Link>
@@ -494,7 +494,7 @@ export const RequestDetailPage: React.FC = () => {
                   className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-between transition"
                 >
                   <span className="flex items-center gap-2">
-                    <Home className="w-4 h-4 text-teal-600" /> Assign to Verified Shelter
+                    <Home className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Assign to Verified Shelter
                   </span>
                   <span>&rarr;</span>
                 </Link>
@@ -506,7 +506,7 @@ export const RequestDetailPage: React.FC = () => {
           <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Clock className="w-4 h-4 text-teal-600" />
+                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Status Lifecycle & Audit Trail
               </h3>
               {rec?.reviewStatus === 'Overridden' && (
@@ -592,7 +592,7 @@ export const RequestDetailPage: React.FC = () => {
               {/* Status History Items */}
               {(request.statusHistory || []).map(h => (
                 <div key={h.id} className="relative pl-7 text-xs space-y-1">
-                  <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-teal-600 border-2 border-white ring-2 ring-slate-100" />
+                  <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-blue-600 dark:bg-blue-600 border-2 border-white ring-2 ring-slate-100" />
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900">{h.newStatus}</span>
                     <span className="text-[10px] text-slate-400">

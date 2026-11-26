@@ -179,7 +179,7 @@ export const VolunteersPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+            <span className="p-2 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <Users className="w-6 h-6" />
             </span>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -194,7 +194,7 @@ export const VolunteersPage: React.FC = () => {
         {canDispatchVolunteers && (
           <button
             onClick={() => setShowRegisterModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-600/20 transition cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Register Field Volunteer
@@ -207,7 +207,7 @@ export const VolunteersPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Registered Volunteers</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{volunteers.length}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Verified community responders</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Verified community responders</p>
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Ready & Available</p>
@@ -221,8 +221,8 @@ export const VolunteersPage: React.FC = () => {
         </div>
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Completed Missions</p>
-          <p className="text-2xl font-bold text-teal-600 dark:text-teal-400 mt-1">{totalTasksCompleted}</p>
-          <p className="text-[11px] text-teal-600 dark:text-teal-400 mt-1">Successful aid deliveries</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalTasksCompleted}</p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Successful aid deliveries</p>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ export const VolunteersPage: React.FC = () => {
             placeholder="Search volunteers by name, skill, or service area..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -282,7 +282,7 @@ export const VolunteersPage: React.FC = () => {
       {/* Volunteer Cards Grid */}
       {loading ? (
         <div className="p-12 text-center">
-          <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-3 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-slate-500">Loading volunteer brigade...</p>
         </div>
       ) : filteredVolunteers.length === 0 ? (
@@ -300,13 +300,13 @@ export const VolunteersPage: React.FC = () => {
             return (
               <div
                 key={v.id}
-                className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-teal-500/50 transition-all duration-200"
+                className="flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500 dark:border-blue-400/50 transition-all duration-200"
               >
                 <div>
                   {/* Top card header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-xs shadow-teal-500/20">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-xs shadow-blue-500/20">
                         {v.fullName.charAt(0)}
                       </div>
                       <div>
@@ -314,7 +314,7 @@ export const VolunteersPage: React.FC = () => {
                           <h3 className="text-base font-bold text-slate-900 dark:text-white">{v.fullName}</h3>
                           {v.isVerified && (
                             <span title="Verified Background Check">
-                              <Shield className="w-4 h-4 text-teal-500 shrink-0" />
+                              <Shield className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" />
                             </span>
                           )}
                         </div>
@@ -347,7 +347,7 @@ export const VolunteersPage: React.FC = () => {
                       {v.skills.map((skill, idx) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800 text-xs font-medium"
+                          className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/30 dark:bg-slate-900/40 text-blue-700 dark:text-blue-300 dark:text-blue-300 dark:text-blue-200 border border-blue-200 dark:border-blue-800/60/60 dark:border-blue-800 dark:border-blue-800/60 text-xs font-medium"
                         >
                           {skill}
                         </span>
@@ -472,7 +472,7 @@ export const VolunteersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isAssigning}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white shadow-xs"
                 >
                   {isAssigning ? 'Dispatching...' : 'Confirm Dispatch'}
                 </button>
@@ -589,7 +589,7 @@ export const VolunteersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 text-white font-bold text-xs shadow-xs"
                 >
                   {isRegistering ? 'Registering...' : 'Enroll to Field Roster'}
                 </button>
