@@ -13,12 +13,14 @@ import { LandingPage } from './pages/LandingPage';
 import { ModernDashboard } from './pages/ModernDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { UsersPage } from './pages/UsersPage';
+import { PendingApprovalPage } from './pages/PendingApprovalPage';
 
 // Member 2: Authentication & Citizen Portal
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CitizenDashboard } from './pages/CitizenDashboard';
 import { CreateRequestPage } from './pages/CreateRequestPage';
+import { HouseholdProfilePage } from './pages/HouseholdProfilePage';
 import { SafetyGuidePage } from './pages/SafetyGuidePage';
 import { SafetyGuideDetailPage } from './pages/SafetyGuideDetailPage';
 import { GuestEmergencyRequestPage } from './pages/GuestEmergencyRequestPage';
@@ -67,6 +69,7 @@ export function App() {
               {/* Public Authentication Pages */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/pending-approval" element={<PendingApprovalPage />} />
               <Route path="/emergency/request" element={<GuestEmergencyRequestPage />} />
               <Route path="/emergency/track" element={<GuestRequestTrackingPage />} />
               <Route path="/emergency" element={<Navigate to="/emergency/request" replace />} />
@@ -125,6 +128,14 @@ export function App() {
                 element={
                   <AppShell>
                     <CitizenDashboard />
+                  </AppShell>
+                }
+              />
+              <Route
+                path="/citizen/household-profile"
+                element={
+                  <AppShell>
+                    <HouseholdProfilePage />
                   </AppShell>
                 }
               />

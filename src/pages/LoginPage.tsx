@@ -41,6 +41,7 @@ export const LoginPage: React.FC = () => {
     { role: 'LogisticsManager', email: 'logistics@sahaya.org', pass: 'Logistics@123', title: 'Resource & Logistics Manager', desc: 'Inventory depot, aid dispatches & shortages' },
     { role: 'ShelterAdmin', email: 'shelteradmin@sahaya.org', pass: 'Shelter@123', title: 'Shelter Administrator', desc: 'Shelter capacity, occupancies & facilities' },
     { role: 'VolunteerCoordinator', email: 'volunteercoord@sahaya.org', pass: 'VolCoord@123', title: 'Volunteer Coordinator', desc: 'Mobilization rosters & mission task allocation' },
+    { role: 'Volunteer', email: 'volunteer@sahaya.org', pass: 'Volunteer@123', title: 'Field Volunteer', desc: 'Assigned field missions, task completion & GPS check-in' },
     { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor / Funding Officer', desc: 'Fund pledges, in-kind supplies & audit log' },
     { role: 'PartnerOfficer', email: 'partner@sahaya.org', pass: 'Partner@123', title: 'Partner Organisation Officer', desc: 'Inter-agency requisition & joint response' },
     { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'National executive command & system telemetry' },
@@ -61,6 +62,24 @@ export const LoginPage: React.FC = () => {
 
     try {
       const res = await login(loginEmail, loginPass);
+      
+      // If official staff account is pending administrator approval, gate immediately
+      const isPublic = res.role === 'Citizen' || res.role === 'Donor';
+      let isActive = true;
+      try {
+        const stored = localStorage.getItem('sahaya_registered_users');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const match = parsed.find((u: any) => u.email.toLowerCase() === res.email.toLowerCase());
+          if (match && match.isActive === false) isActive = false;
+        }
+      } catch {}
+
+      if (!isPublic && !isActive) {
+        window.location.href = '/pending-approval';
+        return;
+      }
+
       redirectToDashboard(res.role);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');

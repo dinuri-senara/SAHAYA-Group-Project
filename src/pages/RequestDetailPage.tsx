@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  LifeBuoy,
   Clock,
   MapPin,
   Sparkles,
@@ -9,18 +8,15 @@ import {
   XCircle,
   AlertTriangle,
   ArrowLeft,
-  Users,
   ShieldCheck,
   Check,
   RotateCcw,
   Boxes,
   Home,
-  UserCheck,
-  MessageSquare,
   Camera
 } from 'lucide-react';
 import { api } from '../services/api';
-import { AssistanceRequest, RequestCategory, RequestUrgency } from '../types';
+import { AssistanceRequest, RequestUrgency, RequestStatusHistory } from '../types';
 import { StatusBadge, UrgencyBadge, getStatusHumanLabel, getStatusExplanation } from '../components/StatusBadge';
 import { LoadingSkeleton } from '../components/StatCard';
 import { MapComponent } from '../components/MapComponent';
@@ -40,10 +36,12 @@ export const RequestDetailPage: React.FC = () => {
   const [overridePriority, setOverridePriority] = useState<number>(3); // High
   const [overrideCategory, setOverrideCategory] = useState<number>(1);
   const [overrideReason, setOverrideReason] = useState('');
-  const [reviewNotes, setReviewNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  const isCoordinatorOrAdmin = user?.role === 'Coordinator' || user?.role === 'Admin';
+  const isCoordinatorOrAdmin =
+    user?.role === 'Coordinator' ||
+    user?.role === 'Admin' ||
+    user?.role === 'CaseManager';
 
   const loadRequest = async () => {
     if (!id) return;
@@ -67,7 +65,7 @@ export const RequestDetailPage: React.FC = () => {
     try {
       await api.reviewRequest(id, {
         decision, // 3 = Approved, 7 = Rejected
-        notes: notes || reviewNotes || (decision === 3 ? 'Approved by coordinator' : 'Rejected by coordinator'),
+        notes: notes || (decision === 3 ? 'Approved by coordinator' : 'Rejected by coordinator'),
       });
       await loadRequest();
     } catch (err: any) {
@@ -82,10 +80,24 @@ export const RequestDetailPage: React.FC = () => {
     setActionLoading(true);
     try {
       await api.reviewAIRecommendation(request.latestRecommendation.id, {
-        reviewStatus: 2, // 2 = Accepted
+        reviewStatus: 1, // 1 = Accepted in api.ts
         notes: 'Coordinator accepted AI priority and category assessment',
       });
-      await loadRequest();
+      const officerName = user?.fullName || 'Operational Officer';
+      const nowIso = new Date().toISOString();
+      setRequest(prev => {
+        if (!prev) return prev;
+        const updatedRec = prev.latestRecommendation ? {
+          ...prev.latestRecommendation,
+          reviewStatus: 'Accepted' as const,
+          reviewingOfficerName: officerName,
+          reviewedAt: nowIso,
+        } : undefined;
+        return {
+          ...prev,
+          latestRecommendation: updatedRec,
+        };
+      });
     } catch (err: any) {
       alert(err.message || 'Failed to accept recommendation.');
     } finally {
@@ -101,18 +113,53 @@ export const RequestDetailPage: React.FC = () => {
       return;
     }
 
+    const targetPriority: RequestUrgency =
+      overridePriority === 4 ? 'Critical' :
+      overridePriority === 3 ? 'High' :
+      overridePriority === 2 ? 'Medium' : 'Low';
+    const officerName = user?.fullName || 'Operational Officer';
+    const nowIso = new Date().toISOString();
+
     setActionLoading(true);
     try {
       await api.reviewAIRecommendation(request.latestRecommendation.id, {
-        reviewStatus: 3, // 3 = Overridden
+        reviewStatus: 2, // 2 = Overridden in api.ts
         overriddenCategory: overrideCategory,
         overriddenPriority: overridePriority,
         overrideReason: overrideReason.trim(),
-        notes: `Coordinator adjusted priority to ${overridePriority} based on ground report`,
+        notes: `Coordinator adjusted priority to ${targetPriority} based on ground report`,
       });
+
+      setRequest(prev => {
+        if (!prev) return prev;
+        const updatedRec = prev.latestRecommendation ? {
+          ...prev.latestRecommendation,
+          reviewStatus: 'Overridden' as const,
+          overrideReason: overrideReason.trim(),
+          reviewingOfficerName: officerName,
+          officerDecision: `Overridden to ${targetPriority}`,
+          reviewedAt: nowIso,
+        } : undefined;
+
+        const newHistoryItem: RequestStatusHistory = {
+          id: `hist-override-${Date.now()}`,
+          previousStatus: prev.status,
+          newStatus: prev.status,
+          changedByName: officerName,
+          notes: `AI Recommendation Overridden: Priority adjusted from ${prev.latestRecommendation?.suggestedPriority} to ${targetPriority}. Reason: "${overrideReason.trim()}"`,
+          timestamp: nowIso,
+        };
+
+        return {
+          ...prev,
+          urgency: targetPriority,
+          latestRecommendation: updatedRec,
+          statusHistory: [newHistoryItem, ...(prev.statusHistory || [])],
+        };
+      });
+
       setShowOverrideModal(false);
       setOverrideReason('');
-      await loadRequest();
     } catch (err: any) {
       alert(err.message || 'Override failed.');
     } finally {
@@ -455,21 +502,101 @@ export const RequestDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Status Timeline History */}
+          {/* Status Timeline History with AI Override Audit */}
           <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Clock className="w-4 h-4 text-teal-600" />
-              Status Lifecycle History
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <Clock className="w-4 h-4 text-teal-600" />
+                Status Lifecycle & Audit Trail
+              </h3>
+              {rec?.reviewStatus === 'Overridden' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-purple-500" />
+                  AI Overridden
+                </span>
+              )}
+            </div>
 
             <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+              {/* Task 1: Dedicated AI Override Audit Entry in Timeline */}
+              {rec && rec.reviewStatus === 'Overridden' && (
+                <div className="relative pl-7 text-xs space-y-2">
+                  <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-purple-600 border-2 border-white ring-2 ring-purple-100" />
+
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-purple-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                      AI Recommendation Override Audit
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      {rec.reviewedAt
+                        ? new Date(rec.reviewedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+                        : 'Audit Recorded'}
+                    </span>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-purple-50/80 border border-purple-200 text-purple-950 space-y-2.5">
+                    {/* Priority Comparison: Original AI Priority vs Final Human-Approved Priority */}
+                    <div className="grid grid-cols-2 gap-3 text-[11px] pb-2 border-b border-purple-200/70">
+                      <div>
+                        <span className="text-slate-500 block text-[10px] font-bold uppercase tracking-wider">
+                          1. Original AI Priority
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="font-bold text-slate-800">{rec.suggestedPriority}</span>
+                          {rec.confidenceScore !== undefined && (
+                            <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
+                              {Math.round(rec.confidenceScore * 100)}% conf
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-purple-700 block text-[10px] font-bold uppercase tracking-wider">
+                          2. Final Approved Priority
+                        </span>
+                        <div className="mt-1">
+                          <UrgencyBadge urgency={request.urgency} size="sm" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Override Reason */}
+                    <div>
+                      <span className="text-slate-500 block text-[10px] font-bold uppercase tracking-wider mb-1">
+                        3. Mandatory Override Reason
+                      </span>
+                      <p className="text-[11px] text-slate-800 leading-relaxed bg-white/90 p-2.5 rounded-lg border border-purple-200/80 italic">
+                        "{rec.overrideReason || 'Officer manual override based on field assessment'}"
+                      </p>
+                    </div>
+
+                    {/* Responsible Officer & Decision Time */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-600 pt-1 border-t border-purple-200/50">
+                      <span>
+                        4. Officer: <strong className="text-slate-900">{rec.reviewingOfficerName || user?.fullName || 'Operational Officer'}</strong>
+                      </span>
+                      <span>
+                        5. Decision Time: <strong className="text-slate-900">
+                          {rec.reviewedAt
+                            ? new Date(rec.reviewedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Status History Items */}
               {(request.statusHistory || []).map(h => (
                 <div key={h.id} className="relative pl-7 text-xs space-y-1">
                   <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-teal-600 border-2 border-white ring-2 ring-slate-100" />
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900">{h.newStatus}</span>
                     <span className="text-[10px] text-slate-400">
-                      {new Date(h.timestamp || h.changedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(h.timestamp || (h as any).changedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px] leading-relaxed">
