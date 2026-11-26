@@ -125,7 +125,7 @@ export const InteractiveMapPage: React.FC = () => {
         />
 
         {/* Floating Map Legend */}
-        <div className="absolute bottom-6 right-6 z-[1000] p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-lg text-xs space-y-2 max-w-xs">
+        <div className="absolute bottom-6 left-6 z-10 p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-lg text-xs space-y-2 max-w-xs">
           <p className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">Map Legend & Indicators</p>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-rose-500 shrink-0" />
