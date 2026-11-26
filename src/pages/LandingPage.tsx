@@ -149,7 +149,7 @@ export const LandingPage: React.FC = () => {
             {/* Login Button */}
             <Link
               to="/login"
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-[#0d254c] hover:bg-slate-100 border border-slate-300 transition shadow-2xs"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/[0.08] hover:bg-slate-200/80 dark:hover:bg-white/[0.15] border border-slate-200/80 dark:border-white/10 transition shadow-2xs"
             >
               Login
             </Link>
@@ -157,7 +157,7 @@ export const LandingPage: React.FC = () => {
             {/* Sign Up Button */}
             <Link
               to="/register"
-              className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0d254c] hover:bg-[#153a75] shadow-md shadow-blue-950/20 transition hover:shadow-lg"
+              className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white theme-btn-primary shadow-md shadow-blue-950/20 transition hover:shadow-lg"
             >
               Sign Up
             </Link>
@@ -320,11 +320,11 @@ export const LandingPage: React.FC = () => {
             to="/safety-guides"
             className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all group flex items-start gap-4"
           >
-            <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-100 group-hover:scale-105 transition-transform">
-              <BookOpen className="w-5 h-5 text-teal-600" />
+            <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-teal-100 group-hover:scale-105 transition-transform">
+              <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-teal-600 transition-colors">
+              <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-blue-600 dark:text-blue-400 transition-colors">
                 Learn & Stay Safe
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-snug">
@@ -691,18 +691,18 @@ export const LandingPage: React.FC = () => {
             <div>
               <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Quick Links</h4>
               <ul className="space-y-2 text-xs">
-                <li><Link to="/emergency/request" className="hover:text-teal-400">Request Emergency Aid</Link></li>
-                <li><Link to="/public-shelters" className="hover:text-teal-400">Safe Shelters Directory</Link></li>
-                <li><Link to="/alerts" className="hover:text-teal-400">Live Disaster Alerts</Link></li>
-                <li><Link to="/safety-guides" className="hover:text-teal-400">Disaster Safety Guides</Link></li>
+                <li><Link to="/emergency/request" className="hover:text-blue-400 dark:text-blue-300">Request Emergency Aid</Link></li>
+                <li><Link to="/public-shelters" className="hover:text-blue-400 dark:text-blue-300">Safe Shelters Directory</Link></li>
+                <li><Link to="/alerts" className="hover:text-blue-400 dark:text-blue-300">Live Disaster Alerts</Link></li>
+                <li><Link to="/safety-guides" className="hover:text-blue-400 dark:text-blue-300">Disaster Safety Guides</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Portals</h4>
               <ul className="space-y-2 text-xs">
-                <li><Link to="/login" className="hover:text-teal-400">Citizen Sign In</Link></li>
-                <li><Link to="/register" className="hover:text-teal-400">Citizen Registration</Link></li>
+                <li><Link to="/login" className="hover:text-blue-400 dark:text-blue-300">Citizen Sign In</Link></li>
+                <li><Link to="/register" className="hover:text-blue-400 dark:text-blue-300">Citizen Registration</Link></li>
               </ul>
             </div>
 

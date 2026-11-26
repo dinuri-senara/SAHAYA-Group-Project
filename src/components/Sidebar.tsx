@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -12,15 +12,18 @@ import {
   Bot,
   FileBarChart,
   LogOut,
-  Headphones,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
   Truck,
+  Sparkles,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { SahayaLogo } from './SahayaLogo';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 export interface NavItem {
   name: string;
@@ -149,6 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAiDrawer,
 }) => {
   const { language } = useLanguage();
+  const { isDark, toggleDarkWithWipe } = useTheme();
   const filteredNav = navItems.filter((item) => item.roles.includes(role));
 
   const handleSignOut = () => {
@@ -171,39 +175,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#0d1b32] border-r border-[#192b4a] text-slate-300 transition-all duration-300 ease-in-out shadow-2xl
-          ${isCollapsed ? 'w-20' : 'w-68'}
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col glass-sidebar-spring select-none
+          ${isCollapsed ? 'w-[84px]' : 'w-[280px]'}
+          ${isOpen ? 'translate-x-0' : 'max-lg:-translate-x-full lg:translate-x-0'}
+          bg-white/45 dark:bg-[#070e1b]/70
+          text-slate-800 dark:text-slate-200
+          border-r border-white/60 dark:border-white/10`}
         style={{
-          backgroundImage: `radial-gradient(circle at 10% 90%, rgba(37, 99, 235, 0.08) 0%, transparent 60%)`
+          backdropFilter: 'blur(30px) saturate(2.0)',
+          WebkitBackdropFilter: 'blur(30px) saturate(2.0)',
+          boxShadow: isDark
+            ? '0 20px 50px rgba(0, 0, 0, 0.7), inset 1px 0 0 rgba(255, 255, 255, 0.12)'
+            : '0 20px 50px rgba(37, 99, 235, 0.08), inset 1px 0 0 rgba(255, 255, 255, 0.8)',
         }}
       >
+        {/* Floating Fold Button on border edge */}
+        <button
+          onClick={onToggleCollapse}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isCollapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)'}
+          className="hidden lg:flex items-center justify-center absolute -right-3.5 top-7 w-7 h-7 rounded-full bg-white/70 dark:bg-[#0f1b30]/80 backdrop-blur-md hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 border border-white/80 dark:border-white/20 text-slate-700 dark:text-slate-300 shadow-md transition-all duration-200 z-50 cursor-pointer active:scale-95 hover:scale-110"
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-4 border-b border-[#172a48]">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <SahayaLogo size="md" light={true} showText={false} />
+        <div className="h-20 flex items-center justify-between px-4 border-b border-white/50 dark:border-white/10 shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden min-w-0">
+            <div className="shrink-0 transition-transform duration-300 hover:scale-105">
+              <SahayaLogo size="md" light={isDark} showText={false} />
+            </div>
             {!isCollapsed && (
-              <div className="flex flex-col overflow-hidden">
-                <span className="font-black text-white text-lg tracking-tight leading-tight truncate flex items-center gap-1.5">
+              <div className="flex flex-col overflow-hidden whitespace-nowrap animate-fade-in">
+                <span className="font-black text-slate-900 dark:text-white text-lg tracking-tight leading-tight truncate flex items-center gap-1.5">
                   SAHAYA
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
                     අපි වෙනුවෙන් අපි
                   </span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium tracking-wide truncate">
-                  Humanitarian Aid Coordination
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide truncate">
+                  Humanitarian Aid Platform
                 </span>
               </div>
             )}
           </div>
-
-          <button
-            onClick={onToggleCollapse}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="hidden lg:flex items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162744] border border-[#22385e] transition-colors shrink-0"
-          >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
         </div>
 
         {/* Dynamic Nav Items */}
@@ -229,18 +244,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.name}
                 to={item.href}
                 onClick={onClose}
+                title={isCollapsed ? item.name : undefined}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  `flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 group ${
                     isActive
-                      ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 font-bold'
-                      : 'text-slate-400 hover:text-white hover:bg-[#162744]'
-                  }`
+                      ? 'theme-nav-active text-white shadow-lg font-bold border border-white/40 backdrop-blur-md'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.08]'
+                  } ${isCollapsed ? 'justify-center px-0' : ''}`
                 }
               >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <Icon className="w-5 h-5 shrink-0" />
+                <div className={`flex items-center gap-3.5 min-w-0 ${isCollapsed ? 'justify-center w-full' : ''}`}>
+                  <span className="shrink-0 p-1 rounded-lg transition-transform duration-200 group-hover:scale-110">
+                    <Icon className="w-5 h-5 shrink-0" />
+                  </span>
                   {!isCollapsed && (
-                    <span className="truncate">
+                    <span className="truncate animate-fade-in text-[13.5px]">
                       {language === 'si' && navItemTranslations[item.name]?.si
                         ? navItemTranslations[item.name].si
                         : item.name}
@@ -249,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {!isCollapsed && isUserManagement && pendingCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 shadow-xs animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-stone-950 shadow-xs animate-pulse">
                     {pendingCount}
                   </span>
                 )}
@@ -258,47 +276,102 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
-        {/* AI Assistant Help Floating Card (Only when expanded) */}
+        {/* AI Assistant Quick Card (Only visible when expanded, smoothly fades) */}
         {!isCollapsed && (
-          <div className="p-3.5">
-            <div className="relative rounded-2xl bg-gradient-to-br from-[#152745] to-[#0f1f38] border border-[#213a63] p-4 text-center shadow-lg overflow-hidden">
-              <div className="w-9 h-9 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center mb-2">
-                <Headphones className="w-4 h-4" />
+          <div className="p-3 shrink-0">
+            <div className="relative rounded-2xl bg-white/40 dark:bg-white/[0.04] border border-white/60 dark:border-white/10 p-3.5 text-center shadow-lg backdrop-blur-md overflow-hidden group">
+              <div className="w-8 h-8 mx-auto rounded-xl theme-bg-soft theme-text-primary border border-slate-200/50 dark:border-white/10 flex items-center justify-center mb-1.5 shadow-inner">
+                <Sparkles className="w-4 h-4 animate-pulse" />
               </div>
-              <h4 className="text-xs font-bold text-white mb-0.5">Need Help?</h4>
-              <p className="text-[10px] text-slate-400 leading-tight mb-2.5">
-                AI Triage Assistant is online.
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">AI Disaster Triage</h4>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-tight mb-2.5">
+                Explainable Decision Engine
               </p>
               <button
                 onClick={onOpenAiDrawer}
-                className="w-full py-1.5 px-3 rounded-lg bg-[#2563eb] hover:bg-blue-500 text-white text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20"
+                className="w-full py-1.5 px-3 rounded-xl theme-btn-primary text-white text-[11px] font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer"
               >
-                <span>Chat Now</span>
+                <span>Launch Assistant</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Dedicated Sign Out & Footer Area */}
-        <div className="p-3 border-t border-[#172a48] space-y-2">
-          <button
-            onClick={handleSignOut}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/20 transition-all ${
-              isCollapsed ? 'justify-center px-0' : ''
-            }`}
-            title="Sign Out"
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Sign Out</span>}
-          </button>
+        {/* Footer Area: User Profile & Session Controls */}
+        <div className="p-3 border-t border-white/50 dark:border-white/10 space-y-2.5 shrink-0 bg-white/20 dark:bg-black/20 backdrop-blur-sm">
+          {/* Circular wipe theme switch button */}
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-1'}`}>
+            <button
+              onClick={(e) => toggleDarkWithWipe(e)}
+              aria-label="Toggle theme with circular transition"
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              className={`flex items-center gap-2 p-1 rounded-2xl bg-white/70 dark:bg-slate-800/80 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-300 shadow-sm transition-all cursor-pointer hover:scale-[1.02] active:scale-98 ${
+                isCollapsed ? 'w-10 h-10 justify-center p-0' : 'w-full justify-between px-3 py-1.5'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`p-1 rounded-full transition-transform duration-200 ${isDark ? 'bg-amber-400/20 text-amber-400' : 'text-slate-600'}`}>
+                  {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+                </div>
+                {!isCollapsed && (
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    {isDark ? 'Dark Theme' : 'Light Theme'}
+                  </span>
+                )}
+              </div>
 
-          {!isCollapsed && (
-            <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1">
-              <span>National SLA: 99.9%</span>
-              <span>v1.0</span>
-            </div>
-          )}
+              {!isCollapsed && (
+                <div className="w-9 h-5 rounded-full bg-slate-200/90 dark:bg-slate-900 border border-slate-300 dark:border-white/20 p-0.5 flex items-center relative">
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white dark:bg-amber-400 shadow-sm transition-transform duration-300 ${
+                      isDark ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </div>
+              )}
+            </button>
+          </div>
+
+          {/* User Profile & Sign Out Tile */}
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-1`}>
+            {!isCollapsed ? (
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div
+                  className="w-8 h-8 rounded-full text-white font-black text-xs flex items-center justify-center shrink-0 border border-white/40 shadow-xs"
+                  style={{ background: 'var(--theme-gradient-from)' }}
+                >
+                  {role.charAt(0)}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">
+                    {role} Officer
+                  </span>
+                  <span className="text-[10px] theme-text-primary font-medium truncate">
+                    National Command
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="w-9 h-9 rounded-full text-white font-black text-xs flex items-center justify-center border border-white/40 shadow-xs cursor-pointer hover:scale-105 transition-transform"
+                style={{ background: 'var(--theme-gradient-from)' }}
+                title={`${role} Portal`}
+              >
+                {role.charAt(0)}
+              </div>
+            )}
+
+            {!isCollapsed && (
+              <button
+                onClick={handleSignOut}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </aside>
     </>

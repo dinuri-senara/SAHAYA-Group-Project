@@ -153,7 +153,7 @@ export const VolunteerDashboard: React.FC = () => {
               setCheckInTaskId(myTasks[0]?.id || '');
               setShowCheckInModal(true);
             }}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer"
           >
             <Navigation className="w-4 h-4" />
             Field GPS Check-in
@@ -168,7 +168,7 @@ export const VolunteerDashboard: React.FC = () => {
             <h2 className="text-base sm:text-lg font-black text-white">
               {profile?.fullName || 'Field Volunteer'}
             </h2>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 dark:bg-blue-500/20 text-blue-300 dark:text-blue-200 border border-blue-500/30 dark:border-blue-500/40">
               Verified First Responder
             </span>
           </div>
@@ -194,14 +194,14 @@ export const VolunteerDashboard: React.FC = () => {
         if (!activeTask) return null;
 
         return (
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-slate-950 border border-teal-500/40 text-white shadow-xl space-y-3">
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-slate-950 border border-blue-500 dark:border-blue-400/40 text-white shadow-xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-teal-500/20 text-teal-400">
+                <span className="p-2 rounded-xl bg-blue-600 dark:bg-blue-500/20 text-blue-400 dark:text-blue-300">
                   <Navigation className="w-5 h-5 animate-pulse" />
                 </span>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-teal-400">Current Immediate Objective</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 dark:text-blue-300">Current Immediate Objective</span>
                   <h3 className="text-base font-extrabold text-white">{activeTask.title}</h3>
                 </div>
               </div>
@@ -230,7 +230,7 @@ export const VolunteerDashboard: React.FC = () => {
                   <button
                     disabled={updatingTaskId === activeTask.id}
                     onClick={() => handleUpdateStatus(activeTask.id, 2, 'Volunteer accepted assignment')}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-xs cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white shadow-xs cursor-pointer"
                   >
                     Accept Assignment
                   </button>
@@ -309,7 +309,7 @@ export const VolunteerDashboard: React.FC = () => {
               onClick={() => setActiveTab('assigned')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'assigned'
-                  ? 'bg-teal-600 text-white shadow-xs'
+                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -320,7 +320,7 @@ export const VolunteerDashboard: React.FC = () => {
               onClick={() => setActiveTab('available')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'available'
-                  ? 'bg-teal-600 text-white shadow-xs'
+                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -350,7 +350,7 @@ export const VolunteerDashboard: React.FC = () => {
                 {myTasks.map(task => (
                   <div
                     key={task.id}
-                    className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/90 shadow-2xs hover:border-teal-500/40 transition"
+                    className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/90 shadow-2xs hover:border-blue-500 dark:border-blue-400/40 transition"
                   >
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="flex-1 space-y-2">
@@ -374,8 +374,8 @@ export const VolunteerDashboard: React.FC = () => {
                         </p>
 
                         {task.requestTitle && (
-                          <p className="text-xs text-teal-700 font-semibold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+                          <p className="text-xs text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-600" />
                             Target Emergency: {task.requestTitle}
                           </p>
                         )}
@@ -394,7 +394,7 @@ export const VolunteerDashboard: React.FC = () => {
                             <button
                               disabled={updatingTaskId === task.id}
                               onClick={() => handleUpdateStatus(task.id, 2, 'Volunteer accepted assignment')} // 2 = Accepted
-                              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white transition cursor-pointer shadow-xs"
+                              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white transition cursor-pointer shadow-xs"
                             >
                               Accept Mission
                             </button>
@@ -458,7 +458,7 @@ export const VolunteerDashboard: React.FC = () => {
                 {availableTasks.map(task => (
                   <div
                     key={task.id}
-                    className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-teal-500/50 transition"
+                    className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-500 dark:border-blue-400/50 transition"
                   >
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="flex-1 space-y-1.5">
@@ -483,7 +483,7 @@ export const VolunteerDashboard: React.FC = () => {
                         </p>
 
                         {task.requestTitle && (
-                          <p className="text-xs text-teal-700 font-semibold">
+                          <p className="text-xs text-blue-700 dark:text-blue-300 font-semibold">
                             Emergency Request: {task.requestTitle}
                           </p>
                         )}
@@ -492,7 +492,7 @@ export const VolunteerDashboard: React.FC = () => {
                       <button
                         disabled={updatingTaskId === task.id}
                         onClick={() => handleAcceptMission(task.id)}
-                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white transition cursor-pointer shadow-md shrink-0 flex items-center gap-1.5"
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white transition cursor-pointer shadow-md shrink-0 flex items-center gap-1.5"
                       >
                         <CheckSquare className="w-4 h-4" />
                         Accept This Mission
@@ -512,7 +512,7 @@ export const VolunteerDashboard: React.FC = () => {
           <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
-                <Navigation className="w-5 h-5 text-teal-600" />
+                <Navigation className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3>Record Field GPS Check-In</h3>
               </div>
               <button
@@ -608,7 +608,7 @@ export const VolunteerDashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={checkingIn}
-                className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs transition cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:bg-blue-500 text-white font-bold text-xs transition cursor-pointer shadow-md"
               >
                 {checkingIn ? 'Recording GPS Check-In...' : 'Confirm Field Check-In'}
               </button>
