@@ -3,8 +3,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sahaya.Logistics.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 0. Database Connection (SQL Server)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Server=(localdb)\\mssqllocaldb;Database=Sahaya_LogisticsDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+
+builder.Services.AddDbContext<LogisticsDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 // 1. CORS Policy for React Frontend
 builder.Services.AddCors(options =>
@@ -110,6 +118,20 @@ app.MapGet("/", () => Results.Ok(new
     TimestampUtc = DateTime.UtcNow,
     Owner = "Member 4 - Logistics & Shelter Domain"
 }));
+
+// Auto-migrate or create database schema on startup with seed data
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<LogisticsDbContext>();
+    try
+    {
+        db.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[LogisticsDb] Database initialization notice: {ex.Message}");
+    }
+}
 
 app.Run();
 
