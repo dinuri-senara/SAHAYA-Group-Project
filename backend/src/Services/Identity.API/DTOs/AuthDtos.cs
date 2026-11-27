@@ -1,15 +1,20 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Sahaya.Common.Enums;
 
 namespace Sahaya.Identity.API.DTOs
 {
-    public record LoginRequest(string Email, string Password);
+    // STRIDE Tampering & Input Validation (Strict DataAnnotations)
+    public record LoginRequest(
+        [Required][EmailAddress][MaxLength(150)] string Email,
+        [Required][MinLength(6)][MaxLength(100)] string Password
+    );
     
     public record RegisterRequest(
-        string Email,
-        string Password,
-        string FullName,
-        string PhoneNumber,
+        [Required][EmailAddress][MaxLength(150)] string Email,
+        [Required][MinLength(6)][MaxLength(100)] string Password,
+        [Required][MaxLength(120)] string FullName,
+        [MaxLength(20)] string PhoneNumber,
         UserRole Role
     );
 
@@ -33,6 +38,13 @@ namespace Sahaya.Identity.API.DTOs
         DateTime CreatedAtUtc
     );
 
-    public record UpdateUserStatusRequest(bool IsActive, string? Justification);
-    public record UpdateUserRoleRequest(UserRole NewRole, string Justification);
+    public record UpdateUserStatusRequest(
+        [Required] bool IsActive, 
+        [Required][MinLength(5)][MaxLength(300)] string Justification
+    );
+    
+    public record UpdateUserRoleRequest(
+        [Required] UserRole NewRole, 
+        [Required][MinLength(5)][MaxLength(300)] string Justification
+    );
 }
