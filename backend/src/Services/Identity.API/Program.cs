@@ -10,12 +10,28 @@ using Sahaya.Identity.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Connection (SQL Server)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=(localdb)\\mssqllocaldb;Database=SahayaIdentityDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+// 1. Database Connection (PostgreSQL Cloud or Fallback)
+var rawConn = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Host=ep-lucky-glade-biebrsak.c-5.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_ySOPHX1cAho4;SSL Mode=Require;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (rawConn.Contains("Host=") || rawConn.Contains("Port="))
+    {
+        var npgsqlBuilder = new Npgsql.NpgsqlConnectionStringBuilder(rawConn)
+        {
+            SslMode = Npgsql.SslMode.Require,
+            TrustServerCertificate = true,
+            Timeout = 30,
+            CommandTimeout = 60
+        };
+        options.UseNpgsql(npgsqlBuilder.ConnectionString);
+    }
+    else
+    {
+        options.UseSqlServer(rawConn);
+    }
+});
 
 // 2. Dependency Injection
 builder.Services.AddScoped<ITokenService, TokenService>();

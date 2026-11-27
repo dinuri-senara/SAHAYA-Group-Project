@@ -106,8 +106,11 @@ namespace Sahaya.Assistance.API.Services
             profile.Status = "Completed";
             profile.UpdatedAtUtc = DateTime.UtcNow;
 
-            // Clear existing vulnerable member links and re-seed
-            profile.VulnerableMembers.Clear();
+            // Remove existing tracked vulnerable members cleanly
+            if (profile.VulnerableMembers.Any())
+            {
+                _db.VulnerableMembers.RemoveRange(profile.VulnerableMembers);
+            }
 
             if (!dto.NoSpecialNeeds && !dto.PreferNotToDisclose && dto.Vulnerabilities != null)
             {
@@ -115,13 +118,15 @@ namespace Sahaya.Assistance.API.Services
                 {
                     if (v.Selected)
                     {
-                        profile.VulnerableMembers.Add(new VulnerableMember
+                        var newMember = new VulnerableMember
                         {
+                            HouseholdProfileId = profile.Id,
                             Category = categoryKey,
                             AffectedCount = Math.Max(1, v.AffectedCount),
                             MedicalDetails = v.Details,
                             RequiresSpecialMobility = v.RequiresSpecialMobility
-                        });
+                        };
+                        _db.VulnerableMembers.Add(newMember);
                     }
                 }
             }
