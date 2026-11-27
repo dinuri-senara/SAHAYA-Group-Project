@@ -858,12 +858,42 @@ const saveStoredUsers = (users: UserSummary[]) => {
 };
 
 export const api = {
-  // Auth
+  // Auth - Live Cloud Database via Gateway with Offline Fallback
   async login(email: string, password: string): Promise<AuthResponse> {
     const lowEmail = (email || '').toLowerCase().trim();
     const cleanPass = (password || '').trim();
 
-    // Valid demo credentials for testing
+    try {
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: lowEmail, password: cleanPass })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        return {
+          token: data.token,
+          userId: data.userId || data.id,
+          email: data.email,
+          fullName: data.fullName,
+          role: data.role,
+          expiresIn: 86400,
+        };
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        const msg = errJson.errorMessage || errJson.message;
+        if (msg) throw new Error(msg);
+      }
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      // If server unreachable, proceed to local demo accounts
+    }
+
+    // Valid demo credentials for offline testing
     const demoCredentials: Record<string, { pass: string; role: UserRole; name: string }> = {
       'admin@sahaya.org': { pass: 'Admin@123', role: 'Admin', name: 'Operational System Administrator' },
       'admin@sahaya.lk': { pass: 'Admin@123', role: 'Admin', name: 'National Command Admin' },
@@ -882,10 +912,7 @@ export const api = {
     const allUsers = getStoredUsers();
     const existing = allUsers.find((u) => u.email.toLowerCase() === lowEmail);
     if (existing) {
-      // In simulated mock, if a password was provided, verify it isn't completely empty
-      if (!cleanPass) {
-        throw new Error('Please enter a valid password.');
-      }
+      if (!cleanPass) throw new Error('Please enter a valid password.');
       return {
         token: 'mock-jwt-token-active-session',
         userId: existing.id,
@@ -912,12 +939,11 @@ export const api = {
       };
     }
 
-    // 3. Reject any unregistered or fake accounts
     throw new Error('No registered account found with this email. Please check your credentials or create an account first.');
   },
 
   async register(data: any): Promise<AuthResponse> {
-    const roleNum = Number(data.role);
+    const roleNum = Number(data.role) || 1;
     let resolvedRole: UserRole = 'Citizen';
     if (roleNum === 2) resolvedRole = 'Coordinator';
     else if (roleNum === 3) resolvedRole = 'Volunteer';
@@ -928,6 +954,44 @@ export const api = {
     else if (roleNum === 8) resolvedRole = 'ShelterAdmin';
     else if (roleNum === 9) resolvedRole = 'VolunteerCoordinator';
     else if (roleNum === 10) resolvedRole = 'PartnerOfficer';
+
+    // 1. Attempt live registration into Neon Cloud Database via Gateway
+    try {
+      const res = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password || 'Password123!',
+          fullName: data.fullName,
+          phoneNumber: data.phoneNumber || '',
+          role: roleNum
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const resData = json.data || json;
+        return {
+          token: resData.token,
+          userId: resData.userId || resData.id,
+          email: resData.email,
+          fullName: resData.fullName,
+          role: resData.role,
+          expiresIn: 86400,
+        };
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        if (errJson.errorMessage) {
+          throw new Error(errJson.errorMessage);
+        }
+      }
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      // Fallback to local storage if offline
+    }
 
     // Official staff roles require Administrator verification
     const isPublicRole = resolvedRole === 'Citizen' || resolvedRole === 'Donor';
@@ -942,7 +1006,6 @@ export const api = {
       createdAt: new Date().toISOString(),
     };
 
-    // Save to persisted stored users
     const allUsers = getStoredUsers();
     allUsers.unshift(newUser);
     saveStoredUsers(allUsers);
