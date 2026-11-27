@@ -65,7 +65,7 @@ namespace Sahaya.Logistics.API.Controllers
         }
 
         /// <summary>
-        /// Registers a new verified safe shelter zone with GPS coordinates & accessibility validation
+        /// Registers a new verified safe shelter zone with GPS coordinates &amp; accessibility validation
         /// </summary>
         [HttpPost]
         public async Task<ActionResult<Result<ShelterResponseDto>>> CreateShelter([FromBody] CreateShelterDto request)

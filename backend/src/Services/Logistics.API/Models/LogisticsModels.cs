@@ -64,7 +64,7 @@ namespace Sahaya.Logistics.API.Models
     }
 
     /// <summary>
-    /// Safe Shelter Entity (Evacuation camps & humanitarian relief centres)
+    /// Safe Shelter Entity (Evacuation camps &amp; humanitarian relief centres)
     /// </summary>
     public class Shelter : BaseEntity
     {
@@ -129,7 +129,7 @@ namespace Sahaya.Logistics.API.Models
     }
 
     /// <summary>
-    /// Relief Supplies Dispatch & Allocation Entity
+    /// Relief Supplies Dispatch &amp; Allocation Entity
     /// </summary>
     public class ResourceAllocation : BaseEntity
     {

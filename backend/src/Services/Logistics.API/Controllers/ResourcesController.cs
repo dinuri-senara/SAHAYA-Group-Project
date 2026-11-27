@@ -239,7 +239,7 @@ namespace Sahaya.Logistics.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves complete Dispatches & Allocations log (Tab 3 in Frontend ResourcesPage)
+        /// Retrieves complete Dispatches &amp; Allocations log (Tab 3 in Frontend ResourcesPage)
         /// </summary>
         [HttpGet("allocations")]
         public async Task<ActionResult<Result<List<ResourceAllocation>>>> GetAllocations(

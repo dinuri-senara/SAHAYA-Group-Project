@@ -65,6 +65,13 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Depot Inventory, Emergency Stock Allocations, Safe Shelters & Satiety Burn-Rate Analytics — Member 4 Domain"
     });
 
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and your token.",
