@@ -8,8 +8,10 @@ using Sahaya.Logistics.API.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // 0. Database Connection (SQL Server)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=(localdb)\\mssqllocaldb;Database=Sahaya_LogisticsDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+var rawConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = (string.IsNullOrWhiteSpace(rawConn) || rawConn.Contains("Host=") || rawConn.Contains("Port="))
+    ? "Server=(localdb)\\mssqllocaldb;Database=Sahaya_LogisticsDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+    : rawConn;
 
 builder.Services.AddDbContext<LogisticsDbContext>(options =>
     options.UseSqlServer(connectionString));
