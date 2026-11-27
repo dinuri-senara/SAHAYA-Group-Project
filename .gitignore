@@ -5,3 +5,12 @@ dist/
 .env
 .hintrc
 
+
+# .NET / Backend Build Artifacts
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+
+.neon
