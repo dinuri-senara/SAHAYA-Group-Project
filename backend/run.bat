@@ -19,20 +19,32 @@ start "Sahaya.Coordination.API (5003)" cmd /k "cd src\Services\Coordination.API 
 
 timeout /t 2 /nobreak >nul
 
-echo [4/5] Starting Sahaya.Logistics.API (Port 5004)...
+echo [4/7] Starting Sahaya.Logistics.API (Port 5004)...
 start "Sahaya.Logistics.API (5004)" cmd /k "cd src\Services\Logistics.API && dotnet run"
 
 timeout /t 2 /nobreak >nul
 
-echo [5/5] Starting Sahaya.Gateway (Port 5000)...
+echo [5/7] Starting Sahaya.AIIntelligence.API (Port 5005) - Member 5...
+start "Sahaya.AIIntelligence.API (5005)" cmd /k "cd src\Services\AIIntelligence.API && dotnet run"
+
+timeout /t 2 /nobreak >nul
+
+echo [6/7] Starting Sahaya.Operations.API (Port 5006)...
+start "Sahaya.Operations.API (5006)" cmd /k "cd src\Services\Operations.API && dotnet run"
+
+timeout /t 2 /nobreak >nul
+
+echo [7/7] Starting Sahaya.Gateway (Port 5000)...
 start "Sahaya.Gateway (5000)" cmd /k "cd src\Sahaya.Gateway && dotnet run"
 
 echo.
 echo ====================================================
 echo All Backend Services are running!
-echo Gateway URL:          http://localhost:5000
-echo Identity Swagger:     http://localhost:5001/swagger
-echo Assistance Swagger:   http://localhost:5002/swagger
-echo Coordination Swagger: http://localhost:5003/swagger
-echo Logistics Swagger:    http://localhost:5004/swagger
+echo Gateway URL:            http://localhost:5000
+echo Identity Swagger:       http://localhost:5001/swagger
+echo Assistance Swagger:     http://localhost:5002/swagger
+echo Coordination Swagger:   http://localhost:5003/swagger
+echo Logistics Swagger:      http://localhost:5004/swagger
+echo AI Intelligence Swagger:http://localhost:5005/swagger
+echo Operations Swagger:     http://localhost:5006/swagger
 echo ====================================================
