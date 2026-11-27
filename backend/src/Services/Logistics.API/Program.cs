@@ -119,6 +119,13 @@ app.MapGet("/", () => Results.Ok(new
     Owner = "Member 4 - Logistics & Shelter Domain"
 }));
 
+app.MapGet("/health", () => Results.Ok(new
+{
+    Status = "Healthy",
+    Service = "Sahaya.Logistics.API",
+    TimestampUtc = DateTime.UtcNow
+}));
+
 // Auto-migrate or create database schema on startup with seed data
 using (var scope = app.Services.CreateScope())
 {
