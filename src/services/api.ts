@@ -7,6 +7,7 @@ import {
   CoordinatorDashboardData,
   AIRecommendation,
   Resource,
+  ResourceCategory,
   ResourceAllocation,
   Shelter,
   ShelterAssignment,
@@ -1212,15 +1213,142 @@ export const api = {
 
   // Shelters
   async getShelters(_activeOnly?: boolean): Promise<Shelter[]> {
+    try {
+      const url = _activeOnly ? '/api/v1/shelters?activeOnly=true' : '/api/v1/shelters';
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data || json;
+        if (Array.isArray(items) && items.length > 0) {
+          const mapped: Shelter[] = items.map((dto: any) => {
+            const cap = Number(dto.totalCapacity || dto.capacity || 100);
+            const statusVal = dto.status === 1 || dto.status === 'Full' ? 'Full' 
+              : dto.status === 2 || dto.status === 'Closed' || dto.status === 'Inactive' ? 'Inactive' 
+              : 'Active';
+            return {
+              id: String(dto.id),
+              name: dto.name || 'Emergency Safe Haven',
+              address: dto.address || '',
+              latitude: Number(dto.latitude) || 6.9271,
+              longitude: Number(dto.longitude) || 79.8612,
+              totalCapacity: cap,
+              capacity: cap,
+              currentOccupancy: Number(dto.currentOccupancy) || 0,
+              availableCapacity: dto.availableCapacity !== undefined ? Number(dto.availableCapacity) : Math.max(0, cap - (Number(dto.currentOccupancy) || 0)),
+              facilities: Array.isArray(dto.facilities) && dto.facilities.length > 0 ? dto.facilities : ['Clean Water', 'Sanitation', 'First Aid'],
+              accessibilityInfo: dto.accessibilityInfo || 'Ramp and ground floor access available',
+              contactPhone: dto.contactPhone || '+94 11 234 5678',
+              contactPerson: dto.contactPerson || 'Camp Administrator',
+              status: statusVal,
+              createdAt: dto.createdAtUtc || dto.createdAt || new Date().toISOString(),
+              waterStockLiters: dto.waterStockLiters !== undefined ? Number(dto.waterStockLiters) : 2500,
+              foodRationBoxes: dto.foodRationBoxes !== undefined ? Number(dto.foodRationBoxes) : 350,
+              medicalKitPacks: dto.medicalKitPacks !== undefined ? Number(dto.medicalKitPacks) : 20,
+              lastStockAuditAt: dto.lastStockAuditAtUtc || dto.lastStockAuditAt || new Date().toISOString(),
+            };
+          });
+          saveStored('sahaya_shelters', mapped);
+          return mapped;
+        }
+      }
+    } catch {
+      // Fallback to local stored data
+    }
     return loadStored('sahaya_shelters', mockShelters);
   },
 
   async getShelter(id: string): Promise<Shelter> {
+    try {
+      const res = await fetch(`/api/v1/shelters/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        const dto = json.data || json;
+        if (dto && dto.id) {
+          const cap = Number(dto.totalCapacity || dto.capacity || 100);
+          return {
+            id: String(dto.id),
+            name: dto.name,
+            address: dto.address,
+            latitude: Number(dto.latitude),
+            longitude: Number(dto.longitude),
+            totalCapacity: cap,
+            capacity: cap,
+            currentOccupancy: Number(dto.currentOccupancy) || 0,
+            availableCapacity: dto.availableCapacity !== undefined ? Number(dto.availableCapacity) : Math.max(0, cap - (Number(dto.currentOccupancy) || 0)),
+            facilities: Array.isArray(dto.facilities) ? dto.facilities : ['Clean Water', 'Sanitation'],
+            accessibilityInfo: dto.accessibilityInfo || '',
+            contactPhone: dto.contactPhone || '',
+            contactPerson: dto.contactPerson || '',
+            status: dto.status === 1 || dto.status === 'Full' ? 'Full' : 'Active',
+            createdAt: dto.createdAtUtc || new Date().toISOString(),
+            waterStockLiters: Number(dto.waterStockLiters) || 0,
+            foodRationBoxes: Number(dto.foodRationBoxes) || 0,
+            medicalKitPacks: Number(dto.medicalKitPacks) || 0,
+            lastStockAuditAt: dto.lastStockAuditAtUtc || new Date().toISOString(),
+          };
+        }
+      }
+    } catch {
+      // Fallback
+    }
     const list = loadStored('sahaya_shelters', mockShelters);
     return list.find((s) => s.id === id) || list[0];
   },
 
   async createShelter(data: any): Promise<Shelter> {
+    try {
+      const cap = Number(data.capacity || data.totalCapacity || 50);
+      const res = await fetch('/api/v1/shelters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          address: data.address,
+          district: data.district || 'Colombo',
+          latitude: Number(data.latitude) || 6.9271,
+          longitude: Number(data.longitude) || 79.8612,
+          totalCapacity: cap,
+          contactPerson: data.contactPerson || 'Camp Coordinator',
+          contactPhone: data.contactPhone || '+94 77 123 4567',
+          facilities: Array.isArray(data.facilities) ? data.facilities : ['Clean Water', 'Sanitation'],
+          accessibilityInfo: data.accessibilityInfo || 'Ground-level ramp available',
+          isWheelchairAccessible: data.isWheelchairAccessible !== false,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const created = json.data || json;
+        if (created && created.id) {
+          const s: Shelter = {
+            id: String(created.id),
+            name: created.name,
+            address: created.address,
+            latitude: Number(created.latitude),
+            longitude: Number(created.longitude),
+            totalCapacity: cap,
+            capacity: cap,
+            currentOccupancy: 0,
+            availableCapacity: cap,
+            facilities: created.facilities || [],
+            accessibilityInfo: created.accessibilityInfo || '',
+            contactPhone: created.contactPhone || '',
+            contactPerson: created.contactPerson || '',
+            status: 'Active',
+            createdAt: created.createdAtUtc || new Date().toISOString(),
+            waterStockLiters: Number(created.waterStockLiters) || Math.max(cap * 4, 400),
+            foodRationBoxes: Number(created.foodRationBoxes) || Math.max(cap * 2, 200),
+            medicalKitPacks: Number(created.medicalKitPacks) || 15,
+            lastStockAuditAt: new Date().toISOString(),
+          };
+          const list = loadStored('sahaya_shelters', mockShelters);
+          list.unshift(s);
+          saveStored('sahaya_shelters', list);
+          return s;
+        }
+      }
+    } catch {
+      // Fallback
+    }
     const list = loadStored('sahaya_shelters', mockShelters);
     const cap = Number(data.capacity || data.totalCapacity || 50);
     const s: Shelter = {
@@ -1243,6 +1371,28 @@ export const api = {
   },
 
   async updateShelter(id: string, data: any): Promise<Shelter> {
+    try {
+      const res = await fetch(`/api/v1/shelters/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const updated = json.data || json;
+        if (updated && updated.id) {
+          const list = loadStored('sahaya_shelters', mockShelters);
+          const idx = list.findIndex((item) => item.id === id);
+          if (idx !== -1) {
+            list[idx] = { ...list[idx], ...data };
+            saveStored('sahaya_shelters', list);
+            return list[idx];
+          }
+        }
+      }
+    } catch {
+      // Fallback
+    }
     const list = loadStored('sahaya_shelters', mockShelters);
     const s = list.find((item) => item.id === id);
     if (s) {
@@ -1259,6 +1409,26 @@ export const api = {
     foodBoxes: number,
     _notes?: string
   ): Promise<{ from: Shelter; to: Shelter }> {
+    try {
+      const res = await fetch(`/api/v1/shelters/${fromShelterId}/transfer-supplies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceShelterId: fromShelterId,
+          targetShelterId: toShelterId,
+          waterLiters,
+          foodBoxes,
+          medicalPacks: 0,
+          notes: _notes || 'Inter-camp surplus redistribution',
+        }),
+      });
+      if (res.ok) {
+        // Refresh local cache with latest data
+        await this.getShelters();
+      }
+    } catch {
+      // Fallback
+    }
     const list = loadStored('sahaya_shelters', mockShelters);
     const source = list.find((s) => s.id === fromShelterId);
     const target = list.find((s) => s.id === toShelterId);
@@ -1279,9 +1449,25 @@ export const api = {
   },
 
   async assignShelter(data: any): Promise<ShelterAssignment> {
+    const assignedCount = Number(data.numberOfPeople || 1);
+    try {
+      const res = await fetch(`/api/v1/shelters/${data.shelterId}/assign-evacuees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistanceRequestId: data.assistanceRequestId,
+          headOfFamilyName: data.citizenName || 'Evacuee Family',
+          numberOfPeople: assignedCount,
+        }),
+      });
+      if (res.ok) {
+        await this.getShelters();
+      }
+    } catch {
+      // Fallback
+    }
     const shelters = loadStored('sahaya_shelters', mockShelters);
     const shelter = shelters.find((s) => s.id === data.shelterId);
-    const assignedCount = Number(data.numberOfPeople || 1);
 
     if (shelter) {
       shelter.currentOccupancy = (shelter.currentOccupancy || 0) + assignedCount;
@@ -1326,15 +1512,158 @@ export const api = {
 
   // Resources
   async getResources(): Promise<Resource[]> {
+    const catMap: Record<number | string, ResourceCategory> = {
+      0: 'Food',
+      'Food': 'Food',
+      1: 'DrinkingWater',
+      'DrinkingWater': 'DrinkingWater',
+      2: 'MedicalSupplies',
+      'MedicalSupplies': 'MedicalSupplies',
+      3: 'ShelterSupplies',
+      'ShelterSupplies': 'ShelterSupplies',
+      4: 'LogisticsEquipment',
+      'LogisticsEquipment': 'LogisticsEquipment',
+      5: 'Sanitation',
+      'Sanitation': 'Sanitation',
+      6: 'LogisticsEquipment',
+      'RescueEquipment': 'LogisticsEquipment',
+      7: 'LogisticsEquipment',
+      'PowerAndEnergy': 'LogisticsEquipment',
+    };
+
+    try {
+      const res = await fetch('/api/v1/resources/inventory');
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data || json;
+        if (Array.isArray(items) && items.length > 0) {
+          const mapped: Resource[] = items.map((dto: any) => {
+            const tot = Number(dto.totalQuantity) || 0;
+            const avail = Number(dto.availableQuantity) || 0;
+            const alloc = Number(dto.allocatedQuantity) || 0;
+            const low = Number(dto.lowStockThreshold) || 20;
+            return {
+              id: String(dto.id),
+              name: dto.name || 'Emergency Relief Item',
+              category: catMap[dto.category] || 'Food',
+              unit: dto.unit || 'Units',
+              totalQuantity: tot,
+              quantity: tot,
+              availableQuantity: avail,
+              allocatedQuantity: alloc,
+              dispatchedQuantity: alloc,
+              lowStockThreshold: low,
+              storageLocation: dto.warehouseLocation || 'Central Logistics Depot - Colombo',
+              warehouseLocation: dto.warehouseLocation || 'Central Logistics Depot - Colombo',
+              expiryDate: dto.expiryDate || undefined,
+              isActive: dto.status !== 2,
+              isLowStock: dto.isLowStock !== undefined ? Boolean(dto.isLowStock) : avail <= low,
+              createdAt: dto.lastReplenishedAtUtc || new Date().toISOString(),
+            };
+          });
+          saveStored('sahaya_resources', mapped);
+          return mapped;
+        }
+      }
+    } catch {
+      // Fallback
+    }
     return loadStored('sahaya_resources', mockResources);
   },
 
   async getResource(id: string): Promise<Resource> {
+    try {
+      const res = await fetch(`/api/v1/resources/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        const dto = json.data || json;
+        if (dto && dto.id) {
+          const tot = Number(dto.totalQuantity) || 0;
+          const avail = Number(dto.availableQuantity) || 0;
+          return {
+            id: String(dto.id),
+            name: dto.name,
+            category: dto.category || 'Food',
+            unit: dto.unit || 'Units',
+            totalQuantity: tot,
+            quantity: tot,
+            availableQuantity: avail,
+            allocatedQuantity: Number(dto.allocatedQuantity) || 0,
+            dispatchedQuantity: Number(dto.allocatedQuantity) || 0,
+            lowStockThreshold: Number(dto.lowStockThreshold) || 20,
+            storageLocation: dto.warehouseLocation || 'Central Logistics Depot - Colombo',
+            warehouseLocation: dto.warehouseLocation || 'Central Logistics Depot - Colombo',
+            isActive: true,
+            isLowStock: Boolean(dto.isLowStock),
+            createdAt: dto.lastReplenishedAtUtc || new Date().toISOString(),
+          };
+        }
+      }
+    } catch {
+      // Fallback
+    }
     const list = loadStored('sahaya_resources', mockResources);
     return list.find((r) => r.id === id) || list[0];
   },
 
   async createResource(data: any): Promise<Resource> {
+    const catNameToIndex: Record<string, number> = {
+      'Food': 0,
+      'DrinkingWater': 1,
+      'MedicalSupplies': 2,
+      'ShelterSupplies': 3,
+      'LogisticsEquipment': 4,
+      'Sanitation': 5,
+      'RescueEquipment': 6,
+      'PowerAndEnergy': 7,
+    };
+
+    try {
+      const payload = {
+        name: data.name,
+        category: typeof data.category === 'number' ? data.category : (catNameToIndex[data.category] ?? 0),
+        totalQuantity: Number(data.totalQuantity || data.quantity || 100),
+        lowStockThreshold: Number(data.lowStockThreshold || 20),
+        unit: data.unit || 'Units',
+        warehouseLocation: data.storageLocation || data.warehouseLocation || 'Central Logistics Depot - Colombo',
+      };
+
+      const res = await fetch('/api/v1/resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const created = json.data || json;
+        if (created && created.id) {
+          const r: Resource = {
+            id: String(created.id),
+            name: created.name,
+            category: data.category || 'Food',
+            unit: created.unit || 'Units',
+            totalQuantity: Number(created.totalQuantity) || payload.totalQuantity,
+            availableQuantity: Number(created.availableQuantity) || payload.totalQuantity,
+            allocatedQuantity: 0,
+            dispatchedQuantity: 0,
+            lowStockThreshold: Number(created.lowStockThreshold) || payload.lowStockThreshold,
+            storageLocation: created.warehouseLocation || payload.warehouseLocation,
+            warehouseLocation: created.warehouseLocation || payload.warehouseLocation,
+            isActive: true,
+            isLowStock: false,
+            createdAt: new Date().toISOString(),
+          };
+          const list = loadStored('sahaya_resources', mockResources);
+          list.unshift(r);
+          saveStored('sahaya_resources', list);
+          return r;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+
     const catMap: Record<number, string> = {
       0: 'Food',
       1: 'DrinkingWater',
@@ -1376,9 +1705,32 @@ export const api = {
   },
 
   async allocateResource(data: any): Promise<ResourceAllocation> {
+    const qty = Number(data.quantityAllocated || data.quantity || 0);
+    try {
+      const res = await fetch('/api/v1/resources/allocate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resourceItemId: data.resourceId,
+          assistanceRequestId: data.assistanceRequestId && data.assistanceRequestId.startsWith('req-') ? null : data.assistanceRequestId,
+          targetShelterId: data.targetShelterId || null,
+          allocatedQuantity: qty,
+          priorityLevel: Number(data.priorityLevel) || 2,
+          destinationLocation: data.destinationLocation || 'Field Relief Area',
+          dispatchNotes: data.notes || `Dispatched directly to citizen assistance request ${data.assistanceRequestId}`,
+        }),
+      });
+
+      if (res.ok) {
+        // Refresh live resources stock
+        await this.getResources();
+      }
+    } catch {
+      // Fallback
+    }
+
     const resList = loadStored('sahaya_resources', mockResources);
     const res = resList.find((r) => r.id === data.resourceId);
-    const qty = Number(data.quantityAllocated || data.quantity || 0);
     if (res) {
       res.availableQuantity = Math.max(0, res.availableQuantity - qty);
       res.allocatedQuantity = (res.allocatedQuantity || 0) + qty;
