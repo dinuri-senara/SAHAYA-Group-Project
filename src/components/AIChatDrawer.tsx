@@ -202,8 +202,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                   <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-400 px-1">
                     <span>{m.timestamp}</span>
                     {m.sender === 'ai' && (
-                      <span className="font-semibold text-slate-500">
-                        {m.isFallback ? '• Rule-based' : '• Model'}
+                      <span className={`font-semibold ${m.isFallback ? 'text-amber-500' : 'text-emerald-500'}`}>
+                        {m.isFallback ? '• Local Emergency Rules' : '• Gemini 3.5 AI (Live)'}
                       </span>
                     )}
                   </div>
