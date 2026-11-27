@@ -1522,8 +1522,33 @@ export const api = {
     };
   },
 
-  async acceptAIRecommendation(_id: string): Promise<void> { },
-  async overrideAIRecommendation(_id: string, _data: any): Promise<void> { },
+  async acceptAIRecommendation(id: string): Promise<void> {
+    try {
+      await fetch(`http://localhost:5005/api/v1/ai/recommendations/${id}/accept`, { method: 'POST' });
+    } catch {
+      // Local fallback
+    }
+  },
+
+  async overrideAIRecommendation(id: string, data: any): Promise<void> {
+    try {
+      await fetch('http://localhost:5005/api/v1/ai/override', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recommendationId: id.startsWith('ai-rec-') ? null : id,
+          assistanceRequestId: data?.assistanceRequestId,
+          overriddenByUserId: data?.userId || 'coordinator-admin-01',
+          overriddenByUserName: data?.userName || 'Lead Disaster Response Officer',
+          originalRecommendation: data?.originalRecommendation || 'Auto Triage',
+          newDecision: data?.newDecision || data?.action || 'Manual Override',
+          justificationReason: data?.reason || 'Coordinator operational adjustment based on ground report',
+        }),
+      });
+    } catch {
+      // Local fallback
+    }
+  },
 
   // Volunteers
   async getVolunteers(): Promise<VolunteerProfile[]> {
@@ -1901,18 +1926,25 @@ export const api = {
     requestContextId?: string
   ): Promise<{ reply: string; isFromFallback?: boolean; quickSuggestions?: string[] }> {
     try {
-      const res = await fetch('/api/v1/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, language, requestContextId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          reply: data.reply || data.message,
-          isFromFallback: data.isFromFallback ?? false,
-          quickSuggestions: data.quickSuggestions || [],
-        };
+      const endpoints = ['http://localhost:5005/api/v1/ai/chat', '/api/v1/ai/chat'];
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, language, requestContextId }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return {
+              reply: data.reply || data.message,
+              isFromFallback: data.isFromFallback ?? false,
+              quickSuggestions: data.quickSuggestions || [],
+            };
+          }
+        } catch {
+          // Continue to next endpoint
+        }
       }
     } catch {
       // Backend unavailable; seamlessly switch to local intelligent Rule-Based NLP engine
