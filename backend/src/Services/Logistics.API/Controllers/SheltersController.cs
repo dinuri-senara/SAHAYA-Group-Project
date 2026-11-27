@@ -301,7 +301,9 @@ namespace Sahaya.Logistics.API.Controllers
                 return BadRequest(Result<InterCampTransfer>.Failure("Source shelter and target shelter cannot be identical."));
             }
 
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = _db.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory"
+                ? null
+                : await _db.Database.BeginTransactionAsync();
             try
             {
                 var sourceShelter = await _db.Shelters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
@@ -359,13 +361,13 @@ namespace Sahaya.Logistics.API.Controllers
 
                 _db.InterCampTransfers.Add(transferRecord);
                 await _db.SaveChangesAsync();
-                await transaction.CommitAsync();
+                if (transaction != null) await transaction.CommitAsync();
 
                 return Ok(Result<InterCampTransfer>.Success(transferRecord));
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                if (transaction != null) await transaction.RollbackAsync();
                 return StatusCode(500, Result<InterCampTransfer>.Failure($"Inter-camp transfer failed: {ex.Message}"));
             }
         }

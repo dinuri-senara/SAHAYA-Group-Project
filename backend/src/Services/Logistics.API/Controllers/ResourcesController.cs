@@ -169,7 +169,9 @@ namespace Sahaya.Logistics.API.Controllers
                 return BadRequest(Result<ResourceAllocation>.Failure("Allocation quantity must be greater than zero."));
             }
 
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = _db.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory"
+                ? null
+                : await _db.Database.BeginTransactionAsync();
             try
             {
                 var resource = await _db.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && !r.IsDeleted);
@@ -219,19 +221,19 @@ namespace Sahaya.Logistics.API.Controllers
 
                 _db.ResourceAllocations.Add(allocation);
                 await _db.SaveChangesAsync();
-                await transaction.CommitAsync();
+                if (transaction != null) await transaction.CommitAsync();
 
                 return Ok(Result<ResourceAllocation>.Success(allocation));
             }
             catch (DbUpdateConcurrencyException)
             {
-                await transaction.RollbackAsync();
+                if (transaction != null) await transaction.RollbackAsync();
                 return StatusCode(409, Result<ResourceAllocation>.Failure(
                     "Concurrent modification detected on resource inventory. Another coordinator may have allocated stock simultaneously. Please retry."));
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                if (transaction != null) await transaction.RollbackAsync();
                 return StatusCode(500, Result<ResourceAllocation>.Failure($"Stock allocation failed: {ex.Message}"));
             }
         }
