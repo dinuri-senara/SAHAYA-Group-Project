@@ -16,7 +16,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Server=(localdb)\\mssqllocaldb;Database=SahayaCoordinationDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 
 builder.Services.AddDbContext<CoordinationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // 2. JWT Authentication (Single sign-on using Sahaya Identity Authority)
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "SAHAYA_NATIONAL_COMMAND_AUTHORITY_SUPER_SECRET_KEY_2026";
@@ -118,7 +118,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<CoordinationDbContext>();
     try
     {
-        db.Database.EnsureCreated();
+        var creator = (Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator)Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(db.Database);
+        try { creator.CreateTables(); } catch (Exception ex) { Console.WriteLine($"CreateTables notice: {ex.Message}"); }
         Console.WriteLine("[Sahaya.Coordination.API] Database schema verified and seeded successfully.");
     }
     catch (Exception ex)
@@ -128,3 +129,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+
+
+

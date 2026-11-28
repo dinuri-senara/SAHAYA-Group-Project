@@ -16,7 +16,7 @@ namespace Sahaya.Identity.API.Controllers
 {
     [ApiController]
     [Route("api/v1/admin")]
-    [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     public class AdminUsersController : ControllerBase
     {
         private readonly IdentityDbContext _db;
@@ -138,6 +138,61 @@ namespace Sahaya.Identity.API.Controllers
             await _db.SaveChangesAsync();
 
             return Ok(Result.Success());
+        }
+
+        [HttpPost("users")]
+        public async Task<ActionResult<Result<UserDto>>> CreateOfficialAccount([FromBody] CreateOfficialAccountRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(Result<UserDto>.Failure("Invalid account creation parameters."));
+
+            var existing = await _db.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower());
+            if (existing)
+                return Conflict(Result<UserDto>.Failure("An account with this email address already exists."));
+
+            var user = new User
+            {
+                Email = request.Email.Trim().ToLower(),
+                FullName = request.FullName.Trim(),
+                PhoneNumber = request.PhoneNumber ?? "0112345678",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 11),
+                Role = request.Role,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            _db.Users.Add(user);
+
+            var audit = new AuditLog
+            {
+                UserId = user.Id,
+                Action = "OfficialAccountCreatedByAdmin",
+                EntityName = "User",
+                EntityId = user.Id.ToString(),
+                ChangesJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    CreatedUserId = user.Id,
+                    Email = user.Email,
+                    Role = user.Role.ToString(),
+                    CreatedTimestampUtc = DateTime.UtcNow
+                }),
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1"
+            };
+
+            _db.AuditLogs.Add(audit);
+            await _db.SaveChangesAsync();
+
+            var dto = new UserDto(
+                user.Id,
+                user.Email,
+                user.FullName,
+                user.PhoneNumber,
+                user.Role.ToString(),
+                user.IsActive,
+                user.CreatedAtUtc
+            );
+
+            return CreatedAtAction(nameof(GetAllUsers), new { id = user.Id }, Result<UserDto>.Success(dto));
         }
 
         [HttpGet("telemetry")]

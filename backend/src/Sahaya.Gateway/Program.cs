@@ -9,7 +9,6 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     
-    // Global fixed window rate limiter for public endpoints (60 requests per minute per IP)
     options.AddPolicy("PublicApiLimiter", httpContext =>
         System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
@@ -54,9 +53,32 @@ app.MapGet("/", () => Results.Ok(new
     service = "SAHAYA National Command API Gateway",
     status = "Online",
     version = "1.0.0",
-    security = "STRIDE Hardened (TLS, Rate-Limiting, Header Sanitization)",
+    security = "STRIDE Hardened",
     docs = "http://localhost:5001/swagger"
 }));
+
+// In-Memory Real-time Broadcast Notifications Hub on Gateway
+var notifications = new List<object>
+{
+    new {
+        id = "notif-system-online",
+        title = "National Disaster Grid Connected",
+        message = "All SAHAYA microservices wired to Neon Serverless Cloud Postgres.",
+        type = "SystemUpdate",
+        isRead = false,
+        createdAt = DateTime.UtcNow
+    }
+};
+
+app.MapGet("/api/v1/notifications", () => Results.Ok(notifications));
+app.MapPost("/api/v1/notifications/{id}/read", (string id) => Results.Ok());
+app.MapPost("/api/v1/notifications/read-all", () => Results.Ok());
+app.MapDelete("/api/v1/notifications/{id}", (string id) => Results.Ok());
+app.MapDelete("/api/v1/notifications", () => Results.Ok());
+app.MapPost("/api/v1/notifications/broadcast", (object payload) => {
+    notifications.Insert(0, payload);
+    return Results.Ok();
+});
 
 app.MapReverseProxy();
 

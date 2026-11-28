@@ -118,109 +118,9 @@ const saveStored = <T>(key: string, data: T[]) => {
   } catch { }
 };
 
-const initialRequests: AssistanceRequest[] = [
-  {
-    id: 'req-1',
-    citizenId: 'cit-1',
-    citizenName: 'Kavinda Fernando',
-    citizenPhone: '+94 71 889 2211',
-    title: 'Clean Drinking Water & Rooftop Evacuation',
-    category: 'DrinkingWater' as RequestCategory,
-    urgency: 'Immediate' as RequestUrgency,
-    description: 'Drinking water contamination. 14 families stranded on upper rooftop of temple.',
-    location: 'Sedawatta, Wellampitiya',
-    address: 'Sedawatta, Wellampitiya',
-    latitude: 6.942,
-    longitude: 79.887,
-    peopleCount: 45,
-    affectedCount: 45,
-    status: 'Submitted' as RequestStatus,
-    statusHistory: [],
-    latestRecommendation: {
-      id: 'ai-rec-req-1',
-      assistanceRequestId: 'req-1',
-      suggestedCategory: 'DrinkingWater',
-      predictedCategory: 'DrinkingWater',
-      suggestedUrgency: 'Critical',
-      suggestedPriority: 'Critical',
-      confidenceScore: 0.94,
-      explanation: 'High-density stranded group (45 people) near Kelani flood surge with contaminated water supply.',
-      suggestedResources: ['Clean Water Purification Packs (5L)', 'Inflatable Life Rafts & Life Jackets'],
-      reviewStatus: 'Pending',
-      status: 'Pending',
-      createdAt: '2026-11-19T06:31:00Z',
-    },
-    createdAt: '2026-11-19T06:30:00Z',
-  },
-  {
-    id: 'req-2',
-    citizenId: 'cit-2',
-    citizenName: 'Nimali Wickramasinghe',
-    citizenPhone: '+94 77 452 9901',
-    title: 'Emergency Shelter Placement - Family Displaced',
-    category: 'EmergencyShelter' as RequestCategory,
-    urgency: 'Critical' as RequestUrgency,
-    description: 'Ground floor flooded to 4 feet. Family of 5 including 2 elders needs immediate safe camp placement.',
-    location: 'Biyagama Rd, Kelaniya',
-    address: 'Biyagama Rd, Kelaniya',
-    latitude: 6.954,
-    longitude: 79.918,
-    peopleCount: 5,
-    affectedCount: 5,
-    status: 'Approved' as RequestStatus,
-    statusHistory: [],
-    latestRecommendation: {
-      id: 'ai-rec-req-2',
-      assistanceRequestId: 'req-2',
-      suggestedCategory: 'EmergencyShelter',
-      predictedCategory: 'EmergencyShelter',
-      suggestedUrgency: 'Critical',
-      suggestedPriority: 'Critical',
-      confidenceScore: 0.91,
-      explanation: 'Vulnerable elderly individuals displaced by rising floodwaters; immediate shelter bed allocation advised.',
-      suggestedResources: ['Emergency Shelter Placement', 'Dry Bedding'],
-      reviewStatus: 'Accepted',
-      status: 'Accepted',
-      createdAt: '2026-11-19T07:16:00Z',
-    },
-    createdAt: '2026-11-19T07:15:00Z',
-  },
-  {
-    id: 'req-3',
-    citizenId: 'cit-3',
-    citizenName: 'Sunil Shantha',
-    citizenPhone: '+94 75 112 3344',
-    title: 'Dry Rations for Elderly Care Hall',
-    category: 'Food' as RequestCategory,
-    urgency: 'High' as RequestUrgency,
-    description: 'Dry rations needed for elderly care home evacuated to community hall.',
-    location: 'Biyagama Central',
-    address: 'Biyagama Central',
-    latitude: 6.948,
-    longitude: 79.992,
-    peopleCount: 30,
-    affectedCount: 30,
-    status: 'InProgress' as RequestStatus,
-    statusHistory: [],
-    latestRecommendation: {
-      id: 'ai-rec-req-3',
-      assistanceRequestId: 'req-3',
-      suggestedCategory: 'Food',
-      predictedCategory: 'Food',
-      suggestedUrgency: 'High',
-      suggestedPriority: 'High',
-      confidenceScore: 0.88,
-      explanation: '30 elderly evacuees require sustained dry food rations.',
-      suggestedResources: ['Emergency High-Energy Biscuit Rations'],
-      reviewStatus: 'Accepted',
-      status: 'Accepted',
-      createdAt: '2026-11-19T08:01:00Z',
-    },
-    createdAt: '2026-11-19T08:00:00Z',
-  },
-];
+const initialRequests: AssistanceRequest[] = [];
 
-const mockRequests: AssistanceRequest[] = loadStored('sahaya_requests', initialRequests);
+const mockRequests: AssistanceRequest[] = [];
 
 const mockShelters: Shelter[] = [
   {
@@ -2261,52 +2161,96 @@ export const api = {
     return [];
   },
 
-  // User Management
+  // User Management - Live Neon PostgreSQL
   async getUsers(role?: string, search?: string): Promise<UserSummary[]> {
-    let result = getStoredUsers();
-    if (role && role !== 'All') {
-      result = result.filter((u) => u.role === role);
+    try {
+      let url = '/api/v1/admin/users';
+      const params = new URLSearchParams();
+      if (role && role !== 'All') params.append('role', role);
+      if (search) params.append('search', search);
+      if (params.toString()) url += '?' + params.toString();
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data || json;
+        if (Array.isArray(items)) {
+          return items.map((u: any) => ({
+            id: String(u.id),
+            email: u.email,
+            fullName: u.fullName,
+            role: u.role,
+            isActive: u.isActive !== undefined ? u.isActive : true,
+            createdAt: u.createdAtUtc || u.createdAt || new Date().toISOString()
+          }));
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching live users:', e);
     }
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((u) => u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-    }
-    return result;
+    return [];
   },
 
   async getUserById(id: string): Promise<UserSummary> {
-    const allUsers = getStoredUsers();
-    return allUsers.find((u) => u.id === id) || allUsers[0];
+    try {
+      const users = await this.getUsers();
+      const found = users.find((u) => u.id === id);
+      if (found) return found;
+    } catch { }
+    return {
+      id,
+      email: 'user@sahaya.org',
+      fullName: 'Sahaya User',
+      role: 'Citizen',
+      isActive: true,
+      createdAt: new Date().toISOString()
+    };
   },
 
   async updateUserRole(id: string, data: { newRole: number | UserRole; justification: string }): Promise<void> {
-    const roles: UserRole[] = [
-      'Citizen',
-      'Coordinator',
-      'Volunteer',
-      'Donor',
-      'Admin',
-      'CaseManager',
-      'LogisticsManager',
-      'ShelterAdmin',
-      'VolunteerCoordinator',
-      'PartnerOfficer',
-    ];
-    const allUsers = getStoredUsers();
-    const u = allUsers.find((item) => item.id === id);
-    if (u) {
-      u.role = typeof data.newRole === 'string' ? (data.newRole as UserRole) : roles[data.newRole] || 'Citizen';
-      saveStoredUsers(allUsers);
+    const roleMap: Record<string, number> = {
+      'Citizen': 1, 'Coordinator': 2, 'Volunteer': 3, 'Donor': 4, 'Admin': 5,
+      'CaseManager': 6, 'LogisticsManager': 7, 'ShelterAdmin': 8, 'VolunteerCoordinator': 9, 'PartnerOfficer': 10
+    };
+    const roleNum = typeof data.newRole === 'number' ? data.newRole : roleMap[String(data.newRole)] || 1;
+    await fetch('/api/v1/admin/users/' + id + '/role', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: roleNum, justification: data.justification || 'Role adjustment' })
+    });
+  },
+
+  async createOfficialUser(data: { fullName: string; email: string; role: string; password?: string; phoneNumber?: string }): Promise<any> {
+    const roleMap: Record<string, number> = {
+      'Citizen': 1, 'Coordinator': 2, 'Volunteer': 3, 'Donor': 4, 'Admin': 5,
+      'CaseManager': 6, 'LogisticsManager': 7, 'ShelterAdmin': 8, 'VolunteerCoordinator': 9, 'PartnerOfficer': 10
+    };
+    const roleNum = roleMap[data.role] || 5;
+    const res = await fetch('/api/v1/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: data.fullName,
+        email: data.email,
+        role: roleNum,
+        password: data.password || 'Admin@123',
+        phoneNumber: data.phoneNumber || '0112345678'
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to create official account.');
     }
+    const json = await res.json();
+    return json.data || json;
   },
 
   async toggleUserStatus(id: string, data: { isActive: boolean; justification: string }): Promise<void> {
-    const allUsers = getStoredUsers();
-    const u = allUsers.find((item) => item.id === id);
-    if (u) {
-      u.isActive = data.isActive;
-      saveStoredUsers(allUsers);
-    }
+    await fetch('/api/v1/admin/users/' + id + '/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: data.isActive, justification: data.justification || 'Status update' })
+    });
   },
 
   // AI Chat Assistant
@@ -2646,3 +2590,12 @@ export const api = {
     return { success: true, task: newTask };
   },
 };
+
+
+
+
+
+
+
+
+

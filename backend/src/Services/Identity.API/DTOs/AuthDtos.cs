@@ -47,4 +47,11 @@ namespace Sahaya.Identity.API.DTOs
         [Required] UserRole NewRole, 
         [Required][MinLength(5)][MaxLength(300)] string Justification
     );
+    public record CreateOfficialAccountRequest(
+        [Required][EmailAddress] string Email,
+        [Required][MinLength(2)][MaxLength(100)] string FullName,
+        [Required] UserRole Role,
+        [Required][MinLength(6)] string Password,
+        string? PhoneNumber
+    );
 }

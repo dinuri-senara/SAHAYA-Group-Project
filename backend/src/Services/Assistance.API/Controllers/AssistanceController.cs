@@ -44,6 +44,14 @@ namespace Sahaya.Assistance.API.Controllers
         /// <summary>
         /// Submit a verified emergency assistance request with GPS coordinates
         /// </summary>
+[HttpGet("requests")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllRequests([FromQuery] string? category = null, [FromQuery] string? status = null)
+        {
+            var result = await _assistanceService.GetAllRequestsAsync(category, status);
+            return Ok(result.Data);
+        }
+
         [HttpPost("requests")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateAssistanceRequestDto dto)
         {
@@ -153,3 +161,4 @@ namespace Sahaya.Assistance.API.Controllers
         }
     }
 }
+

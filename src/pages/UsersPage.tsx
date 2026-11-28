@@ -139,24 +139,18 @@ export const UsersPage: React.FC = () => {
     }
   };
 
-  const handleCreateAccount = (e: React.FormEvent) => {
+  const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingAccount(true);
+    setActionError(null);
     try {
-      const createdUser: UserSummary = {
-        id: `u-adm-${Date.now()}`,
+      await api.createOfficialUser({
         fullName: newAccount.fullName,
         email: newAccount.email,
         role: newAccount.role,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      };
-      const updatedList = [createdUser, ...users];
-      setUsers(updatedList);
-      try {
-        localStorage.setItem('sahaya_registered_users', JSON.stringify(updatedList));
-      } catch {}
-      setSuccessBanner(`Official credential for ${newAccount.fullName} (${newAccount.role}) created successfully!`);
+        password: newAccount.password || 'Admin@123',
+      });
+      setSuccessBanner(`Official credential for ${newAccount.fullName} (${newAccount.role}) created successfully in Neon database!`);
       setShowCreateModal(false);
       setNewAccount({
         fullName: '',
@@ -165,9 +159,10 @@ export const UsersPage: React.FC = () => {
         password: '',
         department: 'National Emergency Operations Center'
       });
+      await loadUsers();
       setTimeout(() => setSuccessBanner(null), 5000);
-    } catch {
-      setActionError('Failed to create account.');
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to create official account.');
     } finally {
       setCreatingAccount(false);
     }

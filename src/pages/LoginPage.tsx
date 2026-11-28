@@ -35,15 +35,15 @@ export const LoginPage: React.FC = () => {
   }, []);
 
   const demoAccounts: { role: UserRole; email: string; pass: string; title: string; desc: string }[] = [
-    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Citizen@123', title: 'Affected Person / Citizen', desc: 'Aid requests, emergency SOS & status tracking' },
-    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Coordinator@123', title: 'Emergency Coordinator', desc: 'Case triage, AI assessment & crisis escalation' },
-    { role: 'CaseManager', email: 'casemanager@sahaya.org', pass: 'Case@123', title: 'Incident / Case Manager', desc: 'Incidents registry & request lifecycle audit' },
-    { role: 'LogisticsManager', email: 'logistics@sahaya.org', pass: 'Logistics@123', title: 'Resource & Logistics Manager', desc: 'Inventory depot, aid dispatches & shortages' },
-    { role: 'ShelterAdmin', email: 'shelteradmin@sahaya.org', pass: 'Shelter@123', title: 'Shelter Administrator', desc: 'Shelter capacity, occupancies & facilities' },
-    { role: 'VolunteerCoordinator', email: 'volunteercoord@sahaya.org', pass: 'VolCoord@123', title: 'Volunteer Coordinator', desc: 'Mobilization rosters & mission task allocation' },
-    { role: 'Volunteer', email: 'volunteer@sahaya.org', pass: 'Volunteer@123', title: 'Field Volunteer', desc: 'Assigned field missions, task completion & GPS check-in' },
-    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Donor@123', title: 'Donor / Funding Officer', desc: 'Fund pledges, in-kind supplies & audit log' },
-    { role: 'PartnerOfficer', email: 'partner@sahaya.org', pass: 'Partner@123', title: 'Partner Organisation Officer', desc: 'Inter-agency requisition & joint response' },
+    { role: 'Citizen', email: 'citizen@sahaya.org', pass: 'Admin@123', title: 'Affected Person / Citizen', desc: 'Aid requests, emergency SOS & status tracking' },
+    { role: 'Coordinator', email: 'coordinator@sahaya.org', pass: 'Admin@123', title: 'Emergency Coordinator', desc: 'Case triage, AI assessment & crisis escalation' },
+    { role: 'CaseManager', email: 'casemanager@sahaya.org', pass: 'Admin@123', title: 'Incident / Case Manager', desc: 'Incidents registry & request lifecycle audit' },
+    { role: 'LogisticsManager', email: 'logistics@sahaya.org', pass: 'Admin@123', title: 'Resource & Logistics Manager', desc: 'Inventory depot, aid dispatches & shortages' },
+    { role: 'ShelterAdmin', email: 'shelteradmin@sahaya.org', pass: 'Admin@123', title: 'Shelter Administrator', desc: 'Shelter capacity, occupancies & facilities' },
+    { role: 'VolunteerCoordinator', email: 'volunteercoord@sahaya.org', pass: 'Admin@123', title: 'Volunteer Coordinator', desc: 'Mobilization rosters & mission task allocation' },
+    { role: 'Volunteer', email: 'volunteer@sahaya.org', pass: 'Admin@123', title: 'Field Volunteer', desc: 'Assigned field missions, task completion & GPS check-in' },
+    { role: 'Donor', email: 'donor@sahaya.org', pass: 'Admin@123', title: 'Donor / Funding Officer', desc: 'Fund pledges, in-kind supplies & audit log' },
+    { role: 'PartnerOfficer', email: 'partner@sahaya.org', pass: 'Admin@123', title: 'Partner Organisation Officer', desc: 'Inter-agency requisition & joint response' },
     { role: 'Admin', email: 'admin@sahaya.org', pass: 'Admin@123', title: 'System Administrator', desc: 'National executive command & system telemetry' },
   ];
 

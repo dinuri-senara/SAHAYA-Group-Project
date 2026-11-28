@@ -85,7 +85,8 @@ using (var scope = app.Services.CreateScope())
     {
         if (!useInMemory && db.Database.IsRelational())
         {
-            db.Database.EnsureCreated();
+            var creator = (Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator)Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(db.Database);
+        try { creator.CreateTables(); } catch (Exception ex) { Console.WriteLine($"CreateTables notice: {ex.Message}"); }
         }
     }
     catch
@@ -96,3 +97,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+

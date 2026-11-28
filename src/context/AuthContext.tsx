@@ -138,24 +138,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: { email: string; password: string; fullName: string; phoneNumber: string; role: number }) => {
     const res = await api.register(data);
-    localStorage.setItem('sahaya_token', res.token);
-    setToken(res.token);
-
     const mappedRole = normalizeRole(res.role);
     const isPublicRole = mappedRole === 'Citizen' || mappedRole === 'Donor';
     const isActive = isPublicRole;
 
-    const fullUser: User = {
-      id: res.userId,
-      email: res.email,
-      fullName: res.fullName,
-      phoneNumber: data.phoneNumber,
-      role: mappedRole,
-      isActive: isActive,
-      createdAt: new Date().toISOString(),
-    };
-    setUser(fullUser);
-    localStorage.setItem('sahaya_user', JSON.stringify(fullUser));
+    if (res.token && isActive) {
+      localStorage.setItem('sahaya_token', res.token);
+      setToken(res.token);
+      const fullUser: User = {
+        id: res.userId,
+        email: res.email,
+        fullName: res.fullName,
+        phoneNumber: data.phoneNumber,
+        role: mappedRole,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      };
+      setUser(fullUser);
+      localStorage.setItem('sahaya_user', JSON.stringify(fullUser));
+    } else {
+      localStorage.removeItem('sahaya_token');
+      localStorage.removeItem('sahaya_user');
+      setToken(null);
+      setUser(null);
+    }
 
     return { ...res, role: mappedRole };
   };

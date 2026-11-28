@@ -121,6 +121,21 @@ namespace Sahaya.Identity.API.Controllers
             _db.RefreshTokens.Add(refreshToken);
             await _db.SaveChangesAsync();
 
+            if (!user.IsActive)
+            {
+                // Unverified staff account - return empty token and message requiring admin approval
+                var pendingResponse = new AuthResponse(
+                    user.Id,
+                    user.Email,
+                    user.FullName,
+                    user.Role.ToString(),
+                    string.Empty,
+                    string.Empty,
+                    DateTime.UtcNow
+                );
+                return Created($"/api/v1/auth/me", Result<AuthResponse>.Success(pendingResponse));
+            }
+
             var response = new AuthResponse(
                 user.Id,
                 user.Email,

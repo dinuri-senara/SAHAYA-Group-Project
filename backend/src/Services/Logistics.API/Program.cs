@@ -8,13 +8,13 @@ using Sahaya.Logistics.API.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // 0. Database Connection (SQL Server)
-var rawConn = builder.Configuration.GetConnectionString("DefaultConnection");
-var connectionString = (string.IsNullOrWhiteSpace(rawConn) || rawConn.Contains("Host=") || rawConn.Contains("Port="))
-    ? "Server=(localdb)\\mssqllocaldb;Database=Sahaya_LogisticsDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
-    : rawConn;
+var connectionString = "Host=ep-lucky-glade-biebrsak.c-5.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_ySOPHX1cAho4;SSL Mode=Require;Trust Server Certificate=true";
+// replaced
+// replaced
+// replaced
 
 builder.Services.AddDbContext<LogisticsDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // 1. CORS Policy for React Frontend
 builder.Services.AddCors(options =>
@@ -141,7 +141,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<LogisticsDbContext>();
     try
     {
-        db.Database.EnsureCreated();
+        var creator = (Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator)Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(db.Database);
+        try { creator.CreateTables(); } catch (Exception ex) { Console.WriteLine($"CreateTables notice: {ex.Message}"); }
     }
     catch (Exception ex)
     {
@@ -150,4 +151,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+
+
+
 

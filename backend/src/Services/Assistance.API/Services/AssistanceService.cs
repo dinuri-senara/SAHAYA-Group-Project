@@ -186,6 +186,21 @@ namespace Sahaya.Assistance.API.Services
             return Result<RequestTrackingDto>.Success(tracking);
         }
 
+        public async Task<Result<List<AssistanceRequestResponseDto>>> GetAllRequestsAsync(string? category = null, string? status = null)
+        {
+            var query = _db.AssistanceRequests.Include(r => r.StatusHistories).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(r => r.CategoryName.ToLower() == category.ToLower() || r.CategoryId.ToString() == category);
+            }
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(r => r.Status.ToLower() == status.ToLower());
+            }
+            var list = await query.OrderByDescending(r => r.CreatedAtUtc).ToListAsync();
+            return Result<List<AssistanceRequestResponseDto>>.Success(list.Select(MapToDto).ToList());
+        }
+
         public async Task<Result<List<AssistanceRequestResponseDto>>> GetCitizenRequestsAsync(string citizenId)
         {
             var list = await _db.AssistanceRequests
@@ -281,3 +296,4 @@ namespace Sahaya.Assistance.API.Services
         }
     }
 }
+

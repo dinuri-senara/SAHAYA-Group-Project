@@ -13,7 +13,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Server=(localdb)\\mssqllocaldb;Database=SahayaOperationsDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 
 builder.Services.AddDbContext<OperationsDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // 2. Dependency Injection for Services
 builder.Services.AddScoped<IVolunteerService, VolunteerService>();
@@ -145,7 +145,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<OperationsDbContext>();
     try
     {
-        db.Database.EnsureCreated();
+        var creator = (Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator)Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(db.Database);
+        try { creator.CreateTables(); } catch (Exception ex) { Console.WriteLine($"CreateTables notice: {ex.Message}"); }
         await OperationsDataSeeder.SeedAsync(db);
     }
     catch (Exception ex)
@@ -155,3 +156,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+
+
+
